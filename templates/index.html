@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Kindle Sender</title>
+<style>
+  /* ── Reset & Base ─────────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: #f5f5f4;
+    color: #1c1917;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 3rem 1rem;
+  }
+
+  /* ── Layout ───────────────────────────────────────────── */
+  .container { width: 100%; max-width: 600px; }
+
+  /* ── Header ───────────────────────────────────────────── */
+  .header { margin-bottom: 2.5rem; }
+  .header h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; }
+  .header p  { color: #78716c; font-size: 0.9rem; margin-top: 0.25rem; }
+
+  /* ── Card ─────────────────────────────────────────────── */
+  .card {
+    background: #fff;
+    border: 1px solid #e7e5e4;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+  }
+  .card h2 {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #a8a29e;
+    margin-bottom: 1rem;
+  }
+
+  /* ── URL input row ────────────────────────────────────── */
+  .url-row { display: flex; gap: 0.5rem; }
+  .url-row input {
+    flex: 1;
+    padding: 0.65rem 0.85rem;
+    font-size: 0.95rem;
+    border: 1px solid #d6d3d1;
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .url-row input:focus { border-color: #1c1917; }
+
+  /* ── Buttons ──────────────────────────────────────────── */
+  .btn {
+    padding: 0.65rem 1.1rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s, opacity 0.15s;
+  }
+  .btn:disabled { opacity: 0.45; cursor: default; }
+  .btn-dark  { background: #1c1917; color: #fff; }
+  .btn-dark:hover:not(:disabled) { background: #292524; }
+  .btn-send  {
+    width: 100%;
+    padding: 0.85rem;
+    font-size: 1rem;
+    font-weight: 600;
+    background: #16a34a;
+    color: #fff;
+    border-radius: 10px;
+    margin-top: 0.25rem;
+  }
+  .btn-send:hover:not(:disabled) { background: #15803d; }
+
+  /* ── Drop zone ────────────────────────────────────────── */
+  .drop-zone {
+    border: 2px dashed #d6d3d1;
+    border-radius: 10px;
+    padding: 1.25rem;
+    text-align: center;
+    color: #a8a29e;
+    font-size: 0.85rem;
+    margin-top: 0.75rem;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .drop-zone.over {
+    border-color: #1c1917;
+    background: #fafaf9;
+    color: #1c1917;
+  }
+
+  /* ── Article list ─────────────────────────────────────── */
+  .article-list { list-style: none; }
+  .article-item {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f5f5f4;
+  }
+  .article-item:last-child { border-bottom: none; }
+  .article-info { flex: 1; min-width: 0; }
+  .article-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .article-url {
+    font-size: 0.78rem;
+    color: #a8a29e;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .remove-btn {
+    background: none;
+    border: none;
+    color: #d6d3d1;
+    font-size: 1.15rem;
+    cursor: pointer;
+    padding: 0.15rem 0.35rem;
+    border-radius: 4px;
+    line-height: 1;
+    transition: color 0.15s;
+  }
+  .remove-btn:hover { color: #ef4444; }
+
+  .empty-state {
+    text-align: center;
+    color: #a8a29e;
+    font-size: 0.9rem;
+    padding: 1.5rem 0;
+  }
+
+  /* ── Settings ─────────────────────────────────────────── */
+  .settings-toggle {
+    background: none;
+    border: none;
+    font-size: 0.85rem;
+    color: #78716c;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+  .settings-toggle:hover { color: #1c1917; }
+  .settings-body { display: none; margin-top: 1rem; }
+  .settings-body.open { display: block; }
+  .field { margin-bottom: 0.85rem; }
+  .field label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #78716c;
+    margin-bottom: 0.3rem;
+  }
+  .field input, .field select {
+    width: 100%;
+    padding: 0.55rem 0.75rem;
+    font-size: 0.9rem;
+    border: 1px solid #d6d3d1;
+    border-radius: 8px;
+    outline: none;
+  }
+  .field input:focus, .field select:focus { border-color: #1c1917; }
+  .field-row { display: flex; gap: 0.75rem; }
+  .field-row .field { flex: 1; }
+  .hint { font-size: 0.75rem; color: #a8a29e; margin-top: 0.2rem; }
+
+  /* ── Toggle row (checkbox + label inline) ────────────── */
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.75rem;
+  }
+  .toggle-row input[type="checkbox"] {
+    width: 18px; height: 18px;
+    accent-color: #1c1917;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .toggle-row label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #1c1917;
+    cursor: pointer;
+  }
+  .toggle-detail {
+    margin-left: 1.65rem;
+    margin-bottom: 0.85rem;
+  }
+  .toggle-detail .field-row { margin-top: 0.3rem; }
+  .inline-num {
+    width: 60px !important;
+    text-align: center;
+    display: inline-block;
+  }
+
+  /* ── Toast ────────────────────────────────────────────── */
+  .toast {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(120%);
+    background: #1c1917;
+    color: #fff;
+    padding: 0.7rem 1.25rem;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    opacity: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    z-index: 100;
+    max-width: 90%;
+    text-align: center;
+  }
+  .toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+  .toast.error { background: #dc2626; }
+
+  /* ── Spinner ──────────────────────────────────────────── */
+  .spinner {
+    display: inline-block;
+    width: 16px; height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    vertical-align: middle;
+    margin-right: 0.4rem;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <h1>Kindle Sender</h1>
+    <p>Paste article URLs, then send them to your Kindle as an ebook.</p>
+  </div>
+
+  <!-- Add articles -->
+  <div class="card">
+    <h2>Add articles</h2>
+    <div class="url-row">
+      <input type="text" id="urlInput" placeholder="Paste an article URL..."
+             autocomplete="off" spellcheck="false" />
+      <button class="btn btn-dark" id="addBtn">Add</button>
+    </div>
+    <div class="drop-zone" id="dropZone">
+      or drag a link here from your browser
+    </div>
+  </div>
+
+  <!-- Article queue -->
+  <div class="card">
+    <h2>Queue <span id="countBadge"></span></h2>
+    <ul class="article-list" id="articleList">
+      <li class="empty-state" id="emptyState">No articles yet - add some above.</li>
+    </ul>
+  </div>
+
+  <!-- Send button -->
+  <button class="btn btn-send" id="sendBtn" disabled>
+    Send to Kindle
+  </button>
+
+  <!-- Settings -->
+  <div class="card" style="margin-top: 1.25rem;">
+    <button class="settings-toggle" id="settingsToggleBtn">
+      <span id="settingsArrow">&#9654;</span> Email settings
+    </button>
+    <div class="settings-body" id="settingsBody">
+      <div class="field">
+        <label>Kindle email address</label>
+        <input type="email" id="kindleEmail" placeholder="you@kindle.com" />
+        <div class="hint">Find it in Amazon &gt; Manage Content &amp; Devices &gt; Preferences</div>
+      </div>
+      <div class="field">
+        <label>Your email address (sender)</label>
+        <input type="email" id="senderEmail" placeholder="you@gmail.com" />
+        <div class="hint">Must be on your Amazon approved senders list</div>
+      </div>
+      <div class="field">
+        <label>App password</label>
+        <input type="password" id="senderPassword" placeholder="xxxx xxxx xxxx xxxx" />
+        <div class="hint">For Gmail: create one at myaccount.google.com &gt; Security &gt; App passwords</div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>SMTP server</label>
+          <input type="text" id="smtpServer" value="smtp.gmail.com" />
+        </div>
+        <div class="field" style="max-width: 100px;">
+          <label>Port</label>
+          <input type="number" id="smtpPort" value="587" />
+        </div>
+      </div>
+      <button class="btn btn-dark" id="saveSettingsBtn" style="margin-top: 0.5rem;">
+        Save settings
+      </button>
+    </div>
+  </div>
+
+  <!-- Schedule settings -->
+  <div class="card">
+    <button class="settings-toggle" id="scheduleToggleBtn">
+      <span id="scheduleArrow">&#9654;</span> Schedule settings
+    </button>
+    <div class="settings-body" id="scheduleBody">
+
+      <!-- Threshold auto-send -->
+      <div class="toggle-row">
+        <input type="checkbox" id="thresholdEnabled" />
+        <label for="thresholdEnabled">Auto-send after</label>
+        <input type="number" id="thresholdCount" class="inline-num" value="3" min="1" max="50" />
+        <label for="thresholdCount" style="color: #78716c;">articles</label>
+      </div>
+      <div class="hint" style="margin-left: 1.65rem; margin-top: -0.5rem; margin-bottom: 1rem;">
+        When the queue reaches this number, articles are automatically sent to your Kindle.
+      </div>
+
+      <!-- Scheduled weekly send -->
+      <div class="toggle-row">
+        <input type="checkbox" id="scheduleEnabled" />
+        <label for="scheduleEnabled">Send every</label>
+        <select id="scheduleDay" style="width: auto; padding: 0.4rem 0.6rem; font-size: 0.85rem;">
+          <option value="0">Monday</option>
+          <option value="1">Tuesday</option>
+          <option value="2">Wednesday</option>
+          <option value="3">Thursday</option>
+          <option value="4">Friday</option>
+          <option value="5">Saturday</option>
+          <option value="6">Sunday</option>
+        </select>
+        <label style="color: #78716c;">at</label>
+        <input type="time" id="scheduleTime" value="09:00"
+               style="width: auto; padding: 0.4rem 0.6rem; font-size: 0.85rem;" />
+      </div>
+      <div class="hint" style="margin-left: 1.65rem; margin-top: -0.5rem; margin-bottom: 1rem;">
+        If the app isn't open at the scheduled time, articles will be sent when you next launch it.
+      </div>
+
+      <button class="btn btn-dark" id="saveScheduleBtn" style="margin-top: 0.5rem;">
+        Save schedule
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+(function() {
+  "use strict";
+
+  var articles = [];
+  var toastTimer = null;
+
+  // ── DOM refs ────────────────────────────────────────────
+  var urlInput        = document.getElementById("urlInput");
+  var addBtn          = document.getElementById("addBtn");
+  var articleList     = document.getElementById("articleList");
+  var countBadge      = document.getElementById("countBadge");
+  var sendBtn         = document.getElementById("sendBtn");
+  var dropZone        = document.getElementById("dropZone");
+  var settingsToggle  = document.getElementById("settingsToggleBtn");
+  var settingsBody    = document.getElementById("settingsBody");
+  var settingsArrow   = document.getElementById("settingsArrow");
+  var saveSettingsBtn = document.getElementById("saveSettingsBtn");
+  var scheduleToggle  = document.getElementById("scheduleToggleBtn");
+  var scheduleBody    = document.getElementById("scheduleBody");
+  var scheduleArrow   = document.getElementById("scheduleArrow");
+  var saveScheduleBtn = document.getElementById("saveScheduleBtn");
+  var toastEl         = document.getElementById("toast");
+
+  // ── Toast ───────────────────────────────────────────────
+  function showToast(msg, isError) {
+    toastEl.textContent = msg;
+    toastEl.className = "toast show" + (isError ? " error" : "");
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function() { toastEl.className = "toast"; }, 3000);
+  }
+
+  // ── Escape HTML ─────────────────────────────────────────
+  function esc(s) {
+    var d = document.createElement("div");
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  // ── Render list ─────────────────────────────────────────
+  function render() {
+    if (articles.length === 0) {
+      articleList.innerHTML = '<li class="empty-state">No articles yet - add some above.</li>';
+      countBadge.textContent = "";
+      sendBtn.disabled = true;
+      return;
+    }
+
+    countBadge.textContent = "(" + articles.length + ")";
+    sendBtn.disabled = false;
+
+    var html = "";
+    for (var i = 0; i < articles.length; i++) {
+      var a = articles[i];
+      html += '<li class="article-item">'
+            + '  <div class="article-info">'
+            + '    <div class="article-title">' + esc(a.title) + '</div>'
+            + '    <div class="article-url">' + esc(a.url) + '</div>'
+            + '  </div>'
+            + '  <button class="remove-btn" data-id="' + esc(a.id) + '" title="Remove">&times;</button>'
+            + '</li>';
+    }
+    articleList.innerHTML = html;
+  }
+
+  // ── Add article ─────────────────────────────────────────
+  function addArticle() {
+    var url = urlInput.value.trim();
+    if (!url) return;
+
+    addBtn.disabled = true;
+    addBtn.innerHTML = '<span class="spinner"></span>';
+
+    fetch("/add", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url: url })
+    })
+    .then(function(res) {
+      return res.json().then(function(data) {
+        if (!res.ok) throw new Error(data.error || "Failed");
+        return data;
+      });
+    })
+    .then(function(data) {
+      if (data.auto_sent) {
+        // Threshold triggered — queue was auto-sent
+        articles.length = 0;
+        render();
+        showToast("Auto-sent " + data.auto_count + " article" + (data.auto_count > 1 ? "s" : "") + " to your Kindle!");
+      } else {
+        articles.push(data);
+        urlInput.value = "";
+        render();
+        showToast("Added: " + data.title);
+      }
+    })
+    .catch(function(e) {
+      showToast(e.message, true);
+    })
+    .finally(function() {
+      addBtn.disabled = false;
+      addBtn.textContent = "Add";
+    });
+  }
+
+  // ── Remove article ──────────────────────────────────────
+  function removeArticle(id) {
+    fetch("/remove", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: id })
+    });
+    for (var i = 0; i < articles.length; i++) {
+      if (articles[i].id === id) {
+        articles.splice(i, 1);
+        break;
+      }
+    }
+    render();
+  }
+
+  // ── Send to Kindle ──────────────────────────────────────
+  function sendToKindle() {
+    sendBtn.disabled = true;
+    sendBtn.innerHTML = '<span class="spinner"></span> Creating ebook & sending...';
+
+    fetch("/send", { method: "POST" })
+    .then(function(res) {
+      return res.json().then(function(data) {
+        if (!res.ok) throw new Error(data.error || "Failed");
+        return data;
+      });
+    })
+    .then(function(data) {
+      articles.length = 0;
+      render();
+      showToast("Sent " + data.count + " article" + (data.count > 1 ? "s" : "") + " to your Kindle!");
+    })
+    .catch(function(e) {
+      showToast(e.message, true);
+    })
+    .finally(function() {
+      sendBtn.disabled = articles.length === 0;
+      sendBtn.textContent = "Send to Kindle";
+    });
+  }
+
+  // ── Toggle panels ────────────────────────────────────────
+  function toggleSettings() {
+    settingsBody.classList.toggle("open");
+    settingsArrow.innerHTML = settingsBody.classList.contains("open") ? "&#9660;" : "&#9654;";
+  }
+  function toggleSchedule() {
+    scheduleBody.classList.toggle("open");
+    scheduleArrow.innerHTML = scheduleBody.classList.contains("open") ? "&#9660;" : "&#9654;";
+  }
+
+  // ── Save email settings ─────────────────────────────────
+  function saveSettings() {
+    // Merge with existing settings so we don't clobber schedule fields
+    fetch("/settings/load")
+    .then(function(res) { return res.json(); })
+    .then(function(existing) {
+      existing.kindle_email    = document.getElementById("kindleEmail").value.trim();
+      existing.sender_email    = document.getElementById("senderEmail").value.trim();
+      existing.sender_password = document.getElementById("senderPassword").value;
+      existing.smtp_server     = document.getElementById("smtpServer").value.trim();
+      existing.smtp_port       = document.getElementById("smtpPort").value.trim();
+      return fetch("/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(existing)
+      });
+    })
+    .then(function() { showToast("Settings saved"); })
+    .catch(function() { showToast("Failed to save settings", true); });
+  }
+
+  // ── Save schedule settings ──────────────────────────────
+  function saveSchedule() {
+    fetch("/settings/load")
+    .then(function(res) { return res.json(); })
+    .then(function(existing) {
+      existing.threshold_enabled = document.getElementById("thresholdEnabled").checked;
+      existing.threshold_count   = document.getElementById("thresholdCount").value;
+      existing.schedule_enabled  = document.getElementById("scheduleEnabled").checked;
+      existing.schedule_day      = document.getElementById("scheduleDay").value;
+      existing.schedule_time     = document.getElementById("scheduleTime").value;
+      return fetch("/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(existing)
+      });
+    })
+    .then(function() { showToast("Schedule saved"); })
+    .catch(function() { showToast("Failed to save schedule", true); });
+  }
+
+  // ── Load saved settings on startup ──────────────────────
+  function loadSettings() {
+    fetch("/settings/load")
+    .then(function(res) { return res.json(); })
+    .then(function(s) {
+      // Email settings
+      if (s.kindle_email)    document.getElementById("kindleEmail").value    = s.kindle_email;
+      if (s.sender_email)    document.getElementById("senderEmail").value    = s.sender_email;
+      if (s.sender_password) document.getElementById("senderPassword").value = s.sender_password;
+      if (s.smtp_server)     document.getElementById("smtpServer").value     = s.smtp_server;
+      if (s.smtp_port)       document.getElementById("smtpPort").value       = s.smtp_port;
+      // Schedule settings
+      document.getElementById("thresholdEnabled").checked = !!s.threshold_enabled;
+      if (s.threshold_count) document.getElementById("thresholdCount").value = s.threshold_count;
+      document.getElementById("scheduleEnabled").checked  = !!s.schedule_enabled;
+      if (s.schedule_day !== undefined)  document.getElementById("scheduleDay").value  = s.schedule_day;
+      if (s.schedule_time) document.getElementById("scheduleTime").value = s.schedule_time;
+    })
+    .catch(function() { /* no saved settings yet */ });
+  }
+
+  // ── Load persisted queue on startup ─────────────────────
+  function loadQueue() {
+    fetch("/queue/load")
+    .then(function(res) { return res.json(); })
+    .then(function(queue) {
+      if (queue && queue.length > 0) {
+        for (var i = 0; i < queue.length; i++) {
+          articles.push(queue[i]);
+        }
+        render();
+      }
+    })
+    .catch(function() { /* no queue yet */ });
+  }
+
+  // ── Bind all event listeners ────────────────────────────
+  addBtn.addEventListener("click", addArticle);
+
+  sendBtn.addEventListener("click", sendToKindle);
+
+  settingsToggle.addEventListener("click", toggleSettings);
+
+  saveSettingsBtn.addEventListener("click", saveSettings);
+
+  scheduleToggle.addEventListener("click", toggleSchedule);
+
+  saveScheduleBtn.addEventListener("click", saveSchedule);
+
+  urlInput.addEventListener("keydown", function(e) {
+    if (e.key === "Enter") addArticle();
+  });
+
+  // Delegated click handler for remove buttons
+  articleList.addEventListener("click", function(e) {
+    var btn = e.target.closest(".remove-btn");
+    if (btn) {
+      var id = btn.getAttribute("data-id");
+      if (id) removeArticle(id);
+    }
+  });
+
+  // Drag and drop
+  dropZone.addEventListener("dragover", function(e) {
+    e.preventDefault();
+    dropZone.classList.add("over");
+  });
+  dropZone.addEventListener("dragleave", function() {
+    dropZone.classList.remove("over");
+  });
+  dropZone.addEventListener("drop", function(e) {
+    e.preventDefault();
+    dropZone.classList.remove("over");
+    var url = e.dataTransfer.getData("text/uri-list") || e.dataTransfer.getData("text/plain");
+    if (url && url.indexOf("http") === 0) {
+      urlInput.value = url;
+      addArticle();
+    }
+  });
+
+  // ── Init ────────────────────────────────────────────────
+  loadSettings();
+  loadQueue();
+
+})();
+</script>
+</body>
+</html>

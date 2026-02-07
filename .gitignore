@@ -1,0 +1,15 @@
+# Virtual environment
+.venv/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# App data (user-specific, not code)
+settings.json
+queue.json
+
+# OS files
+.DS_Store
+Thumbs.db
