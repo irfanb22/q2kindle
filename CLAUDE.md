@@ -4,13 +4,21 @@ Read this file first before working on this project. It covers how the app works
 
 ## What this is
 
-A Python desktop app that lets you paste article URLs, queue them up, and send them to your Kindle as a formatted EPUB ebook via email — similar to Instapaper's send-to-Kindle feature. You paste a link, the app extracts the article content, and when you're ready (or automatically on a schedule), it bundles everything into an EPUB and emails it to your Kindle address.
+A web app that lets you paste article URLs, queue them up, and send them to your Kindle as a formatted EPUB ebook via email — similar to Instapaper's send-to-Kindle feature. You paste a link, the app extracts the article content, and when you're ready (or automatically on a schedule), it bundles everything into an EPUB and emails it to your Kindle address.
+
+**This project is being rewritten** from a Python desktop app (v1) to a full-stack TypeScript web app (v2). Both versions live in this repo. See "V2 Web App Rewrite" below for the current plan and progress.
 
 ## Project location
 
 `~/Projects/kindle-sender` on the developer's Mac. The repo has a GitHub remote at `github.com/irfanb22/kindle-sender`.
 
-## Tech stack
+---
+
+# V1 — Python Desktop App (Legacy)
+
+The original app. Still functional but being replaced by the v2 web app. All v1 files live in the repo root.
+
+## V1 Tech stack
 
 - **Backend**: Python 3 / Flask (web server + API routes)
 - **Frontend**: Single HTML file with vanilla JS (no frameworks)
@@ -20,7 +28,7 @@ A Python desktop app that lets you paste article URLs, queue them up, and send t
 - **Desktop window**: pywebview 5.3.2 (when running from terminal; disabled in .app bundles)
 - **macOS packaging**: py2app (builds a standalone .app bundle)
 
-## File overview
+## V1 File overview
 
 | File | Purpose |
 |------|---------|
@@ -34,7 +42,7 @@ A Python desktop app that lets you paste article URLs, queue them up, and send t
 | `settings.json` | Created at runtime. Stores email config and schedule preferences. Gitignored |
 | `queue.json` | Created at runtime. Persists the article queue across launches. Gitignored |
 
-## How the app works
+## How the V1 app works
 
 ### Core flow
 
@@ -74,7 +82,7 @@ Settings and schedule preferences are stored in `settings.json`. The frontend us
 
 The article queue (including full extracted text) is stored in `queue.json` and loaded on startup. This means articles survive app restarts.
 
-## How to run it
+## How to run V1
 
 ### From terminal (development)
 
@@ -99,7 +107,7 @@ cd ~/Projects/kindle-sender
 
 The built app appears at `dist/Kindle Sender.app`. Drag it to Applications. The .app always runs in browser mode (pywebview is disabled in bundles).
 
-## App entry points
+## V1 App entry points
 
 `app.py` has three run modes at the bottom:
 
@@ -107,7 +115,7 @@ The built app appears at `dist/Kindle Sender.app`. Drag it to Applications. The 
 - `run_browser()` — Starts Flask on a random free port, opens the system browser, runs Flask in the foreground
 - The `__main__` block checks `_is_bundled_app()` to decide: bundled .app always uses `run_browser()`; otherwise tries pywebview first with a fallback to browser
 
-## py2app build — issues encountered and fixes
+## V1 py2app build — issues encountered and fixes
 
 ### 1. charset_normalizer ModuleNotFoundError
 
@@ -127,7 +135,7 @@ The built app appears at `dist/Kindle Sender.app`. Drag it to Applications. The 
 
 **Fix**: Changed `run_browser()` to use the existing `_find_free_port()` function instead of hardcoded port 5000.
 
-## Current py2app setup.py packages
+## V1 py2app setup.py packages
 
 These are the packages and includes that py2app needs to bundle correctly:
 
@@ -135,7 +143,149 @@ These are the packages and includes that py2app needs to bundle correctly:
 - **includes**: lxml.html.clean, lxml._elementpath, charset_normalizer.md__mypyc
 - webview was intentionally removed from packages (causes Cocoa crash in bundles)
 
-## Future ideas
+---
 
-- Native Swift/SwiftUI rewrite with menu bar integration and notifications (if py2app continues to be problematic)
-- Restructure `app.py` into separate modules: `extraction.py`, `epub_builder.py`, `mailer.py`, `scheduler.py`
+# V2 — Web App Rewrite (In Progress)
+
+Full rewrite from Python desktop app to a hosted TypeScript web app. All v2 code lives in the `web/` subdirectory.
+
+## Why the rewrite
+
+- py2app packaging was painful and fragile
+- Needed multi-device access (phone, tablet, any browser)
+- UI felt rough/outdated — wanted a modern, polished interface
+- Wanted new features (article preview/reader, send history)
+- Unified language (TypeScript everywhere) instead of Python backend + JS frontend
+
+## V2 Tech stack
+
+| Layer | Technology |
+|-------|-----------|
+| **Frontend** | Next.js (App Router) + React + Tailwind CSS v4 |
+| **Backend** | Next.js API routes / Netlify Functions |
+| **Auth** | Supabase Auth — magic link (passwordless) |
+| **Database** | Supabase Postgres |
+| **Local cache** | React Query or SWR (planned) |
+| **Article extraction** | `@extractus/article-extractor` (planned, replaces trafilatura) |
+| **EPUB creation** | `epub-gen-memory` (planned, replaces ebooklib) |
+| **Email** | Nodemailer via Netlify Function (planned, replaces smtplib) |
+| **Hosting** | Netlify |
+
+## V2 Supabase details
+
+- **Project URL**: `https://scxkmenczzxpwustppee.supabase.co`
+- **Anon key**: stored in `web/.env.local` (gitignored)
+- Free tier — no cost
+
+### Database tables (planned)
+
+```
+users (managed by Supabase Auth)
+
+articles
+├── id (uuid)
+├── user_id (fk → auth.users)
+├── url, title, author, content (extracted text)
+├── status (queued | sent | failed)
+├── created_at, sent_at
+
+send_history
+├── id (uuid)
+├── user_id (fk → auth.users)
+├── article_count, status (success | failed), error_message
+├── sent_at
+
+settings
+├── user_id (pk, fk → auth.users)
+├── kindle_email, sender_email, smtp_password (encrypted)
+├── auto_send_threshold, schedule_day, schedule_time
+```
+
+## V2 File overview
+
+All files live under `web/`:
+
+| File | Purpose |
+|------|---------|
+| `web/package.json` | Node dependencies and scripts (`dev`, `build`, `start`, `lint`) |
+| `web/tsconfig.json` | TypeScript config with `@/*` path alias to `./src/*` |
+| `web/next.config.ts` | Next.js config (minimal — Netlify handles most settings) |
+| `web/postcss.config.mjs` | PostCSS config for Tailwind CSS v4 (`@tailwindcss/postcss`) |
+| `web/.env.local` | Supabase URL and anon key (gitignored) |
+| `web/src/app/globals.css` | Global styles — CSS variables for dark theme, Tailwind import |
+| `web/src/app/layout.tsx` | Root layout — html/body wrapper, metadata |
+| `web/src/app/page.tsx` | Login page — magic link auth via Supabase, editorial dark UI |
+| `web/src/app/auth/callback/route.ts` | Auth callback — exchanges Supabase code for session, redirects to dashboard |
+| `web/src/middleware.ts` | Route protection — redirects unauthenticated users to login, authenticated users from `/` to `/dashboard` |
+| `web/src/lib/supabase/client.ts` | Browser-side Supabase client (uses `createBrowserClient` from `@supabase/ssr`) |
+| `web/src/lib/supabase/server.ts` | Server-side Supabase client (uses `createServerClient` with cookie handling) |
+| `web/src/lib/supabase/middleware.ts` | Session refresh logic used by the middleware |
+
+## V2 Design system
+
+- **Theme**: Dark (#0a0a0a bg, #141414 surfaces, #262626 borders, #22c55e green accent)
+- **Fonts**: Instrument Serif (headings), DM Sans (body) — loaded via Google Fonts
+- **Style**: Editorial/literary aesthetic — serif headings, clean sans body, subtle green glow, grid texture background
+- **Animations**: Staggered fadeUp on page load, focus ring transitions on inputs
+
+## How to run V2
+
+```bash
+cd ~/Projects/kindle-sender/web
+npm run dev
+```
+
+Opens at `http://localhost:3000`. Requires Node.js (installed via nvm, v24 LTS).
+
+## V2 Build phases
+
+| Phase | Description | Status |
+|-------|-------------|--------|
+| **Phase 1** | Project scaffold, Supabase config, auth flow, basic UI shell | 🟡 In progress |
+| **Phase 2** | Article extraction API + queue management + Supabase CRUD | ⬜ Not started |
+| **Phase 3** | Article reader/preview page | ⬜ Not started |
+| **Phase 4** | EPUB generation + email sending via Netlify Functions | ⬜ Not started |
+| **Phase 5** | Settings page, auto-send, send history | ⬜ Not started |
+| **Phase 6** | Polish — mobile responsive, loading states, error handling, PWA | ⬜ Not started |
+
+### Phase 1 progress
+
+- ✅ Next.js project scaffolded with TypeScript + Tailwind CSS v4
+- ✅ Supabase client configured (browser, server, middleware)
+- ✅ Environment variables set up (`.env.local`)
+- ✅ Auth callback route (`/auth/callback`)
+- ✅ Middleware for route protection (login redirect, session refresh)
+- ✅ Login page with magic link flow (Instrument Serif + DM Sans, dark editorial design)
+- ⬜ Supabase database tables (articles, send_history, settings)
+- ⬜ Dashboard page shell
+- ⬜ App navigation/layout for authenticated pages
+
+## V2 Pages (planned)
+
+| Route | Purpose |
+|-------|---------|
+| `/` | Login — magic link email input |
+| `/dashboard` | Main app — URL input, article queue, send button |
+| `/article/:id` | Article reader/preview — read extracted content before sending |
+| `/history` | Last 10 sends with status |
+| `/settings` | Kindle email, SMTP config, auto-send preferences |
+
+## V2 Deployment (planned)
+
+- **Hosting**: Netlify (developer has an existing account)
+- **Database**: Supabase free tier
+- **Build command**: `npm run build` (from `web/` directory)
+- **Netlify config**: Will need `@netlify/plugin-nextjs` or adapter for Next.js App Router support
+
+---
+
+## Decision log
+
+| Date | Decision | Rationale |
+|------|----------|-----------|
+| 2025-02-08 | Rewrite as full-stack TypeScript web app | py2app was fragile, needed multi-device access, wanted modern UI |
+| 2025-02-08 | Chose Next.js + Tailwind + Supabase + Netlify | Developer had Netlify/Supabase accounts; Next.js has best Netlify support; Supabase gives free Postgres + auth |
+| 2025-02-08 | Magic link auth (passwordless) | Simpler UX, no passwords to manage |
+| 2025-02-08 | Supabase + local cache for storage | Supabase as source of truth for multi-device sync, local cache for speed |
+| 2025-02-08 | Keep v1 Python code in repo root | Still functional, can reference during rewrite, no need to delete yet |
+| 2025-02-08 | Node.js installed via nvm (v24 LTS) | Developer didn't have Node installed; nvm allows easy version management |
