@@ -166,7 +166,7 @@ Full rewrite from Python desktop app to a hosted TypeScript web app. All v2 code
 | **Auth** | Supabase Auth — magic link (passwordless) |
 | **Database** | Supabase Postgres |
 | **Local cache** | React Query or SWR (planned) |
-| **Article extraction** | `@extractus/article-extractor` (planned, replaces trafilatura) |
+| **Article extraction** | `@extractus/article-extractor` (replaces trafilatura) |
 | **EPUB creation** | `epub-gen-memory` (planned, replaces ebooklib) |
 | **Email** | Nodemailer via Netlify Function (planned, replaces smtplib) |
 | **Hosting** | Netlify |
@@ -177,20 +177,22 @@ Full rewrite from Python desktop app to a hosted TypeScript web app. All v2 code
 - **Anon key**: stored in `web/.env.local` (gitignored)
 - Free tier — no cost
 
-### Database tables (planned)
+### Database tables
 
 ```
 users (managed by Supabase Auth)
 
 articles
-├── id (uuid)
+├── id (uuid, pk)
 ├── user_id (fk → auth.users)
-├── url, title, author, content (extracted text)
+├── url, title, author, content (extracted HTML)
+├── description (article summary/excerpt)
+├── read_time_minutes (integer, calculated at 238 wpm)
 ├── status (queued | sent | failed)
 ├── created_at, sent_at
 
 send_history
-├── id (uuid)
+├── id (uuid, pk)
 ├── user_id (fk → auth.users)
 ├── article_count, status (success | failed), error_message
 ├── sent_at
@@ -199,6 +201,7 @@ settings
 ├── user_id (pk, fk → auth.users)
 ├── kindle_email, sender_email, smtp_password (encrypted)
 ├── auto_send_threshold, schedule_day, schedule_time
+├── created_at, updated_at (auto-updated via trigger)
 ```
 
 ## V2 File overview
@@ -224,7 +227,10 @@ All files live under `web/`:
 | `web/src/app/(app)/dashboard/page.tsx` | Dashboard — URL input, article queue list, send button, empty/loading states |
 | `web/src/app/(app)/history/page.tsx` | Send history placeholder (Phase 5) |
 | `web/src/app/(app)/settings/page.tsx` | Settings placeholder (Phase 5) |
+| `web/src/app/api/articles/extract/route.ts` | Article extraction API — fetches URL, extracts content, calculates read time |
+| `web/src/lib/types.ts` | Shared TypeScript types (Article) used across pages |
 | `web/supabase/migrations/001_create_tables.sql` | Database schema — articles, send_history, settings tables + RLS policies |
+| `web/supabase/migrations/002_add_read_time_and_description.sql` | Adds read_time_minutes and description columns to articles |
 
 ## V2 Design system
 
@@ -247,8 +253,8 @@ Opens at `http://localhost:3000`. Requires Node.js (installed via nvm, v24 LTS).
 | Phase | Description | Status |
 |-------|-------------|--------|
 | **Phase 1** | Project scaffold, Supabase config, auth flow, basic UI shell | ✅ Complete |
-| **Phase 2** | Article extraction API + queue management + Supabase CRUD | ⬜ Not started |
-| **Phase 3** | Article reader/preview page | ⬜ Not started |
+| **Phase 2** | Article extraction API + queue management + Supabase CRUD | ✅ Complete |
+| **Phase 3** | Kindle preview page with device mockup | ⬜ Not started |
 | **Phase 4** | EPUB generation + email sending via Netlify Functions | ⬜ Not started |
 | **Phase 5** | Settings page, auto-send, send history | ⬜ Not started |
 | **Phase 6** | Polish — mobile responsive, loading states, error handling, PWA | ⬜ Not started |
@@ -264,6 +270,18 @@ Opens at `http://localhost:3000`. Requires Node.js (installed via nvm, v24 LTS).
 - ✅ Supabase database tables (articles, send_history, settings) — with RLS policies
 - ✅ Dashboard page shell — URL input, article queue list, send button, empty states
 - ✅ App navigation/layout for authenticated pages — shared nav bar via `(app)` route group
+
+### Phase 2 progress
+
+- ✅ Server-side article extraction API (`/api/articles/extract`) using `@extractus/article-extractor`
+- ✅ Extracts title, author, content, description from article URLs
+- ✅ Read time calculation (238 words per minute) stored in `read_time_minutes` column
+- ✅ Background extraction UX — article appears instantly with shimmer loading animation
+- ✅ Richer queue cards — title, author (fallback to website name), read time with clock icon
+- ✅ Failed extraction warning — amber badge when content can't be extracted
+- ✅ Shared Article type definition (`web/src/lib/types.ts`)
+- ✅ Database migration 002 — added `read_time_minutes` and `description` columns
+- ✅ Middleware updated to exclude API routes from auth redirect
 
 ## V2 Pages (planned)
 
@@ -294,3 +312,8 @@ Opens at `http://localhost:3000`. Requires Node.js (installed via nvm, v24 LTS).
 | 2025-02-08 | Supabase + local cache for storage | Supabase as source of truth for multi-device sync, local cache for speed |
 | 2025-02-08 | Keep v1 Python code in repo root | Still functional, can reference during rewrite, no need to delete yet |
 | 2025-02-08 | Node.js installed via nvm (v24 LTS) | Developer didn't have Node installed; nvm allows easy version management |
+| 2025-02-10 | Background extraction UX (not inline wait) | Matches Instapaper/Reader pattern — article appears instantly, content fills in |
+| 2025-02-10 | Author fallback to website name | If no author extracted, show publisher/source name, then domain as last resort |
+| 2025-02-10 | Read time at 238 wpm | Industry standard reading speed; stored as integer minutes in DB |
+| 2025-02-10 | Split Kindle preview into separate Phase 3 | Keep Phase 2 focused on extraction; preview is a distinct feature |
+| 2025-02-10 | Failed extraction adds with warning, not rejected | User keeps the URL in queue even if content can't be extracted |
