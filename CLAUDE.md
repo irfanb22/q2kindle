@@ -220,6 +220,11 @@ All files live under `web/`:
 | `web/src/lib/supabase/client.ts` | Browser-side Supabase client (uses `createBrowserClient` from `@supabase/ssr`) |
 | `web/src/lib/supabase/server.ts` | Server-side Supabase client (uses `createServerClient` with cookie handling) |
 | `web/src/lib/supabase/middleware.ts` | Session refresh logic used by the middleware |
+| `web/src/app/(app)/layout.tsx` | Authenticated layout — top nav bar (Queue/History/Settings), sign out, user email |
+| `web/src/app/(app)/dashboard/page.tsx` | Dashboard — URL input, article queue list, send button, empty/loading states |
+| `web/src/app/(app)/history/page.tsx` | Send history placeholder (Phase 5) |
+| `web/src/app/(app)/settings/page.tsx` | Settings placeholder (Phase 5) |
+| `web/supabase/migrations/001_create_tables.sql` | Database schema — articles, send_history, settings tables + RLS policies |
 
 ## V2 Design system
 
@@ -241,7 +246,7 @@ Opens at `http://localhost:3000`. Requires Node.js (installed via nvm, v24 LTS).
 
 | Phase | Description | Status |
 |-------|-------------|--------|
-| **Phase 1** | Project scaffold, Supabase config, auth flow, basic UI shell | 🟡 In progress |
+| **Phase 1** | Project scaffold, Supabase config, auth flow, basic UI shell | ✅ Complete |
 | **Phase 2** | Article extraction API + queue management + Supabase CRUD | ⬜ Not started |
 | **Phase 3** | Article reader/preview page | ⬜ Not started |
 | **Phase 4** | EPUB generation + email sending via Netlify Functions | ⬜ Not started |
@@ -256,9 +261,9 @@ Opens at `http://localhost:3000`. Requires Node.js (installed via nvm, v24 LTS).
 - ✅ Auth callback route (`/auth/callback`)
 - ✅ Middleware for route protection (login redirect, session refresh)
 - ✅ Login page with magic link flow (Instrument Serif + DM Sans, dark editorial design)
-- ⬜ Supabase database tables (articles, send_history, settings)
-- ⬜ Dashboard page shell
-- ⬜ App navigation/layout for authenticated pages
+- ✅ Supabase database tables (articles, send_history, settings) — with RLS policies
+- ✅ Dashboard page shell — URL input, article queue list, send button, empty states
+- ✅ App navigation/layout for authenticated pages — shared nav bar via `(app)` route group
 
 ## V2 Pages (planned)
 
