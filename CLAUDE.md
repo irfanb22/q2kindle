@@ -227,6 +227,8 @@ All files live under `web/`:
 | `web/src/app/(app)/dashboard/page.tsx` | Dashboard — URL input, article queue list, send button, empty/loading states |
 | `web/src/app/(app)/history/page.tsx` | Send history placeholder (Phase 5) |
 | `web/src/app/(app)/settings/page.tsx` | Settings placeholder (Phase 5) |
+| `web/src/app/(app)/article/[id]/page.tsx` | Article preview page — fetches article, sanitizes HTML with DOMPurify, renders Kindle mockup |
+| `web/src/app/(app)/article/[id]/kindle-mockup.tsx` | Kindle device mockup — CSS bezel frame, e-ink screen, grayscale content rendering |
 | `web/src/app/api/articles/extract/route.ts` | Article extraction API — fetches URL, extracts content, calculates read time |
 | `web/src/lib/types.ts` | Shared TypeScript types (Article) used across pages |
 | `web/supabase/migrations/001_create_tables.sql` | Database schema — articles, send_history, settings tables + RLS policies |
@@ -254,7 +256,7 @@ Opens at `http://localhost:3000`. Requires Node.js (installed via nvm, v24 LTS).
 |-------|-------------|--------|
 | **Phase 1** | Project scaffold, Supabase config, auth flow, basic UI shell | ✅ Complete |
 | **Phase 2** | Article extraction API + queue management + Supabase CRUD | ✅ Complete |
-| **Phase 3** | Kindle preview page with device mockup | ⬜ Not started |
+| **Phase 3** | Kindle preview page with device mockup | ✅ Complete |
 | **Phase 4** | EPUB generation + email sending via Netlify Functions | ⬜ Not started |
 | **Phase 5** | Settings page, auto-send, send history | ⬜ Not started |
 | **Phase 6** | Polish — mobile responsive, loading states, error handling, PWA | ⬜ Not started |
@@ -282,6 +284,20 @@ Opens at `http://localhost:3000`. Requires Node.js (installed via nvm, v24 LTS).
 - ✅ Shared Article type definition (`web/src/lib/types.ts`)
 - ✅ Database migration 002 — added `read_time_minutes` and `description` columns
 - ✅ Middleware updated to exclude API routes from auth redirect
+
+### Phase 3 progress
+
+- ✅ Kindle preview page at `/article/[id]` with client-side data fetching
+- ✅ Stylized e-reader device mockup — pure CSS frame (`#3a3a3a` bezel, 420×620px, rounded corners, chin dot)
+- ✅ E-ink screen simulation — cream `#f5f1e8` background, Georgia serif typography, grayscale filter on all content
+- ✅ HTML sanitization with DOMPurify — explicit allowlist for tags/attributes, blocks scripts and event handlers
+- ✅ Scrollable content inside fixed device frame
+- ✅ Title + author + read time displayed inside the screen (like ebook chapter start)
+- ✅ Loading state with shimmer skeleton inside the Kindle frame
+- ✅ Error states — "Article not found" and "Content could not be extracted" with original URL
+- ✅ Preview button (eye icon) on dashboard queue cards — hidden during extraction, green hover
+- ✅ Wider layout (`max-w-6xl`) for article preview route
+- ✅ Back to queue navigation button
 
 ## V2 Pages (planned)
 
@@ -317,3 +333,9 @@ Opens at `http://localhost:3000`. Requires Node.js (installed via nvm, v24 LTS).
 | 2025-02-10 | Read time at 238 wpm | Industry standard reading speed; stored as integer minutes in DB |
 | 2025-02-10 | Split Kindle preview into separate Phase 3 | Keep Phase 2 focused on extraction; preview is a distinct feature |
 | 2025-02-10 | Failed extraction adds with warning, not rejected | User keeps the URL in queue even if content can't be extracted |
+| 2025-02-10 | Generic stylized Kindle mockup (not specific model) | Avoids trademark issues; cleaner look with CSS-only frame |
+| 2025-02-10 | E-ink grayscale filter on article content | CSS `filter: grayscale(1)` simulates real Kindle e-ink display |
+| 2025-02-10 | DOMPurify for HTML sanitization (client-side) | Industry standard; explicit allowlist prevents XSS from extracted article HTML |
+| 2025-02-10 | Dedicated Preview button (not clickable card) | Explicit action keeps delete button safe from accidental clicks |
+| 2025-02-10 | Scrollable content inside fixed frame | More realistic than paginated; simpler to implement |
+| 2025-02-10 | Lighter bezel (`#3a3a3a`) against dark background | Dark `#1a1a1a` bezel was invisible on `#0a0a0a` app background |
