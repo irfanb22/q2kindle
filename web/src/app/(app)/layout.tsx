@@ -146,7 +146,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </header>
 
         {/* Page content */}
-        <main className="max-w-4xl mx-auto px-6 py-10">
+        <main className={`${pathname.startsWith('/article/') ? 'max-w-6xl' : 'max-w-4xl'} mx-auto px-6 py-10`}>
           {children}
         </main>
       </div>

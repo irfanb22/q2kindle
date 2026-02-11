@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { Article } from "@/lib/types";
 
@@ -12,6 +13,7 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [extractingIds, setExtractingIds] = useState<Set<string>>(new Set());
 
+  const router = useRouter();
   const supabaseRef = useRef(createClient());
   const supabase = supabaseRef.current;
 
@@ -316,6 +318,27 @@ export default function DashboardPage() {
                   </div>
 
                   <div className="flex items-center gap-4 shrink-0">
+                    {!isExtracting && (
+                      <button
+                        onClick={() => router.push(`/article/${article.id}`)}
+                        className="p-1.5 rounded-lg transition-colors duration-150 cursor-pointer"
+                        style={{ color: '#888888' }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.color = '#22c55e';
+                          e.currentTarget.style.background = 'rgba(34,197,94,0.08)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.color = '#888888';
+                          e.currentTarget.style.background = 'transparent';
+                        }}
+                        title="Preview article"
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                          <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.5"/>
+                        </svg>
+                      </button>
+                    )}
                     <span className="text-xs" style={{ fontFamily: "'DM Sans', sans-serif", color: '#555555' }}>
                       {timeAgo(article.created_at)}
                     </span>
