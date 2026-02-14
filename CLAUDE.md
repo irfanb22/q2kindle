@@ -261,6 +261,7 @@ Opens at `http://localhost:3000`. Requires Node.js (installed via nvm, v24 LTS).
 | **Phase 2** | Article extraction API + queue management + Supabase CRUD | ✅ Complete |
 | **Phase 3** | Kindle preview page with device mockup | ✅ Complete |
 | **Phase 4** | EPUB generation + email sending + settings page | ✅ Complete |
+| **Phase 4.5** | Deployment — Netlify hosting, Resend auth emails, production login verified | ✅ Complete |
 | **Phase 5** | Auto-send, send history, settings polish | ⬜ Not started |
 | **Phase 6** | Polish — mobile responsive, loading states, error handling, PWA | ⬜ Not started |
 
@@ -321,6 +322,16 @@ Opens at `http://localhost:3000`. Requires Node.js (installed via nvm, v24 LTS).
 - ✅ Redirects to `/settings` if email config not yet saved
 - ✅ `next.config.ts` updated with `serverExternalPackages: ["epub-gen-memory"]`
 - ✅ Settings type added to shared types (`web/src/lib/types.ts`)
+
+### Phase 4.5 progress (Deployment)
+
+- ✅ Netlify site created, auto-deploys from GitHub `main` branch
+- ✅ `netlify.toml` configured with `@netlify/plugin-nextjs` for SSR/API routes
+- ✅ Netlify env vars set (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`)
+- ✅ Supabase Site URL + redirect URLs updated for production domain
+- ✅ Resend configured as custom SMTP in Supabase (replaces rate-limited built-in email provider)
+- ✅ Magic link auth verified working on production (`https://kindle-sender.netlify.app`)
+- ⚠️ Send-to-Kindle not yet tested on Netlify (works locally; serverless timeout may be an issue)
 
 ## V2 Pages (planned)
 
