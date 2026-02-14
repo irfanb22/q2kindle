@@ -263,7 +263,8 @@ Opens at `http://localhost:3000`. Requires Node.js (installed via nvm, v24 LTS).
 | **Phase 4** | EPUB generation + email sending + settings page | ✅ Complete |
 | **Phase 4.5** | Deployment — Netlify hosting, Resend auth emails, production login verified | ✅ Complete |
 | **Phase 5** | Auto-send, send history, settings polish | ⬜ Not started |
-| **Phase 6** | Polish — mobile responsive, loading states, error handling, PWA | ⬜ Not started |
+| **Phase 6** | EPUB customization — cover page, fonts, image toggle, metadata controls | ⬜ Not started |
+| **Phase 7** | Polish — mobile responsive, loading states, error handling, PWA | ⬜ Not started |
 
 ### Phase 1 progress
 
@@ -332,6 +333,65 @@ Opens at `http://localhost:3000`. Requires Node.js (installed via nvm, v24 LTS).
 - ✅ Resend configured as custom SMTP in Supabase (replaces rate-limited built-in email provider)
 - ✅ Magic link auth verified working on production (`https://kindle-sender.netlify.app`)
 - ⚠️ Send-to-Kindle not yet tested on Netlify (works locally; serverless timeout may be an issue)
+
+### Phase 6 plan (EPUB Customization)
+
+Goal: Make the EPUB output polished and customizable — branded cover page, font options, image control, and per-field metadata toggles.
+
+#### Cover page
+
+- Minimal editorial style — clean branded cover on every digest
+- Shows: app name ("Kindle Sender" — branding TBA), digest/issue number (auto-incrementing per user, tracked in DB), date, total estimated read time, article count
+- Issue numbering uses both formats: "Issue #12 — Feb 14, 2026"
+- Read time is estimated across all articles (extracted where available, estimated where not)
+- Cover is always included (no toggle) — it's part of the product identity
+
+#### Table of contents
+
+- Kindle native TOC only (chapter-level navigation via Kindle's built-in TOC)
+- No custom styled TOC page inside the EPUB
+
+#### Article formatting
+
+- Keep current article style: title, metadata line, then content flows directly (no chapter title pages)
+- Article metadata fields are independently toggle-able per user:
+  - Author/name (on/off)
+  - Read time (on/off)
+  - Published date (on/off, shown if available from extraction)
+  - Source URL (always shown — not toggle-able, needed for attribution)
+
+#### Font options
+
+- User-selectable font for article body text
+- Options: Bookerly (Kindle default), Georgia, Palatino, Helvetica
+- Font choice stored in settings, applied as CSS in EPUB chapters
+- Default: Bookerly (matches native Kindle reading experience)
+
+#### Image handling
+
+- Simple toggle: include images (on/off)
+- Default: on (images included)
+- When off, all `<img>` tags stripped from article content before EPUB generation
+- When on, images optimized for Kindle: grayscale not forced in EPUB (Kindle handles display), `ignoreFailedDownloads: true` kept as safety net
+
+#### Settings UI
+
+- New "EPUB Formatting" section on the existing Settings page (below email config)
+- Fields: font choice (dropdown), include images (toggle), metadata toggles (author, read time, published date)
+- Stored in `settings` table (new columns or JSON field)
+
+#### Database changes
+
+- Add `issue_number` column to `send_history` (integer, auto-incremented per user on each successful send)
+- Add EPUB preference columns to `settings` table: `epub_font`, `epub_include_images`, `epub_show_author`, `epub_show_read_time`, `epub_show_published_date`
+- Alternative: single `epub_preferences` JSONB column on `settings` (more flexible, fewer migrations)
+
+#### Not included in Phase 6
+
+- No archive/read-tracking links in EPUB (decided against for now)
+- No custom TOC page styling (using Kindle native TOC)
+- No cover page toggle (always on)
+- No article separator customization (keeping current flowing style)
 
 ## V2 Pages (planned)
 
@@ -422,3 +482,8 @@ Opens at `http://localhost:3000`. Requires Node.js (installed via nvm, v24 LTS).
 | 2025-02-14 | `require()` for epub-gen-memory in send route | ESM `import` caused TS strict mode error on `.default` access during Netlify build |
 | 2025-02-14 | GitHub integration for deploys (not local CLI) | Worktree path resolution issues with `netlify deploy --build`; GitHub auto-deploy is more reliable |
 | 2026-02-14 | Resend for Supabase auth emails (not built-in provider) | Supabase's free-tier email provider silently drops emails after ~3-4/hour with no error. Resend free tier (3k/month) configured as custom SMTP in Supabase dashboard. Uses shared `onboarding@resend.dev` domain — no custom domain needed. |
+| 2026-02-14 | EPUB customization as Phase 6 (not part of Phase 5) | Phase 5 focuses on auto-send/history. EPUB formatting (cover page, fonts, images, metadata) is a distinct feature set that deserves its own phase. Bumped polish/PWA to Phase 7. |
+| 2026-02-14 | Cover page always on (no toggle) | Part of product identity — every digest gets a branded cover. Reduces settings complexity. |
+| 2026-02-14 | Kindle-native fonts only (Bookerly, Georgia, Palatino, Helvetica) | Ensures fonts render correctly on all Kindle devices without embedding font files in EPUB. |
+| 2026-02-14 | JSONB column for EPUB preferences (considered) | Single `epub_preferences` JSONB column vs individual columns — more flexible for adding future options without migrations. Decision TBD at implementation time. |
+| 2026-02-14 | No archive/read-tracking links in EPUB | Adds complexity (server-side redirect routes, tracking state) for marginal value. Can revisit later. |
