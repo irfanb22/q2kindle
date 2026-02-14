@@ -12,6 +12,8 @@ export default function DashboardPage() {
   const [fetching, setFetching] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [extractingIds, setExtractingIds] = useState<Set<string>>(new Set());
+  const [sending, setSending] = useState(false);
+  const [sendSuccess, setSendSuccess] = useState<{ count: number; skipped: number } | null>(null);
 
   const router = useRouter();
   const supabaseRef = useRef(createClient());
@@ -124,6 +126,38 @@ export default function DashboardPage() {
       next.delete(id);
       return next;
     });
+  }
+
+  async function handleSend() {
+    setSending(true);
+    setError(null);
+    setSendSuccess(null);
+
+    try {
+      const res = await fetch("/api/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        if (data.error === "settings_not_configured") {
+          router.push("/settings");
+          return;
+        }
+        setError(data.message || "Failed to send");
+        setSending(false);
+        return;
+      }
+
+      setSendSuccess({ count: data.articleCount, skipped: data.skippedCount || 0 });
+      setArticles([]);
+      setSending(false);
+      setTimeout(() => setSendSuccess(null), 5000);
+    } catch {
+      setError("Failed to send. Please try again.");
+      setSending(false);
+    }
   }
 
   function extractDomain(urlStr: string): string {
@@ -367,27 +401,55 @@ export default function DashboardPage() {
           </div>
 
           {/* Send button */}
-          <div className="mt-8 flex justify-end" style={{ animation: 'fadeUp 0.6s ease 0.2s both' }}>
+          <div className="mt-8 flex flex-col items-end gap-3" style={{ animation: 'fadeUp 0.6s ease 0.2s both' }}>
             <button
-              className="rounded-xl px-6 py-3 text-sm font-medium transition-all duration-200 cursor-pointer inline-flex items-center gap-2"
+              disabled={sending || extractingIds.size > 0}
+              className="rounded-xl px-6 py-3 text-sm font-medium transition-all duration-200 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center gap-2"
               style={{
                 fontFamily: "'DM Sans', sans-serif",
-                background: '#22c55e',
+                background: sending ? '#16a34a' : '#22c55e',
                 color: '#0a0a0a',
                 boxShadow: '0 1px 2px rgba(0,0,0,0.2), 0 0 0 1px rgba(34,197,94,0.3)',
               }}
-              onMouseEnter={(e) => e.currentTarget.style.background = '#16a34a'}
-              onMouseLeave={(e) => e.currentTarget.style.background = '#22c55e'}
-              onClick={() => {
-                // Phase 4: EPUB generation + email sending
-                alert("Send to Kindle coming in Phase 4!");
-              }}
+              onMouseEnter={(e) => { if (!sending) e.currentTarget.style.background = '#16a34a'; }}
+              onMouseLeave={(e) => { if (!sending) e.currentTarget.style.background = '#22c55e'; }}
+              onClick={handleSend}
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-              Send {queueCount} to Kindle
+              {sending ? (
+                <span className="inline-flex items-center gap-2">
+                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3"/>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                  </svg>
+                  Sending…
+                </span>
+              ) : (
+                <>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  Send {queueCount} to Kindle
+                </>
+              )}
             </button>
+
+            {sendSuccess && (
+              <div className="flex items-center gap-2 rounded-lg px-3 py-2.5"
+                style={{ background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.15)' }}>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="shrink-0">
+                  <circle cx="8" cy="8" r="7" stroke="#22c55e" strokeWidth="1.5"/>
+                  <path d="M5.5 8l2 2 3-4" stroke="#22c55e" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                <span className="text-sm" style={{ color: '#22c55e', fontFamily: "'DM Sans', sans-serif" }}>
+                  {sendSuccess.count} article{sendSuccess.count !== 1 ? "s" : ""} sent to Kindle!
+                  {sendSuccess.skipped > 0 && (
+                    <span style={{ color: '#888888' }}>
+                      {" "}({sendSuccess.skipped} skipped — no content)
+                    </span>
+                  )}
+                </span>
+              </div>
+            )}
           </div>
         </div>
       )}

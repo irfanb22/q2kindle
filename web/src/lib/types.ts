@@ -10,3 +10,12 @@ export type Article = {
   created_at: string;
   sent_at: string | null;
 };
+
+export type Settings = {
+  kindle_email: string | null;
+  sender_email: string | null;
+  smtp_password: string | null;
+  auto_send_threshold: number | null;
+  schedule_day: string | null;
+  schedule_time: string | null;
+};

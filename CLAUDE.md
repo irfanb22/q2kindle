@@ -212,7 +212,7 @@ All files live under `web/`:
 |------|---------|
 | `web/package.json` | Node dependencies and scripts (`dev`, `build`, `start`, `lint`) |
 | `web/tsconfig.json` | TypeScript config with `@/*` path alias to `./src/*` |
-| `web/next.config.ts` | Next.js config (minimal — Netlify handles most settings) |
+| `web/next.config.ts` | Next.js config — `serverExternalPackages` for epub-gen-memory |
 | `web/postcss.config.mjs` | PostCSS config for Tailwind CSS v4 (`@tailwindcss/postcss`) |
 | `web/.env.local` | Supabase URL and anon key (gitignored) |
 | `web/src/app/globals.css` | Global styles — CSS variables for dark theme, Tailwind import |
@@ -224,13 +224,15 @@ All files live under `web/`:
 | `web/src/lib/supabase/server.ts` | Server-side Supabase client (uses `createServerClient` with cookie handling) |
 | `web/src/lib/supabase/middleware.ts` | Session refresh logic used by the middleware |
 | `web/src/app/(app)/layout.tsx` | Authenticated layout — top nav bar (Queue/History/Settings), sign out, user email |
-| `web/src/app/(app)/dashboard/page.tsx` | Dashboard — URL input, article queue list, send button, empty/loading states |
+| `web/src/app/(app)/dashboard/page.tsx` | Dashboard — URL input, article queue list, send-to-Kindle with loading/success states |
 | `web/src/app/(app)/history/page.tsx` | Send history placeholder (Phase 5) |
-| `web/src/app/(app)/settings/page.tsx` | Settings placeholder (Phase 5) |
+| `web/src/app/(app)/settings/page.tsx` | Settings page — Kindle email, Gmail address, app password config, auto-send (coming soon) |
 | `web/src/app/(app)/article/[id]/page.tsx` | Article preview page — fetches article, sanitizes HTML with DOMPurify, renders Kindle mockup |
 | `web/src/app/(app)/article/[id]/kindle-mockup.tsx` | Kindle device mockup — CSS bezel frame, e-ink screen, grayscale content rendering |
 | `web/src/app/api/articles/extract/route.ts` | Article extraction API — fetches URL, extracts content, calculates read time |
-| `web/src/lib/types.ts` | Shared TypeScript types (Article) used across pages |
+| `web/src/app/api/send/route.ts` | Send-to-Kindle API — generates EPUB with epub-gen-memory, emails via Nodemailer/Gmail SMTP |
+| `web/src/app/api/settings/route.ts` | Settings API — GET (load, masked password) / POST (upsert email config) |
+| `web/src/lib/types.ts` | Shared TypeScript types (Article, Settings) used across pages |
 | `web/supabase/migrations/001_create_tables.sql` | Database schema — articles, send_history, settings tables + RLS policies |
 | `web/supabase/migrations/002_add_read_time_and_description.sql` | Adds read_time_minutes and description columns to articles |
 
@@ -257,8 +259,8 @@ Opens at `http://localhost:3000`. Requires Node.js (installed via nvm, v24 LTS).
 | **Phase 1** | Project scaffold, Supabase config, auth flow, basic UI shell | ✅ Complete |
 | **Phase 2** | Article extraction API + queue management + Supabase CRUD | ✅ Complete |
 | **Phase 3** | Kindle preview page with device mockup | ✅ Complete |
-| **Phase 4** | EPUB generation + email sending via Netlify Functions | ⬜ Not started |
-| **Phase 5** | Settings page, auto-send, send history | ⬜ Not started |
+| **Phase 4** | EPUB generation + email sending + settings page | ✅ Complete |
+| **Phase 5** | Auto-send, send history, settings polish | ⬜ Not started |
 | **Phase 6** | Polish — mobile responsive, loading states, error handling, PWA | ⬜ Not started |
 
 ### Phase 1 progress
@@ -298,6 +300,26 @@ Opens at `http://localhost:3000`. Requires Node.js (installed via nvm, v24 LTS).
 - ✅ Preview button (eye icon) on dashboard queue cards — hidden during extraction, green hover
 - ✅ Wider layout (`max-w-6xl`) for article preview route
 - ✅ Back to queue navigation button
+
+### Phase 4 progress
+
+- ✅ EPUB generation using `epub-gen-memory` — in-memory Buffer, no filesystem needed
+- ✅ ESM import fix — `epubModule.default ?? epubModule` to get the actual generator function
+- ✅ EPUB format matches V1: "ReadLater - YYYY-MM-DD" title, Georgia serif, 1.7 line height, author + URL per chapter
+- ✅ Email sending via Nodemailer + Gmail SMTP (app password auth)
+- ✅ Kindle body fix — `html: "<div></div>"` instead of `text: ""` to avoid Amazon E009 "No Attachment" rejection
+- ✅ Send API route (`/api/send`) — full pipeline: auth → load settings → fetch articles → generate EPUB → send email → update statuses → log to send_history
+- ✅ Articles with failed extraction silently skipped (skipped count shown in success message)
+- ✅ Separate try/catch for EPUB generation vs email sending — distinct error messages
+- ✅ Settings API route (`/api/settings`) — GET with masked password, POST with upsert
+- ✅ Settings page — Kindle email, Gmail address, app password inputs with help links
+- ✅ Auto-send section shown as disabled "Coming soon" placeholder
+- ✅ Password preservation — updating emails without re-entering password uses direct Supabase update
+- ✅ Dashboard send button wired up — spinner during send, disabled while articles extracting
+- ✅ Green success banner after send, auto-dismiss after 5 seconds
+- ✅ Redirects to `/settings` if email config not yet saved
+- ✅ `next.config.ts` updated with `serverExternalPackages: ["epub-gen-memory"]`
+- ✅ Settings type added to shared types (`web/src/lib/types.ts`)
 
 ## V2 Pages (planned)
 
@@ -339,3 +361,11 @@ Opens at `http://localhost:3000`. Requires Node.js (installed via nvm, v24 LTS).
 | 2025-02-10 | Dedicated Preview button (not clickable card) | Explicit action keeps delete button safe from accidental clicks |
 | 2025-02-10 | Scrollable content inside fixed frame | More realistic than paginated; simpler to implement |
 | 2025-02-10 | Lighter bezel (`#3a3a3a`) against dark background | Dark `#1a1a1a` bezel was invisible on `#0a0a0a` app background |
+| 2025-02-12 | `epub-gen-memory` for EPUB generation | In-memory Buffer output, no filesystem writes, works in serverless |
+| 2025-02-12 | Main import, not `/sabstub` subpath | `/sabstub` uses `window` which breaks in Node.js server-side |
+| 2025-02-12 | `epubModule.default ?? epubModule` pattern | ESM default import returns module object, not the function |
+| 2025-02-12 | Nodemailer with `html: "<div></div>"` body | Amazon Kindle rejects emails with no body (E009); Python's MIMEMultipart always includes one |
+| 2025-02-12 | Keep images in EPUB | Richer content; `ignoreFailedDownloads: true` as safety net for slow servers |
+| 2025-02-12 | Settings page pulled forward from Phase 5 | Needed for send flow; built full page instead of a temporary modal |
+| 2025-02-12 | Skip articles with failed extraction silently | Send only articles with content; show skipped count in success message |
+| 2025-02-12 | Password masked in GET, preserved on email-only updates | Never send actual password to client; direct Supabase update avoids re-entering password |
