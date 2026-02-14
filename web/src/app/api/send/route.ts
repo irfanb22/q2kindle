@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import epubModule from "epub-gen-memory";
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const epubModule = require("epub-gen-memory");
 
 // epub-gen-memory's ESM default export is the module object, not the function.
 // The actual generator function is at .default
