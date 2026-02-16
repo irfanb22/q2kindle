@@ -419,10 +419,13 @@ Goal: Make the EPUB output polished and customizable — branded cover page, fon
 
 ### Phase 7 plan (Polish, Branding & Custom Domain)
 
+- **Clickable article links** — queue cards link to original article URL, displayed as clean domain (e.g. "ofdollarsanddata.com" links to full URL, opens in new tab)
+- **Enhanced send history** — click into a send to see which articles were included. Requires storing article titles/URLs per send (JSON array on send_history or join table). Detail view shows article list with titles and sources.
 - Mobile responsive design — breakpoints for phone/tablet, responsive Kindle mockup
 - Loading states and error handling improvements across all pages
 - PWA manifest, service worker, app icons
-- **Branding** — finalize app name (currently "Kindle Sender" as codename), logo, color palette, update cover page branding to match
+- **Favicon / web icon** — part of branding work, designed alongside logo and app identity
+- **Branding** — finalize app name (currently "Kindle Sender" as codename), logo, color palette, favicon, update cover page branding to match
 - **Custom domain** — purchase and configure custom domain (replace `kindle-sender.netlify.app`), update Supabase redirect URLs, Resend sender domain with DNS verification
 - Resend custom domain setup (replace `onboarding@resend.dev` with branded sender email)
 
