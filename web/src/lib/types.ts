@@ -34,6 +34,7 @@ export type SendHistory = {
   status: string;
   error_message: string | null;
   sent_at: string;
+  articles_data: Array<{ title: string | null; url: string }> | null;
 };
 
 export type EpubPreferences = {

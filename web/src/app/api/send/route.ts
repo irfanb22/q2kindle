@@ -196,6 +196,7 @@ export async function POST() {
       article_count: articleCount,
       issue_number: issueNumber,
       status: "success",
+      articles_data: sendableArticles.map((a) => ({ title: a.title || null, url: a.url })),
     });
 
     return NextResponse.json({

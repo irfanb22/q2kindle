@@ -7,6 +7,7 @@ import type { SendHistory } from "@/lib/types";
 export default function HistoryPage() {
   const [history, setHistory] = useState<SendHistory[]>([]);
   const [loading, setLoading] = useState(true);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const supabaseRef = useRef(createClient());
 
   useEffect(() => {
@@ -14,7 +15,7 @@ export default function HistoryPage() {
       const supabase = supabaseRef.current;
       const { data } = await supabase
         .from("send_history")
-        .select("id, article_count, issue_number, status, error_message, sent_at")
+        .select("id, article_count, issue_number, status, error_message, sent_at, articles_data")
         .order("sent_at", { ascending: false })
         .limit(10);
 
@@ -57,6 +58,14 @@ export default function HistoryPage() {
       minute: "2-digit",
       hour12: true,
     });
+  }
+
+  function extractDomain(urlStr: string): string {
+    try {
+      return new URL(urlStr).hostname.replace("www.", "");
+    } catch {
+      return urlStr;
+    }
   }
 
   return (
@@ -151,105 +160,181 @@ export default function HistoryPage() {
         >
           {history.map((entry) => {
             const isSuccess = entry.status === "success";
+            const hasArticleData = entry.articles_data && entry.articles_data.length > 0;
+            const isExpanded = expandedId === entry.id;
 
             return (
-              <div
-                key={entry.id}
-                className="flex items-center justify-between rounded-xl border px-5 py-4 transition-colors duration-150"
-                style={{
-                  borderColor: "#1a1a1a",
-                  background: "#141414",
-                }}
-                onMouseEnter={(e) =>
-                  (e.currentTarget.style.background = "#1a1a1a")
-                }
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.background = "#141414")
-                }
-              >
-                <div className="flex items-center gap-4">
-                  {/* Status icon */}
-                  <div
-                    className="flex items-center justify-center w-9 h-9 rounded-full shrink-0"
-                    style={{
-                      background: isSuccess
-                        ? "rgba(34,197,94,0.1)"
-                        : "rgba(239,68,68,0.1)",
-                      border: `1px solid ${isSuccess ? "rgba(34,197,94,0.2)" : "rgba(239,68,68,0.2)"}`,
-                    }}
-                  >
-                    {isSuccess ? (
+              <div key={entry.id}>
+                {/* Summary row */}
+                <div
+                  className={`flex items-center justify-between border px-5 py-4 transition-colors duration-150 ${hasArticleData ? "cursor-pointer" : ""}`}
+                  style={{
+                    borderColor: isExpanded ? "#262626" : "#1a1a1a",
+                    background: "#141414",
+                    borderRadius: isExpanded ? "12px 12px 0 0" : "12px",
+                  }}
+                  onClick={() => hasArticleData && setExpandedId(isExpanded ? null : entry.id)}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.background = "#1a1a1a")
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.background = "#141414")
+                  }
+                >
+                  <div className="flex items-center gap-4">
+                    {/* Status icon */}
+                    <div
+                      className="flex items-center justify-center w-9 h-9 rounded-full shrink-0"
+                      style={{
+                        background: isSuccess
+                          ? "rgba(34,197,94,0.1)"
+                          : "rgba(239,68,68,0.1)",
+                        border: `1px solid ${isSuccess ? "rgba(34,197,94,0.2)" : "rgba(239,68,68,0.2)"}`,
+                      }}
+                    >
+                      {isSuccess ? (
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 16 16"
+                          fill="none"
+                        >
+                          <path
+                            d="M4 8.5l3 3 5-6"
+                            stroke="#22c55e"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      ) : (
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 16 16"
+                          fill="none"
+                        >
+                          <path
+                            d="M5 5l6 6M11 5l-6 6"
+                            stroke="#ef4444"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                          />
+                        </svg>
+                      )}
+                    </div>
+
+                    {/* Details */}
+                    <div>
+                      <p
+                        className="text-sm"
+                        style={{
+                          fontFamily: "'DM Sans', sans-serif",
+                          color: "#ededed",
+                          fontWeight: 500,
+                        }}
+                      >
+                        {entry.issue_number
+                          ? `Issue #${entry.issue_number} — `
+                          : ""}
+                        {entry.article_count} article
+                        {entry.article_count !== 1 ? "s" : ""} sent
+                      </p>
+                      {entry.error_message && (
+                        <p
+                          className="text-xs mt-0.5 max-w-md truncate"
+                          style={{
+                            fontFamily: "'DM Sans', sans-serif",
+                            color: "#ef4444",
+                          }}
+                        >
+                          {entry.error_message}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Timestamp + chevron */}
+                  <div className="flex items-center gap-3 shrink-0">
+                    <span
+                      className="text-xs"
+                      style={{
+                        fontFamily: "'DM Sans', sans-serif",
+                        color: "#555555",
+                      }}
+                    >
+                      {formatDate(entry.sent_at)}
+                    </span>
+                    {hasArticleData && (
                       <svg
                         width="16"
                         height="16"
                         viewBox="0 0 16 16"
                         fill="none"
+                        className="transition-transform duration-200"
+                        style={{
+                          transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)",
+                          color: "#555555",
+                        }}
                       >
                         <path
-                          d="M4 8.5l3 3 5-6"
-                          stroke="#22c55e"
+                          d="M4 6l4 4 4-4"
+                          stroke="currentColor"
                           strokeWidth="1.5"
                           strokeLinecap="round"
                           strokeLinejoin="round"
                         />
                       </svg>
-                    ) : (
-                      <svg
-                        width="16"
-                        height="16"
-                        viewBox="0 0 16 16"
-                        fill="none"
-                      >
-                        <path
-                          d="M5 5l6 6M11 5l-6 6"
-                          stroke="#ef4444"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                        />
-                      </svg>
-                    )}
-                  </div>
-
-                  {/* Details */}
-                  <div>
-                    <p
-                      className="text-sm"
-                      style={{
-                        fontFamily: "'DM Sans', sans-serif",
-                        color: "#ededed",
-                        fontWeight: 500,
-                      }}
-                    >
-                      {entry.issue_number
-                        ? `Issue #${entry.issue_number} — `
-                        : ""}
-                      {entry.article_count} article
-                      {entry.article_count !== 1 ? "s" : ""} sent
-                    </p>
-                    {entry.error_message && (
-                      <p
-                        className="text-xs mt-0.5 max-w-md truncate"
-                        style={{
-                          fontFamily: "'DM Sans', sans-serif",
-                          color: "#ef4444",
-                        }}
-                      >
-                        {entry.error_message}
-                      </p>
                     )}
                   </div>
                 </div>
 
-                {/* Timestamp */}
-                <span
-                  className="text-xs shrink-0"
-                  style={{
-                    fontFamily: "'DM Sans', sans-serif",
-                    color: "#555555",
-                  }}
-                >
-                  {formatDate(entry.sent_at)}
-                </span>
+                {/* Expanded article list */}
+                {isExpanded && entry.articles_data && (
+                  <div
+                    className="border border-t-0 px-5 py-3"
+                    style={{
+                      borderColor: "#262626",
+                      background: "#111111",
+                      borderRadius: "0 0 12px 12px",
+                    }}
+                  >
+                    <div className="space-y-1">
+                      {entry.articles_data.map((article, idx) => (
+                        <div key={idx} className="flex items-center gap-3 py-1.5">
+                          <span
+                            className="text-xs shrink-0 w-5 text-right"
+                            style={{ color: "#555555", fontFamily: "'DM Sans', sans-serif" }}
+                          >
+                            {idx + 1}.
+                          </span>
+                          <a
+                            href={article.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm truncate transition-colors duration-150"
+                            style={{
+                              fontFamily: "'DM Sans', sans-serif",
+                              color: "#ededed",
+                              textDecoration: "none",
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.color = "#22c55e";
+                              e.currentTarget.style.textDecoration = "underline";
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.color = "#ededed";
+                              e.currentTarget.style.textDecoration = "none";
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {article.title || extractDomain(article.url)}
+                          </a>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             );
           })}

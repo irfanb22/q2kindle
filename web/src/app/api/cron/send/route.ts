@@ -250,6 +250,7 @@ export async function GET(request: Request) {
         article_count: sendableArticles.length,
         issue_number: issueNumber,
         status: "success",
+        articles_data: sendableArticles.map((a: { title?: string; url: string }) => ({ title: a.title || null, url: a.url })),
       });
 
       console.log(`User ${settings.user_id}: ✅ Scheduled send successful — ${sendableArticles.length} articles (Issue #${issueNumber})`);

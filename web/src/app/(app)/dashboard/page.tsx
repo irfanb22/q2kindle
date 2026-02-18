@@ -310,10 +310,24 @@ export default function DashboardPage() {
                     {isExtracting ? (
                       <div className="shimmer rounded" style={{ height: '16px', width: '60%', marginBottom: '8px' }} />
                     ) : (
-                      <p className="text-sm truncate"
-                        style={{ fontFamily: "'DM Sans', sans-serif", color: '#ededed', fontWeight: 500 }}>
+                      <a
+                        href={article.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm truncate block transition-colors duration-150"
+                        style={{ fontFamily: "'DM Sans', sans-serif", color: '#ededed', fontWeight: 500, textDecoration: 'none' }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.color = '#22c55e';
+                          e.currentTarget.style.textDecoration = 'underline';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.color = '#ededed';
+                          e.currentTarget.style.textDecoration = 'none';
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         {article.title || extractDomain(article.url)}
-                      </p>
+                      </a>
                     )}
 
                     {/* Author + Read time */}
