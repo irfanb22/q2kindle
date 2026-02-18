@@ -116,7 +116,7 @@ export async function generateKindleEpub(options: {
     0
   );
 
-  // Build cover page chapter
+  // Build cover page chapter — beforeToc places it before the auto-generated TOC
   const coverChapter = {
     title: "Cover",
     content: buildCoverHtml({
@@ -126,6 +126,8 @@ export async function generateKindleEpub(options: {
       totalReadTime,
     }),
     filename: "cover.xhtml",
+    beforeToc: true,
+    excludeFromToc: true,
   };
 
   // Build article chapters
