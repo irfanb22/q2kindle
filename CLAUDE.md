@@ -269,7 +269,8 @@ Opens at `http://localhost:3000`. Requires Node.js (installed via nvm, v24 LTS).
 | **Phase 4.5** | Deployment — Netlify hosting, Resend auth emails, production login verified | ✅ Complete |
 | **Phase 5** | Auto-send, send history, settings polish, test email | ✅ Complete |
 | **Phase 6** | EPUB customization — cover page, fonts, image toggle, metadata controls | ⬜ Not started |
-| **Phase 7** | Polish — mobile responsive, loading states, error handling, PWA, branding, custom domain | ⬜ Not started |
+| **Phase 6.5** | Custom domain — q2kindle.com via Squarespace DNS + Netlify + Supabase | ✅ Complete |
+| **Phase 7** | Polish — mobile responsive, loading states, error handling, PWA, branding | ⬜ Not started |
 
 ### Phase 1 progress
 
@@ -336,7 +337,7 @@ Opens at `http://localhost:3000`. Requires Node.js (installed via nvm, v24 LTS).
 - ✅ Netlify env vars set (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`)
 - ✅ Supabase Site URL + redirect URLs updated for production domain
 - ✅ Resend configured as custom SMTP in Supabase (replaces rate-limited built-in email provider)
-- ✅ Magic link auth verified working on production (`https://kindle-sender.netlify.app`)
+- ✅ Magic link auth verified working on production (`https://q2kindle.com`)
 - ✅ Send-to-Kindle verified working on Netlify (manual send + scheduled cron send)
 
 ### Phase 5 progress (Auto-Send, History & Settings Polish)
@@ -420,19 +421,29 @@ Goal: Make the EPUB output polished and customizable — branded cover page, fon
 - No article separator customization (keeping current flowing style)
 - No source URL in EPUB metadata (already removed in current implementation)
 
-### Phase 7 progress (Polish, Branding & Custom Domain)
+### Phase 6.5 progress (Custom Domain)
+
+- ✅ Purchased `q2kindle.com` domain via Squarespace
+- ✅ DNS configured: A record (`@` → `75.2.60.5`) + CNAME (`www` → `kindle-sender.netlify.app`)
+- ✅ Netlify custom domain added, `q2kindle.com` set as primary domain
+- ✅ SSL/TLS certificate provisioned via Let's Encrypt (covers `q2kindle.com` and `www.q2kindle.com`)
+- ✅ Supabase Site URL updated to `https://q2kindle.com`
+- ✅ Supabase redirect URLs: `https://q2kindle.com/auth/callback`, `https://kindle-sender.netlify.app/auth/callback`, `http://localhost:3000/auth/callback`
+- ✅ Magic link auth verified working end-to-end on `q2kindle.com`
+
+### Phase 7 progress (Polish & Branding)
 
 - ✅ **Clickable article links** — article titles on queue cards link to original URLs (green hover + underline, opens in new tab). Uses `extractDomain()` fallback for display text.
 - ✅ **Enhanced send history** — `articles_data` JSONB column on `send_history` stores article title/URL snapshots per send. History entries with data show chevron, expand on click to reveal numbered article list with linked titles. Migration 005. Both `/api/send` and `/api/cron/send` store article data on success.
 - ✅ **EPUB cover page ordering** — cover chapter uses `beforeToc: true` + `excludeFromToc: true` so it appears before the auto-generated TOC in reading order.
 - ✅ **Hourly delivery time picker** — replaced free-form `<input type="time">` with `<select>` of hourly slots (12 AM–11 PM), since pg_cron runs hourly. Normalizes existing minute-based values on load.
+- ✅ **Custom domain** — `q2kindle.com` configured via Squarespace DNS + Netlify + Supabase auth URL updates
 - ⬜ **Dynamic cover image for Kindle library** — Kindle's library grid needs an actual image file (not just an HTML chapter) registered in EPUB metadata via `<meta name="cover"/>`. `epub-gen-memory` supports a `cover` option (URL or File) that handles this. Current HTML cover page renders when reading but doesn't appear in the Kindle library view. Need to dynamically generate a cover image (using @vercel/og, sharp+canvas, or SVG-to-PNG) matching the current cover design (brand, issue number, date, article count) and pass it to `generateEpub()`. Instapaper does this — their cover shows in the library.
 - ⬜ Mobile responsive design — breakpoints for phone/tablet, responsive Kindle mockup
 - ⬜ Loading states and error handling improvements across all pages
 - ⬜ PWA manifest, service worker, app icons
 - ⬜ **Favicon / web icon** — part of branding work, designed alongside logo and app identity
 - ⬜ **Branding** — finalize app name (currently "Kindle Sender" as codename), logo, color palette, favicon, update cover page branding to match
-- ⬜ **Custom domain** — purchase and configure custom domain (replace `kindle-sender.netlify.app`), update Supabase redirect URLs, Resend sender domain with DNS verification
 - ⬜ Resend custom domain setup (replace `onboarding@resend.dev` with branded sender email)
 
 ## V2 Pages (planned)
@@ -447,15 +458,15 @@ Goal: Make the EPUB output polished and customizable — branded cover page, fon
 
 ## V2 Deployment
 
-- **Live URL**: https://kindle-sender.netlify.app
+- **Live URL**: https://q2kindle.com (custom domain, registered via Squarespace)
 - **Hosting**: Netlify (free tier, auto-deploys from `main` branch)
 - **Database**: Supabase free tier (already cloud-hosted)
 - **Build**: Netlify builds from GitHub repo, `base = "web"`, `npm run build`, Node 22 LTS
 - **Config file**: `netlify.toml` at repo root (not inside `web/`)
 - **Plugin**: `@netlify/plugin-nextjs` (required for SSR/API routes on Netlify)
 - **Env vars on Netlify**: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` (set via CLI)
-- **Supabase Site URL**: Must be set to `https://kindle-sender.netlify.app` (in Auth > URL Configuration)
-- **Supabase Redirect URLs**: Must include `https://kindle-sender.netlify.app/auth/callback` and `http://localhost:3000/auth/callback`
+- **Supabase Site URL**: Must be set to `https://q2kindle.com` (in Auth > URL Configuration)
+- **Supabase Redirect URLs**: Must include `https://q2kindle.com/auth/callback`, `https://kindle-sender.netlify.app/auth/callback`, and `http://localhost:3000/auth/callback`
 - **Supabase Custom SMTP**: Resend (configured in Supabase Dashboard > Project Settings > Auth > SMTP Settings)
   - **Host**: `smtp.resend.com`
   - **Port**: `465`
@@ -470,6 +481,8 @@ Goal: Make the EPUB output polished and customizable — branded cover page, fon
 - ✅ Supabase Site URL updated to Netlify domain
 - ✅ Supabase redirect URL added for Netlify domain
 - ✅ **Auth login verified working** — magic link emails delivered via Resend custom SMTP. Supabase's built-in email provider was silently dropping emails due to free-tier rate limits; Resend fixed this.
+- ✅ Custom domain `q2kindle.com` configured — DNS via Squarespace, SSL via Let's Encrypt, Supabase auth updated
+- ✅ Magic link auth verified working end-to-end on `q2kindle.com`
 - ⚠️ **Send-to-Kindle not yet tested on Netlify** — works locally, but serverless function timeout (26s limit) could be an issue for large queues
 
 ### Deployment files
@@ -543,3 +556,4 @@ Goal: Make the EPUB output polished and customizable — branded cover page, fon
 | 2026-02-18 | EPUB cover uses `beforeToc: true` | `epub-gen-memory` auto-generates a TOC page. Without `beforeToc`, cover was placed after TOC. Spine order: beforeToc chapters → TOC → regular chapters. |
 | 2026-02-18 | Hourly delivery time picker (not free-form) | pg_cron runs every hour (`'0 * * * *'`), cron route matches by hour only. Free-form minute input was misleading — users could set 7:30 PM but cron only fires at 7:00 PM. Replaced with `<select>` dropdown of hourly slots. |
 | 2026-02-18 | Dynamic cover image for Kindle library (TODO) | Kindle library grid shows cover image from EPUB metadata (`<meta name="cover"/>`), not from HTML chapters. `epub-gen-memory` supports `cover` option (URL or File). Need to generate image server-side matching current cover design. Deferred for later implementation. |
+| 2026-02-18 | Custom domain `q2kindle.com` (Squarespace) | Bought `.com` over `.app` — cheaper ($14 vs $20), more universally recognized, HTTPS-only benefit of `.app` is moot with Netlify auto-SSL. DNS: A record + www CNAME → Netlify. Supabase auth URLs updated. |
