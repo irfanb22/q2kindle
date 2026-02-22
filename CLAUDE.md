@@ -441,6 +441,8 @@ Opens at `http://localhost:3000`. Requires Node.js (installed via nvm, v24 LTS).
 - ✅ Custom domain `q2kindle.com` configured — DNS via Squarespace, SSL via Let's Encrypt, Supabase auth updated
 - ✅ Magic link auth verified working end-to-end on `q2kindle.com`
 - ⚠️ **Send-to-Kindle not yet tested on Netlify** — works locally, but serverless function timeout (26s limit) could be an issue for large queues
+- ⚠️ **SES in sandbox mode** — production access requested. Until approved, SES can only send to verified email addresses (200/day). Once approved, no recipient restrictions. Check status: AWS SES Console → Account Dashboard.
+- ⬜ **Run migration 006** — drop `sender_email` and `smtp_password` columns from settings table. Run in Supabase SQL Editor after verifying SES send works on production.
 
 ### Deployment files
 
