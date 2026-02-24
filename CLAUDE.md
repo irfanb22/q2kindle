@@ -237,6 +237,7 @@ All files live under `web/`:
 | `web/src/app/api/settings/route.ts` | Settings API — GET (load settings) / POST (upsert Kindle email + delivery + EPUB prefs) |
 | `web/src/lib/email.ts` | Shared email sending — `sendToKindle()` via Amazon SES + Nodemailer, `KINDLE_SENDER` constant |
 | `web/src/lib/epub.ts` | Shared EPUB generation — `generateKindleEpub()`, cover page, font mapping, image stripping, CSS builder |
+| `web/src/lib/send-limits.ts` | Daily send limit — `DAILY_SEND_LIMIT` constant, `getDailySendCount()`, `getStartOfDayUtc()` timezone helper |
 | `web/src/lib/types.ts` | Shared TypeScript types (Article, Settings, SendHistory, EpubPreferences) used across pages |
 | `web/supabase/migrations/001_create_tables.sql` | Database schema — articles, send_history, settings tables + RLS policies |
 | `web/supabase/migrations/002_add_read_time_and_description.sql` | Adds read_time_minutes and description columns to articles |
@@ -402,6 +403,7 @@ Opens at `http://localhost:3000`. Requires Node.js (installed via nvm, v24 LTS).
 - ⬜ **Branding** — finalize logo, color palette, favicon, update cover page branding to match
 - ✅ **Resend custom domain** — `q2kindle.com` verified in Resend with DKIM + SPF DNS records. Supabase SMTP sender updated from `onboarding@resend.dev` to `team@q2kindle.com`. Fixes new user sign-up (shared Resend domain only sends to verified emails).
 - ✅ **Amazon SES for Kindle delivery** — Replaced user-provided Gmail SMTP credentials with app-owned Amazon SES. Users only provide Kindle email and add `kindle@q2kindle.com` to Amazon approved senders. Removes security risk of storing user email passwords. Shared `email.ts` module centralizes sending logic. Resend stays for auth emails via Supabase SMTP.
+- ✅ **Daily send limit (10/day per user)** — Protects SES costs and prevents abuse. Each "send" = one email (all queued articles bundled into one EPUB). Both manual and scheduled/cron sends count. Test emails do NOT count. No database migration needed — counts successful sends from `send_history` table. Shared `send-limits.ts` module with `DAILY_SEND_LIMIT` constant, timezone-aware `getDailySendCount()`. Manual send returns HTTP 429 at limit; cron skips silently. Settings page shows usage card with progress bar (green/red). Dashboard shows usage text below send button, disables button at limit.
 
 ## V2 Pages (planned)
 
@@ -441,7 +443,7 @@ Opens at `http://localhost:3000`. Requires Node.js (installed via nvm, v24 LTS).
 - ✅ Custom domain `q2kindle.com` configured — DNS via Squarespace, SSL via Let's Encrypt, Supabase auth updated
 - ✅ Magic link auth verified working end-to-end on `q2kindle.com`
 - ⚠️ **Send-to-Kindle not yet tested on Netlify** — works locally, but serverless function timeout (26s limit) could be an issue for large queues
-- ⚠️ **SES in sandbox mode** — production access requested. Until approved, SES can only send to verified email addresses (200/day). Once approved, no recipient restrictions. Check status: AWS SES Console → Account Dashboard.
+- ⚠️ **SES in sandbox mode** — production access requested. AWS asked for additional use case details — provided. Awaiting approval. Until approved, SES can only send to verified email addresses (200/day). Once approved, no recipient restrictions. Check status: AWS SES Console → Account Dashboard.
 - ⬜ **Run migration 006** — drop `sender_email` and `smtp_password` columns from settings table. Run in Supabase SQL Editor after verifying SES send works on production.
 
 ### Deployment files
@@ -518,3 +520,4 @@ Opens at `http://localhost:3000`. Requires Node.js (installed via nvm, v24 LTS).
 | 2026-02-18 | Custom domain `q2kindle.com` (Squarespace) | Bought `.com` over `.app` — cheaper ($14 vs $20), more universally recognized, HTTPS-only benefit of `.app` is moot with Netlify auto-SSL. DNS: A record + www CNAME → Netlify. Supabase auth URLs updated. |
 | 2026-02-19 | Resend custom domain `q2kindle.com` (replaces shared `onboarding@resend.dev`) | Shared Resend domain only delivers to verified email addresses — blocked new user sign-ups. Custom domain with DKIM + SPF DNS records allows sending to any recipient. Sender updated to `team@q2kindle.com`. |
 | 2026-02-21 | Amazon SES for Kindle delivery (replaces user-provided Gmail SMTP) | Storing user Gmail app passwords was a security risk and trust barrier. SES sends from `kindle@q2kindle.com` — users only provide Kindle email. SES scales to thousands/day at $0.10/1000 vs Resend's 100/day free cap. Nodemailer kept with SES transport for minimal code change. Resend stays for Supabase auth emails. |
+| 2026-02-23 | Daily send limit (10/day per user) | Protects SES costs at scale. Reuses `send_history` table — no migration needed. Counts successful sends since midnight in user's timezone. Both manual and cron sends count; test emails don't. Fail-open pattern (returns 0 on query error, doesn't block sends). Usage displayed on settings page (progress bar) and dashboard (text + disabled button at limit). |
