@@ -227,14 +227,31 @@ function LoginForm() {
           </div>
 
           {/* Footer hint */}
-          <p className="text-center mt-8 text-xs"
+          <div className="text-center mt-8"
             style={{
-              fontFamily: "'DM Sans', sans-serif",
-              color: '#555555',
               animation: 'fadeUp 0.8s ease 0.3s both',
             }}>
-            No password needed — we&apos;ll email you a sign-in link
-          </p>
+            <p className="text-xs"
+              style={{
+                fontFamily: "'DM Sans', sans-serif",
+                color: '#555555',
+              }}>
+              No password needed — we&apos;ll email you a sign-in link
+            </p>
+            <a
+              href="/privacy"
+              className="inline-block mt-4 text-xs transition-colors duration-200"
+              style={{
+                fontFamily: "'DM Sans', sans-serif",
+                color: '#444444',
+                textDecoration: 'none',
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.color = '#888888'}
+              onMouseLeave={(e) => e.currentTarget.style.color = '#444444'}
+            >
+              Privacy Policy
+            </a>
+          </div>
         </div>
       </div>
 
