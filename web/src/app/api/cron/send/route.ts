@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { generateKindleEpub } from "@/lib/epub";
 import { sendToKindle } from "@/lib/email";
+import { DAILY_SEND_LIMIT, getDailySendCount } from "@/lib/send-limits";
 
 // ── Timezone helpers ────────────────────────────────────────────────────────
 
@@ -150,6 +151,18 @@ export async function GET(request: Request) {
       if (sendableArticles.length < minCount) {
         console.log(`User ${settings.user_id}: only ${sendableArticles.length} articles, minimum is ${minCount}, skipping`);
         results.push({ userId: settings.user_id, status: "skipped", message: `Below minimum (${sendableArticles.length}/${minCount})` });
+        continue;
+      }
+
+      // Check daily send limit
+      const dailyCount = await getDailySendCount(
+        supabase,
+        settings.user_id,
+        settings.timezone || "UTC"
+      );
+      if (dailyCount >= DAILY_SEND_LIMIT) {
+        console.log(`User ${settings.user_id}: daily send limit reached (${dailyCount}/${DAILY_SEND_LIMIT}), skipping`);
+        results.push({ userId: settings.user_id, status: "skipped", message: `Daily send limit reached (${dailyCount}/${DAILY_SEND_LIMIT})` });
         continue;
       }
 

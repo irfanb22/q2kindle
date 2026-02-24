@@ -80,6 +80,10 @@ export default function SettingsPage() {
   const [epubShowReadTime, setEpubShowReadTime] = useState(true);
   const [epubShowPublishedDate, setEpubShowPublishedDate] = useState(true);
 
+  // Daily send usage
+  const [dailySendsUsed, setDailySendsUsed] = useState(0);
+  const [dailySendLimit, setDailySendLimit] = useState(10);
+
   // UI state
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -94,6 +98,10 @@ export default function SettingsPage() {
       try {
         const res = await fetch("/api/settings");
         const data = await res.json();
+
+        // Load daily send usage
+        setDailySendsUsed(data.dailySendsUsed ?? 0);
+        setDailySendLimit(data.dailySendLimit ?? 10);
 
         if (data.settings) {
           setKindleEmail(data.settings.kindle_email || "");
@@ -324,6 +332,81 @@ export default function SettingsPage() {
         >
           Configure your Kindle email and delivery preferences
         </p>
+      </div>
+
+      {/* Daily Usage */}
+      <div
+        className="rounded-xl border px-5 py-4 mb-4 flex items-center justify-between"
+        style={{
+          background: "#141414",
+          borderColor: "#262626",
+          animation: "fadeUp 0.6s ease 0.05s both",
+        }}
+      >
+        <div className="flex items-center gap-3">
+          <div
+            className="flex items-center justify-center w-8 h-8 rounded-lg"
+            style={{
+              background:
+                dailySendsUsed >= dailySendLimit
+                  ? "rgba(239,68,68,0.1)"
+                  : "rgba(136,136,136,0.08)",
+              border:
+                dailySendsUsed >= dailySendLimit
+                  ? "1px solid rgba(239,68,68,0.15)"
+                  : "1px solid rgba(136,136,136,0.1)",
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M5 12h14M12 5l7 7-7 7"
+                stroke={
+                  dailySendsUsed >= dailySendLimit ? "#ef4444" : "#888888"
+                }
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </div>
+          <div>
+            <p
+              className="text-sm"
+              style={{
+                fontFamily: "'DM Sans', sans-serif",
+                color:
+                  dailySendsUsed >= dailySendLimit ? "#ef4444" : "#ededed",
+              }}
+            >
+              {dailySendsUsed} of {dailySendLimit} sends used today
+            </p>
+            <p
+              className="text-xs"
+              style={{
+                fontFamily: "'DM Sans', sans-serif",
+                color: "#555555",
+              }}
+            >
+              {dailySendsUsed >= dailySendLimit
+                ? "Limit resets tomorrow"
+                : `${dailySendLimit - dailySendsUsed} remaining`}
+            </p>
+          </div>
+        </div>
+
+        <div
+          className="w-24 h-1.5 rounded-full overflow-hidden"
+          style={{ background: "#262626" }}
+        >
+          <div
+            className="h-full rounded-full transition-all duration-300"
+            style={{
+              width: `${Math.min((dailySendsUsed / dailySendLimit) * 100, 100)}%`,
+              background:
+                dailySendsUsed >= dailySendLimit ? "#ef4444" : "#22c55e",
+            }}
+          />
+        </div>
       </div>
 
       <form onSubmit={handleSave}>

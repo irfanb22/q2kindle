@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { generateKindleEpub } from "@/lib/epub";
 import { sendToKindle } from "@/lib/email";
+import { DAILY_SEND_LIMIT, getDailySendCount } from "@/lib/send-limits";
 
 export async function POST() {
   let supabase;
@@ -25,7 +26,7 @@ export async function POST() {
     // Load user's email settings and EPUB preferences
     const { data: settings, error: settingsError } = await supabase
       .from("settings")
-      .select("kindle_email, epub_font, epub_include_images, epub_show_author, epub_show_read_time, epub_show_published_date")
+      .select("kindle_email, timezone, epub_font, epub_include_images, epub_show_author, epub_show_read_time, epub_show_published_date")
       .eq("user_id", user.id)
       .single();
 
@@ -46,6 +47,25 @@ export async function POST() {
           message: "Please complete your email settings before sending.",
         },
         { status: 400 }
+      );
+    }
+
+    // Check daily send limit
+    const dailyCount = await getDailySendCount(
+      supabase,
+      user.id,
+      settings.timezone || "UTC"
+    );
+
+    if (dailyCount >= DAILY_SEND_LIMIT) {
+      return NextResponse.json(
+        {
+          error: "daily_limit_reached",
+          message: `You've reached the daily limit of ${DAILY_SEND_LIMIT} sends. Your limit resets tomorrow.`,
+          dailySendsUsed: dailyCount,
+          dailySendLimit: DAILY_SEND_LIMIT,
+        },
+        { status: 429 }
       );
     }
 
@@ -188,6 +208,8 @@ export async function POST() {
       success: true,
       articleCount,
       skippedCount,
+      dailySendsUsed: dailyCount + 1,
+      dailySendLimit: DAILY_SEND_LIMIT,
     });
   } catch (err) {
     const message =

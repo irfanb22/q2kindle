@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { DAILY_SEND_LIMIT, getDailySendCount } from "@/lib/send-limits";
 
 export async function GET() {
   try {
@@ -32,10 +33,25 @@ export async function GET() {
     }
 
     if (!data) {
-      return NextResponse.json({ settings: null });
+      return NextResponse.json({
+        settings: null,
+        dailySendsUsed: 0,
+        dailySendLimit: DAILY_SEND_LIMIT,
+      });
     }
 
-    return NextResponse.json({ settings: data });
+    // Get daily send count for usage display
+    const dailySendsUsed = await getDailySendCount(
+      supabase,
+      user.id,
+      data.timezone || "UTC"
+    );
+
+    return NextResponse.json({
+      settings: data,
+      dailySendsUsed,
+      dailySendLimit: DAILY_SEND_LIMIT,
+    });
   } catch {
     return NextResponse.json(
       { error: "Failed to load settings" },

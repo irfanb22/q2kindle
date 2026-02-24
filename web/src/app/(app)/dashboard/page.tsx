@@ -14,6 +14,9 @@ export default function DashboardPage() {
   const [extractingIds, setExtractingIds] = useState<Set<string>>(new Set());
   const [sending, setSending] = useState(false);
   const [sendSuccess, setSendSuccess] = useState<{ count: number; skipped: number } | null>(null);
+  const [dailySendsUsed, setDailySendsUsed] = useState<number | null>(null);
+  const [dailySendLimit, setDailySendLimit] = useState(10);
+  const [atSendLimit, setAtSendLimit] = useState(false);
 
   const router = useRouter();
   const supabaseRef = useRef(createClient());
@@ -33,6 +36,23 @@ export default function DashboardPage() {
   useEffect(() => {
     fetchArticles();
   }, [fetchArticles]);
+
+  useEffect(() => {
+    async function fetchSendUsage() {
+      try {
+        const res = await fetch("/api/settings");
+        const data = await res.json();
+        if (data.dailySendsUsed !== undefined) {
+          setDailySendsUsed(data.dailySendsUsed);
+          setDailySendLimit(data.dailySendLimit || 10);
+          setAtSendLimit(data.dailySendsUsed >= (data.dailySendLimit || 10));
+        }
+      } catch {
+        // Non-critical — don't block the dashboard
+      }
+    }
+    fetchSendUsage();
+  }, []);
 
   async function handleAddUrl(e: React.FormEvent) {
     e.preventDefault();
@@ -145,9 +165,22 @@ export default function DashboardPage() {
           router.push("/settings");
           return;
         }
+        if (data.error === "daily_limit_reached") {
+          setAtSendLimit(true);
+          setDailySendsUsed(data.dailySendsUsed);
+          setError(data.message);
+          setSending(false);
+          return;
+        }
         setError(data.message || "Failed to send");
         setSending(false);
         return;
+      }
+
+      // Update daily usage from response
+      if (data.dailySendsUsed !== undefined) {
+        setDailySendsUsed(data.dailySendsUsed);
+        setAtSendLimit(data.dailySendsUsed >= (data.dailySendLimit || 10));
       }
 
       setSendSuccess({ count: data.articleCount, skipped: data.skippedCount || 0 });
@@ -417,7 +450,7 @@ export default function DashboardPage() {
           {/* Send button */}
           <div className="mt-8 flex flex-col items-end gap-3" style={{ animation: 'fadeUp 0.6s ease 0.2s both' }}>
             <button
-              disabled={sending || extractingIds.size > 0}
+              disabled={sending || extractingIds.size > 0 || atSendLimit}
               className="rounded-xl px-6 py-3 text-sm font-medium transition-all duration-200 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center gap-2"
               style={{
                 fontFamily: "'DM Sans', sans-serif",
@@ -429,7 +462,15 @@ export default function DashboardPage() {
               onMouseLeave={(e) => { if (!sending) e.currentTarget.style.background = '#22c55e'; }}
               onClick={handleSend}
             >
-              {sending ? (
+              {atSendLimit ? (
+                <>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.5"/>
+                    <path d="M12 8v4M12 14.5v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                  </svg>
+                  Daily limit reached
+                </>
+              ) : sending ? (
                 <span className="inline-flex items-center gap-2">
                   <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3"/>
@@ -446,6 +487,20 @@ export default function DashboardPage() {
                 </>
               )}
             </button>
+
+            {dailySendsUsed !== null && dailySendsUsed > 0 && (
+              <p
+                className="text-xs"
+                style={{
+                  fontFamily: "'DM Sans', sans-serif",
+                  color: atSendLimit ? "#ef4444" : "#555555",
+                }}
+              >
+                {atSendLimit
+                  ? `Daily limit reached (${dailySendsUsed}/${dailySendLimit})`
+                  : `${dailySendsUsed}/${dailySendLimit} sends used today`}
+              </p>
+            )}
 
             {sendSuccess && (
               <div className="flex items-center gap-2 rounded-lg px-3 py-2.5"
