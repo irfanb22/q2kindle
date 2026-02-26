@@ -7,15 +7,23 @@ const BREVO_SMTP_PORT = 587;
 // Typical article digests are well under 1MB. Log a warning if approaching.
 const ATTACHMENT_WARN_BYTES = 3.5 * 1024 * 1024; // 3.5 MB
 
-const transporter = nodemailer.createTransport({
-  host: BREVO_SMTP_HOST,
-  port: BREVO_SMTP_PORT,
-  secure: false, // STARTTLS (upgraded after connect)
-  auth: {
-    user: process.env.BREVO_SMTP_LOGIN!,
-    pass: process.env.BREVO_SMTP_KEY!,
-  },
-});
+// Lazy-initialize transporter to ensure env vars are available in serverless
+let _transporter: nodemailer.Transporter | null = null;
+function getTransporter() {
+  if (!_transporter) {
+    console.log(`Brevo SMTP: login=${process.env.BREVO_SMTP_LOGIN}, key=${process.env.BREVO_SMTP_KEY ? "***set***" : "MISSING"}`);
+    _transporter = nodemailer.createTransport({
+      host: BREVO_SMTP_HOST,
+      port: BREVO_SMTP_PORT,
+      secure: false, // STARTTLS (upgraded after connect)
+      auth: {
+        user: process.env.BREVO_SMTP_LOGIN!,
+        pass: process.env.BREVO_SMTP_KEY!,
+      },
+    });
+  }
+  return _transporter;
+}
 
 export const KINDLE_SENDER = "q2kindle <kindle@q2kindle.com>";
 
@@ -32,7 +40,7 @@ export async function sendToKindle(options: {
     );
   }
 
-  await transporter.sendMail({
+  await getTransporter().sendMail({
     from: KINDLE_SENDER,
     to: options.to,
     subject: options.subject,
