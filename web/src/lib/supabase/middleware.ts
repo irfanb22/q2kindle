@@ -34,21 +34,22 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Protect all routes except / (login), /auth/callback, and static assets
+  // Protect all routes except public pages
   const isPublicRoute =
     request.nextUrl.pathname === "/" ||
+    request.nextUrl.pathname === "/login" ||
     request.nextUrl.pathname.startsWith("/auth/") ||
     request.nextUrl.pathname.startsWith("/api/") ||
     request.nextUrl.pathname === "/privacy";
 
   if (!user && !isPublicRoute) {
     const url = request.nextUrl.clone();
-    url.pathname = "/";
+    url.pathname = "/login";
     return NextResponse.redirect(url);
   }
 
-  // If user is logged in and hits /, redirect to dashboard
-  if (user && request.nextUrl.pathname === "/") {
+  // If user is logged in and hits / or /login, redirect to dashboard
+  if (user && (request.nextUrl.pathname === "/" || request.nextUrl.pathname === "/login")) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
     return NextResponse.redirect(url);
