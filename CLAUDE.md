@@ -404,6 +404,8 @@ Opens at `http://localhost:3000`. Requires Node.js (installed via nvm, v24 LTS).
 - ✅ **Resend custom domain** — `q2kindle.com` verified in Resend with DKIM + SPF DNS records. Supabase SMTP sender updated from `onboarding@resend.dev` to `team@q2kindle.com`. Fixes new user sign-up (shared Resend domain only sends to verified emails).
 - ✅ **App-owned email for Kindle delivery** — Replaced user-provided Gmail SMTP credentials with app-owned sending. Users only provide Kindle email and add `kindle@q2kindle.com` to Amazon approved senders. Shared `email.ts` module centralizes sending logic. Initially used Amazon SES (denied production access twice), switched to Brevo SMTP (300 emails/day free, 4MB attachment limit). Resend stays for auth emails via Supabase SMTP.
 - ✅ **Daily send limit (10/day per user)** — Protects SES costs and prevents abuse. Each "send" = one email (all queued articles bundled into one EPUB). Both manual and scheduled/cron sends count. Test emails do NOT count. No database migration needed — counts successful sends from `send_history` table. Shared `send-limits.ts` module with `DAILY_SEND_LIMIT` constant, timezone-aware `getDailySendCount()`. Manual send returns HTTP 429 at limit; cron skips silently. Settings page shows usage card with progress bar (green/red). Dashboard shows usage text below send button, disables button at limit.
+- ✅ **Privacy policy page** — `/privacy` route with 7 content sections (dark editorial design, server component). Added to middleware public routes. Link in login page footer.
+- ⬜ **Test email feedback position** — success/failure message appears at bottom of settings page, should be near the test send button so users can see the result without scrolling
 
 ## V2 Pages (planned)
 
@@ -442,7 +444,7 @@ Opens at `http://localhost:3000`. Requires Node.js (installed via nvm, v24 LTS).
 - ✅ **Auth login verified working** — magic link emails delivered via Resend custom SMTP. Supabase's built-in email provider was silently dropping emails due to free-tier rate limits; Resend fixed this.
 - ✅ Custom domain `q2kindle.com` configured — DNS via Squarespace, SSL via Let's Encrypt, Supabase auth updated
 - ✅ Magic link auth verified working end-to-end on `q2kindle.com`
-- ⚠️ **Send-to-Kindle not yet tested on Netlify** — works locally, but serverless function timeout (26s limit) could be an issue for large queues
+- ✅ **Send-to-Kindle verified working on Netlify** — Brevo SMTP delivery confirmed working in production (test email + manual send)
 - ✅ **Switched from Amazon SES to Brevo** — AWS denied SES production access twice. Brevo provides 300 emails/day free with SMTP access. Domain `q2kindle.com` verified in Brevo with DKIM. Sender: `kindle@q2kindle.com`.
 - ⬜ **Run migration 006** — drop `sender_email` and `smtp_password` columns from settings table. Run in Supabase SQL Editor.
 
