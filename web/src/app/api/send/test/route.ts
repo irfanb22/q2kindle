@@ -89,7 +89,7 @@ p { margin: 0 0 0.75em; text-indent: 0; }`,
       );
     }
 
-    // Send the test email via Amazon SES
+    // Send the test email via Brevo SMTP
     try {
       await sendToKindle({
         to: settings.kindle_email,

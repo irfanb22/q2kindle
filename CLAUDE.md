@@ -169,7 +169,7 @@ Full rewrite from Python desktop app to a hosted TypeScript web app. All v2 code
 | **Local cache** | React Query or SWR (planned) |
 | **Article extraction** | `@extractus/article-extractor` (replaces trafilatura) |
 | **EPUB creation** | `epub-gen-memory` (replaces ebooklib) |
-| **Email (Kindle delivery)** | Amazon SES via Nodemailer SES transport (`kindle@q2kindle.com`) |
+| **Email (Kindle delivery)** | Brevo (formerly Sendinblue) via Nodemailer SMTP (`kindle@q2kindle.com`) |
 | **Hosting** | Netlify |
 
 ## V2 Supabase details
@@ -235,7 +235,7 @@ All files live under `web/`:
 | `web/src/app/api/send/route.ts` | Send-to-Kindle API — generates EPUB with epub-gen-memory, emails via Amazon SES |
 | `web/src/app/api/send/test/route.ts` | Test email API — sends a mini test EPUB to verify Kindle address and SES delivery |
 | `web/src/app/api/settings/route.ts` | Settings API — GET (load settings) / POST (upsert Kindle email + delivery + EPUB prefs) |
-| `web/src/lib/email.ts` | Shared email sending — `sendToKindle()` via Amazon SES + Nodemailer, `KINDLE_SENDER` constant |
+| `web/src/lib/email.ts` | Shared email sending — `sendToKindle()` via Brevo SMTP + Nodemailer, `KINDLE_SENDER` constant |
 | `web/src/lib/epub.ts` | Shared EPUB generation — `generateKindleEpub()`, cover page, font mapping, image stripping, CSS builder |
 | `web/src/lib/send-limits.ts` | Daily send limit — `DAILY_SEND_LIMIT` constant, `getDailySendCount()`, `getStartOfDayUtc()` timezone helper |
 | `web/src/lib/types.ts` | Shared TypeScript types (Article, Settings, SendHistory, EpubPreferences) used across pages |
@@ -402,7 +402,7 @@ Opens at `http://localhost:3000`. Requires Node.js (installed via nvm, v24 LTS).
 - ⬜ **Favicon / web icon** — part of branding work, designed alongside logo and app identity
 - ⬜ **Branding** — finalize logo, color palette, favicon, update cover page branding to match
 - ✅ **Resend custom domain** — `q2kindle.com` verified in Resend with DKIM + SPF DNS records. Supabase SMTP sender updated from `onboarding@resend.dev` to `team@q2kindle.com`. Fixes new user sign-up (shared Resend domain only sends to verified emails).
-- ✅ **Amazon SES for Kindle delivery** — Replaced user-provided Gmail SMTP credentials with app-owned Amazon SES. Users only provide Kindle email and add `kindle@q2kindle.com` to Amazon approved senders. Removes security risk of storing user email passwords. Shared `email.ts` module centralizes sending logic. Resend stays for auth emails via Supabase SMTP.
+- ✅ **App-owned email for Kindle delivery** — Replaced user-provided Gmail SMTP credentials with app-owned sending. Users only provide Kindle email and add `kindle@q2kindle.com` to Amazon approved senders. Shared `email.ts` module centralizes sending logic. Initially used Amazon SES (denied production access twice), switched to Brevo SMTP (300 emails/day free, 4MB attachment limit). Resend stays for auth emails via Supabase SMTP.
 - ✅ **Daily send limit (10/day per user)** — Protects SES costs and prevents abuse. Each "send" = one email (all queued articles bundled into one EPUB). Both manual and scheduled/cron sends count. Test emails do NOT count. No database migration needed — counts successful sends from `send_history` table. Shared `send-limits.ts` module with `DAILY_SEND_LIMIT` constant, timezone-aware `getDailySendCount()`. Manual send returns HTTP 429 at limit; cron skips silently. Settings page shows usage card with progress bar (green/red). Dashboard shows usage text below send button, disables button at limit.
 
 ## V2 Pages (planned)
@@ -423,7 +423,7 @@ Opens at `http://localhost:3000`. Requires Node.js (installed via nvm, v24 LTS).
 - **Build**: Netlify builds from GitHub repo, `base = "web"`, `npm run build`, Node 22 LTS
 - **Config file**: `netlify.toml` at repo root (not inside `web/`)
 - **Plugin**: `@netlify/plugin-nextjs` (required for SSR/API routes on Netlify)
-- **Env vars on Netlify**: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `AWS_SES_ACCESS_KEY_ID`, `AWS_SES_SECRET_ACCESS_KEY`, `AWS_SES_REGION`
+- **Env vars on Netlify**: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `BREVO_SMTP_LOGIN`, `BREVO_SMTP_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
 - **Supabase Site URL**: Must be set to `https://q2kindle.com` (in Auth > URL Configuration)
 - **Supabase Redirect URLs**: Must include `https://q2kindle.com/auth/callback`, `https://q2kindle.netlify.app/auth/callback`, and `http://localhost:3000/auth/callback`
 - **Supabase Custom SMTP**: Resend (configured in Supabase Dashboard > Project Settings > Auth > SMTP Settings)
@@ -443,8 +443,8 @@ Opens at `http://localhost:3000`. Requires Node.js (installed via nvm, v24 LTS).
 - ✅ Custom domain `q2kindle.com` configured — DNS via Squarespace, SSL via Let's Encrypt, Supabase auth updated
 - ✅ Magic link auth verified working end-to-end on `q2kindle.com`
 - ⚠️ **Send-to-Kindle not yet tested on Netlify** — works locally, but serverless function timeout (26s limit) could be an issue for large queues
-- ⚠️ **SES in sandbox mode** — production access requested. AWS asked for additional use case details — provided. Awaiting approval. Until approved, SES can only send to verified email addresses (200/day). Once approved, no recipient restrictions. Check status: AWS SES Console → Account Dashboard.
-- ⬜ **Run migration 006** — drop `sender_email` and `smtp_password` columns from settings table. Run in Supabase SQL Editor after verifying SES send works on production.
+- ✅ **Switched from Amazon SES to Brevo** — AWS denied SES production access twice. Brevo provides 300 emails/day free with SMTP access. Domain `q2kindle.com` verified in Brevo with DKIM. Sender: `kindle@q2kindle.com`.
+- ⬜ **Run migration 006** — drop `sender_email` and `smtp_password` columns from settings table. Run in Supabase SQL Editor.
 
 ### Deployment files
 
@@ -521,3 +521,5 @@ Opens at `http://localhost:3000`. Requires Node.js (installed via nvm, v24 LTS).
 | 2026-02-19 | Resend custom domain `q2kindle.com` (replaces shared `onboarding@resend.dev`) | Shared Resend domain only delivers to verified email addresses — blocked new user sign-ups. Custom domain with DKIM + SPF DNS records allows sending to any recipient. Sender updated to `team@q2kindle.com`. |
 | 2026-02-21 | Amazon SES for Kindle delivery (replaces user-provided Gmail SMTP) | Storing user Gmail app passwords was a security risk and trust barrier. SES sends from `kindle@q2kindle.com` — users only provide Kindle email. SES scales to thousands/day at $0.10/1000 vs Resend's 100/day free cap. Nodemailer kept with SES transport for minimal code change. Resend stays for Supabase auth emails. |
 | 2026-02-23 | Daily send limit (10/day per user) | Protects SES costs at scale. Reuses `send_history` table — no migration needed. Counts successful sends since midnight in user's timezone. Both manual and cron sends count; test emails don't. Fail-open pattern (returns 0 on query error, doesn't block sends). Usage displayed on settings page (progress bar) and dashboard (text + disabled button at limit). |
+| 2026-02-25 | Brevo SMTP for Kindle delivery (replaces Amazon SES) | AWS denied SES production access twice — sandbox mode blocks sending to Kindle addresses (can't verify them). Brevo offers 300 emails/day free with SMTP access, no monthly fee. 4MB per-file attachment limit (text-only EPUBs are well under 1MB; image toggle available). Supports ~30 active users at 10 sends/day before needing $9/mo paid plan. Nodemailer kept with SMTP transport. Only `email.ts` changed — send routes untouched. |
+| 2026-02-25 | Privacy policy page at /privacy | Added to strengthen SES reapplication (ultimately switched providers). Public page accessible without login, matches dark editorial design. Linked from login page footer. |

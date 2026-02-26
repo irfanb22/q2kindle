@@ -158,7 +158,7 @@ export async function POST() {
       );
     }
 
-    // Send email via Amazon SES
+    // Send email via Brevo SMTP
     try {
       await sendToKindle({
         to: settings.kindle_email,
