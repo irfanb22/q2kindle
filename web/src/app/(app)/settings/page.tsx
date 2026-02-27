@@ -327,7 +327,7 @@ export default function SettingsPage() {
           className="text-sm"
           style={{ fontFamily: "'DM Sans', sans-serif", color: "#888888" }}
         >
-          Configure your Kindle email and delivery preferences
+          Configure your Kindle email and delivery preferences.
         </p>
       </div>
 
