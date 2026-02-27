@@ -26,7 +26,7 @@ export async function POST() {
     // Load user's email settings and EPUB preferences
     const { data: settings, error: settingsError } = await supabase
       .from("settings")
-      .select("kindle_email, timezone, epub_font, epub_include_images, epub_show_author, epub_show_read_time, epub_show_published_date")
+      .select("kindle_email, timezone, epub_include_images, epub_show_author, epub_show_read_time, epub_show_published_date")
       .eq("user_id", user.id)
       .single();
 
@@ -129,7 +129,6 @@ export async function POST() {
       const result = await generateKindleEpub({
         articles: sendableArticles,
         preferences: {
-          font: settings.epub_font || "bookerly",
           includeImages: settings.epub_include_images ?? true,
           showAuthor: settings.epub_show_author ?? true,
           showReadTime: settings.epub_show_read_time ?? true,

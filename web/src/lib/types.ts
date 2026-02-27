@@ -18,7 +18,6 @@ export type Settings = {
   schedule_days: string[] | null;
   schedule_time: string | null;
   timezone: string | null;
-  epub_font: string | null;
   epub_include_images: boolean | null;
   epub_show_author: boolean | null;
   epub_show_read_time: boolean | null;
@@ -36,7 +35,6 @@ export type SendHistory = {
 };
 
 export type EpubPreferences = {
-  font: string;
   includeImages: boolean;
   showAuthor: boolean;
   showReadTime: boolean;

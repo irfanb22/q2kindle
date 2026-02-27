@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { FONT_MAP } from "@/lib/epub";
 import { sendToKindle } from "@/lib/email";
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const epubModule = require("epub-gen-memory");
@@ -23,7 +22,7 @@ export async function POST() {
     // Load user's email settings
     const { data: settings, error: settingsError } = await supabase
       .from("settings")
-      .select("kindle_email, epub_font")
+      .select("kindle_email")
       .eq("user_id", user.id)
       .single();
 
@@ -43,7 +42,6 @@ export async function POST() {
 
     // Generate a small test EPUB
     const dateStr = new Date().toISOString().split("T")[0];
-    const fontFamily = FONT_MAP[settings.epub_font || "bookerly"] || FONT_MAP.bookerly;
     const testContent = `
       <h2>Test Delivery Successful</h2>
       <p>This is a test email from q2kindle. If you're reading this on your Kindle, your email configuration is working correctly.</p>
@@ -59,7 +57,7 @@ export async function POST() {
         {
           title: `q2kindle - Test (${dateStr})`,
           author: "q2kindle",
-          css: `body { font-family: ${fontFamily}; line-height: 1.7; margin: 1em; color: #1a1a1a; }
+          css: `body { line-height: 1.7; margin: 1em; color: #1a1a1a; }
 h2 { font-size: 1.2em; margin: 0 0 0.8em; }
 p { margin: 0 0 0.75em; text-indent: 0; }`,
           ignoreFailedDownloads: true,

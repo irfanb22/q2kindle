@@ -4,13 +4,6 @@ import type { EpubPreferences } from "./types";
 const epubModule = require("epub-gen-memory");
 const generateEpub = epubModule.default ?? epubModule;
 
-export const FONT_MAP: Record<string, string> = {
-  bookerly: 'Bookerly, Georgia, "Times New Roman", serif',
-  georgia: 'Georgia, "Times New Roman", serif',
-  palatino: '"Palatino Linotype", Palatino, Georgia, serif',
-  helvetica: "Helvetica, Arial, sans-serif",
-};
-
 export function escapeHtml(text: string): string {
   return text
     .replace(/&/g, "&amp;")
@@ -78,8 +71,8 @@ function buildCoverHtml(options: {
 </div>`;
 }
 
-function buildCss(fontFamily: string): string {
-  return `body { font-family: ${fontFamily}; line-height: 1.7; margin: 1em; color: #1a1a1a; }
+function buildCss(): string {
+  return `body { line-height: 1.7; margin: 1em; color: #1a1a1a; }
 h1 { font-size: 1.35em; margin: 0 0 0.3em; }
 .meta { color: #666; font-size: 0.82em; margin-bottom: 1.8em; }
 p { margin: 0 0 0.75em; text-indent: 0; }
@@ -108,7 +101,6 @@ export async function generateKindleEpub(options: {
 }): Promise<{ buffer: Buffer; title: string; filename: string }> {
   const { articles, preferences, issueNumber } = options;
   const dateStr = new Date().toISOString().split("T")[0];
-  const fontFamily = FONT_MAP[preferences.font] || FONT_MAP.bookerly;
 
   // Calculate total read time for cover
   const totalReadTime = articles.reduce(
@@ -179,7 +171,7 @@ export async function generateKindleEpub(options: {
     {
       title,
       author: "q2kindle",
-      css: buildCss(fontFamily),
+      css: buildCss(),
       ignoreFailedDownloads: true,
       fetchTimeout: 10000,
       verbose: false,

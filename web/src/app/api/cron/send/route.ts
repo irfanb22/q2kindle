@@ -72,7 +72,7 @@ export async function GET(request: Request) {
   // Fetch all users who have scheduled days configured and complete email settings
   const { data: allSettings, error: settingsError } = await supabase
     .from("settings")
-    .select("user_id, kindle_email, schedule_days, schedule_time, timezone, min_article_count, epub_font, epub_include_images, epub_show_author, epub_show_read_time, epub_show_published_date")
+    .select("user_id, kindle_email, schedule_days, schedule_time, timezone, min_article_count, epub_include_images, epub_show_author, epub_show_read_time, epub_show_published_date")
     .not("schedule_days", "is", null)
     .not("schedule_time", "is", null)
     .not("kindle_email", "is", null);
@@ -188,7 +188,6 @@ export async function GET(request: Request) {
         const result = await generateKindleEpub({
           articles: sendableArticles,
           preferences: {
-            font: settings.epub_font || "bookerly",
             includeImages: settings.epub_include_images ?? true,
             showAuthor: settings.epub_show_author ?? true,
             showReadTime: settings.epub_show_read_time ?? true,

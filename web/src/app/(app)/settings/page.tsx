@@ -74,7 +74,6 @@ export default function SettingsPage() {
   const [minArticleCount, setMinArticleCount] = useState("");
 
   // EPUB formatting
-  const [epubFont, setEpubFont] = useState("bookerly");
   const [epubIncludeImages, setEpubIncludeImages] = useState(true);
   const [epubShowAuthor, setEpubShowAuthor] = useState(true);
   const [epubShowReadTime, setEpubShowReadTime] = useState(true);
@@ -121,7 +120,6 @@ export default function SettingsPage() {
               ? String(data.settings.min_article_count)
               : ""
           );
-          setEpubFont(data.settings.epub_font || "bookerly");
           setEpubIncludeImages(data.settings.epub_include_images ?? true);
           setEpubShowAuthor(data.settings.epub_show_author ?? true);
           setEpubShowReadTime(data.settings.epub_show_read_time ?? true);
@@ -178,7 +176,6 @@ export default function SettingsPage() {
           schedule_days: scheduleDays.length > 0 ? scheduleDays : null,
           schedule_time: scheduleTime || null,
           timezone: timezone || null,
-          epub_font: epubFont,
           epub_include_images: epubIncludeImages,
           epub_show_author: epubShowAuthor,
           epub_show_read_time: epubShowReadTime,
@@ -926,44 +923,6 @@ export default function SettingsPage() {
           </div>
 
           <div className="space-y-5">
-            {/* Font selection */}
-            <div>
-              <label
-                className="block text-xs mb-1.5"
-                style={{
-                  fontFamily: "'DM Sans', sans-serif",
-                  color: "#888888",
-                }}
-              >
-                Body font
-              </label>
-              <select
-                value={epubFont}
-                onChange={(e) => {
-                  setEpubFont(e.target.value);
-                  setError(null);
-                }}
-                className="w-full rounded-xl border px-4 py-3 text-sm outline-none transition-all duration-200 appearance-none"
-                style={inputStyle}
-                onFocus={handleFocus}
-                onBlur={handleBlur}
-              >
-                <option value="bookerly">Bookerly (Kindle default)</option>
-                <option value="georgia">Georgia</option>
-                <option value="palatino">Palatino</option>
-                <option value="helvetica">Helvetica</option>
-              </select>
-              <p
-                className="text-xs mt-1.5"
-                style={{
-                  fontFamily: "'DM Sans', sans-serif",
-                  color: "#555555",
-                }}
-              >
-                Font used for article body text in the EPUB
-              </p>
-            </div>
-
             {/* Include images toggle */}
             <div className="flex items-center justify-between">
               <div>

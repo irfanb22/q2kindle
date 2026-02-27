@@ -202,7 +202,7 @@ settings
 ├── user_id (pk, fk → auth.users)
 ├── kindle_email
 ├── min_article_count, schedule_days (text[]), schedule_time, timezone
-├── epub_font, epub_include_images, epub_show_author, epub_show_read_time, epub_show_published_date
+├── epub_include_images, epub_show_author, epub_show_read_time, epub_show_published_date
 ├── created_at, updated_at (auto-updated via trigger)
 ```
 
@@ -236,7 +236,7 @@ All files live under `web/`:
 | `web/src/app/api/send/test/route.ts` | Test email API — sends a mini test EPUB to verify Kindle address and SES delivery |
 | `web/src/app/api/settings/route.ts` | Settings API — GET (load settings) / POST (upsert Kindle email + delivery + EPUB prefs) |
 | `web/src/lib/email.ts` | Shared email sending — `sendToKindle()` via Brevo SMTP + Nodemailer, `KINDLE_SENDER` constant |
-| `web/src/lib/epub.ts` | Shared EPUB generation — `generateKindleEpub()`, cover page, font mapping, image stripping, CSS builder |
+| `web/src/lib/epub.ts` | Shared EPUB generation — `generateKindleEpub()`, cover page, image stripping, CSS builder |
 | `web/src/lib/send-limits.ts` | Daily send limit — `DAILY_SEND_LIMIT` constant, `getDailySendCount()`, `getStartOfDayUtc()` timezone helper |
 | `web/src/lib/types.ts` | Shared TypeScript types (Article, Settings, SendHistory, EpubPreferences) used across pages |
 | `web/supabase/migrations/001_create_tables.sql` | Database schema — articles, send_history, settings tables + RLS policies |
@@ -245,6 +245,7 @@ All files live under `web/`:
 | `web/supabase/migrations/004_epub_customization.sql` | Adds EPUB preference columns and issue_number to settings/send_history |
 | `web/supabase/migrations/005_add_articles_data_to_send_history.sql` | Adds `articles_data` JSONB column to send_history for per-send article snapshots |
 | `web/supabase/migrations/006_remove_smtp_credentials.sql` | Drops `sender_email` and `smtp_password` columns from settings (moved to app-owned SES) |
+| `web/supabase/migrations/007_remove_epub_font.sql` | Drops `epub_font` column from settings (Kindle ignores CSS font-family) |
 | `web/src/app/api/cron/send/route.ts` | Cron API route — scheduled send logic, called hourly by Supabase pg_cron |
 
 ## V2 Design system
@@ -370,12 +371,11 @@ Opens at `http://localhost:3000`. Requires Node.js (installed via nvm, v24 LTS).
 
 - ✅ **Cover page** — branded cover on every digest with "q2kindle" branding, issue number, date, article count, total read time. Uses `beforeToc: true` + `excludeFromToc: true` for proper spine ordering.
 - ✅ **Issue number tracking** — auto-incremented per user on each successful send. Stored in `send_history.issue_number`. Both manual and cron send routes query previous sends for next sequential number.
-- ✅ **Font options** — user-selectable body font (Bookerly default, Georgia, Palatino, Helvetica). Stored in `settings.epub_font`, applied via CSS in EPUB chapters. Font mapping in `epub.ts`.
 - ✅ **Image toggle** — include images on/off (default: on). When off, `<img>`, `<picture>`, and `<figure>` tags stripped via `stripImages()`. Stored in `settings.epub_include_images`.
 - ✅ **Metadata toggles** — three independent toggles for article headers: author (on/off), read time (on/off), published date (on/off). All default to on. Stored as individual boolean columns on `settings`.
-- ✅ **EPUB Formatting section on Settings page** — font dropdown, image toggle, metadata toggles. Saved alongside email settings.
-- ✅ **Shared EPUB generation module** — `web/src/lib/epub.ts` with `generateKindleEpub()`, `buildCss()`, `stripImages()`, font mapping. Used by both `/api/send` and `/api/cron/send`.
-- ✅ **DB migration 004** — `epub_font`, `epub_include_images`, `epub_show_author`, `epub_show_read_time`, `epub_show_published_date` columns on `settings`; `issue_number` on `send_history`; `published_at` on `articles`; CHECK constraint on font values.
+- ✅ **EPUB Formatting section on Settings page** — image toggle, metadata toggles. Saved alongside email settings.
+- ✅ **Shared EPUB generation module** — `web/src/lib/epub.ts` with `generateKindleEpub()`, `buildCss()`, `stripImages()`. Used by both `/api/send` and `/api/cron/send`.
+- ✅ **DB migration 004** — `epub_include_images`, `epub_show_author`, `epub_show_read_time`, `epub_show_published_date` columns on `settings`; `issue_number` on `send_history`; `published_at` on `articles`.
 - ✅ **Full pipeline integration** — both manual send and cron send routes load EPUB preferences and pass to `generateKindleEpub()`.
 
 ### Phase 6.5 progress (Custom Domain)
@@ -502,7 +502,7 @@ Opens at `http://localhost:3000`. Requires Node.js (installed via nvm, v24 LTS).
 | 2026-02-14 | Resend for Supabase auth emails (not built-in provider) | Supabase's free-tier email provider silently drops emails after ~3-4/hour with no error. Resend free tier (3k/month) configured as custom SMTP in Supabase dashboard. Uses shared `onboarding@resend.dev` domain — no custom domain needed. |
 | 2026-02-14 | EPUB customization as Phase 6 (not part of Phase 5) | Phase 5 focuses on auto-send/history. EPUB formatting (cover page, fonts, images, metadata) is a distinct feature set that deserves its own phase. Bumped polish/PWA to Phase 7. |
 | 2026-02-14 | Cover page always on (no toggle) | Part of product identity — every digest gets a branded cover. Reduces settings complexity. |
-| 2026-02-14 | Kindle-native fonts only (Bookerly, Georgia, Palatino, Helvetica) | Ensures fonts render correctly on all Kindle devices without embedding font files in EPUB. |
+| 2026-02-26 | Removed EPUB font picker | Kindle ignores CSS `font-family` in EPUBs — the reader's device font setting always wins. The font dropdown was cosmetic. Removed `FONT_MAP`, `epub_font` column, and font UI. EPUB CSS now omits `font-family` entirely. |
 | 2026-02-14 | JSONB column for EPUB preferences (considered) | Single `epub_preferences` JSONB column vs individual columns — more flexible for adding future options without migrations. Decision TBD at implementation time. |
 | 2026-02-14 | No archive/read-tracking links in EPUB | Adds complexity (server-side redirect routes, tracking state) for marginal value. Can revisit later. |
 | 2026-02-15 | Supabase pg_cron for scheduled send (replaces Netlify Scheduled Function) | `@netlify/plugin-nextjs` completely overrides standalone Netlify functions — the Next.js Server Handler intercepts all invocations, so standalone functions never execute (zero logs, zero metrics). Replaced with Supabase `pg_cron` + `pg_net` calling `/api/cron/send` every hour. Cron job created via SQL in Supabase dashboard. Requires SUPABASE_SERVICE_ROLE_KEY env var on Netlify. |
