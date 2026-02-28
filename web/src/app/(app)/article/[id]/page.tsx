@@ -76,15 +76,15 @@ export default function ArticlePreviewPage() {
         onClick={() => router.push("/dashboard")}
         className="flex items-center gap-2 mb-8 cursor-pointer transition-colors duration-150"
         style={{
-          fontFamily: "'DM Sans', sans-serif",
+          fontFamily: "var(--font-body)",
           fontSize: "0.875rem",
-          color: "#888888",
+          color: "var(--color-text-muted)",
           background: "none",
           border: "none",
           padding: 0,
         }}
-        onMouseEnter={(e) => (e.currentTarget.style.color = "#ededed")}
-        onMouseLeave={(e) => (e.currentTarget.style.color = "#888888")}
+        onMouseEnter={(e) => (e.currentTarget.style.color = "var(--color-text)")}
+        onMouseLeave={(e) => (e.currentTarget.style.color = "var(--color-text-muted)")}
       >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
           <path
@@ -105,11 +105,11 @@ export default function ArticlePreviewPage() {
             style={{
               width: 420,
               height: 620,
-              background: "#1a1a1a",
+              background: "#4a453e",
               borderRadius: 24,
               padding: "28px 24px 40px",
               boxShadow:
-                "0 0 0 1px rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.5), 0 12px 48px rgba(0,0,0,0.3)",
+                "0 0 0 1px rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.12), 0 12px 48px rgba(0,0,0,0.06)",
               position: "relative",
               flexShrink: 0,
             }}
@@ -174,7 +174,7 @@ export default function ArticlePreviewPage() {
                 width: 6,
                 height: 6,
                 borderRadius: "50%",
-                background: "#2a2a2a",
+                background: "#5a554e",
               }}
             />
           </div>
@@ -194,19 +194,6 @@ export default function ArticlePreviewPage() {
           />
         </div>
       )}
-
-      <style jsx>{`
-        @keyframes fadeUp {
-          from {
-            opacity: 0;
-            transform: translateY(12px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-      `}</style>
     </div>
   );
 }
