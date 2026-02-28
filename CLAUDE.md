@@ -407,6 +407,28 @@ Opens at `http://localhost:3000`. Requires Node.js (installed via nvm, v24 LTS).
 - ✅ **Privacy policy page** — `/privacy` route with 7 content sections (dark editorial design, server component). Added to middleware public routes. Link in login page footer.
 - ⬜ **Test email feedback position** — success/failure message appears at bottom of settings page, should be near the test send button so users can see the result without scrolling
 
+### Visual Refresh (branch: `visual-refresh`)
+
+Exploring new color palettes and typography for the landing page and eventually the full app. Three options built as standalone pages (`/landing-a`, `/landing-b`, `/landing-c`), middleware updated to allow public access.
+
+**Option A — "Midnight Library"** (`/landing-a`): Dark navy `#0b0f1a` + amber/gold `#d4a574`. Fonts: Fraunces (headings, light italic) + Outfit (body). Diagonal grid lines, amber pill badge, italic `01`/`02`/`03` step numbers.
+
+**Option B — "Paper & Ink"** (`/landing-b`) — **CHOSEN DIRECTION**: Warm cream `#faf7f2` + forest green `#2d5f2d`. Fonts: Newsreader (headings) + Source Serif 4 (body). All-serif pairing, paper texture, subtle green ornamental circles.
+
+**Option C — "Clean Slate"** (`/landing-c`): Cool gray `#f4f4f6` + indigo `#5b5bd6`. Fonts: IBM Plex Sans + JetBrains Mono. Technical/modern aesthetic.
+
+**Refinements applied to Option B** (per user feedback):
+- Headline: "Articles deserve a quieter place to be read." (from Option A)
+- Label: "A READING COMPANION FOR YOUR **KINDLE**" — "Kindle" highlighted in green with underline
+- Sub-copy: "Queue the articles you find. We compile them into a beautiful ebook and deliver it straight to your Kindle."
+- Font weights bumped from 300 → 400 throughout for readability; `--text-secondary` darkened to `#5a5149`
+- All buttons pill-shaped (`border-radius: 100px`) — nav CTA, primary buttons, "Log in" as outlined pill
+- Italic `01`/`02`/`03` numbering (from Option A) replacing "Step one/two/three"
+
+**Known issue**: styled-jsx scoped styles don't apply to elements rendered by Next.js `<Link>` components (they don't get the jsx hash class). The second `<style>` block was changed to `jsx global` but Tailwind CSS from `globals.css` still overrides some properties. Needs proper fix — likely switch to CSS Modules or add the landing page styles to a dedicated CSS file that loads after Tailwind.
+
+**Pending**: Viability analysis of applying this cream + forest green palette across the full authenticated app (dashboard, settings, history, article preview pages). User asked about this — not yet answered.
+
 ## V2 Pages (planned)
 
 | Route | Purpose |
@@ -525,3 +547,4 @@ Opens at `http://localhost:3000`. Requires Node.js (installed via nvm, v24 LTS).
 | 2026-02-23 | Daily send limit (10/day per user) | Protects SES costs at scale. Reuses `send_history` table — no migration needed. Counts successful sends since midnight in user's timezone. Both manual and cron sends count; test emails don't. Fail-open pattern (returns 0 on query error, doesn't block sends). Usage displayed on settings page (progress bar) and dashboard (text + disabled button at limit). |
 | 2026-02-25 | Brevo SMTP for Kindle delivery (replaces Amazon SES) | AWS denied SES production access twice — sandbox mode blocks sending to Kindle addresses (can't verify them). Brevo offers 300 emails/day free with SMTP access, no monthly fee. 4MB per-file attachment limit (text-only EPUBs are well under 1MB; image toggle available). Supports ~30 active users at 10 sends/day before needing $9/mo paid plan. Nodemailer kept with SMTP transport. Only `email.ts` changed — send routes untouched. |
 | 2026-02-25 | Privacy policy page at /privacy | Added to strengthen SES reapplication (ultimately switched providers). Public page accessible without login, matches dark editorial design. Linked from login page footer. |
+| 2026-02-27 | Paper & Ink color palette for visual refresh | Chose warm cream (#faf7f2) + forest green (#2d5f2d) with Newsreader + Source Serif 4 over dark navy/amber and cool gray/indigo options. Inspired by doanything.com/landing and culturedcode.com/things/. All-serif pairing, pill buttons, italic step numbers. |
