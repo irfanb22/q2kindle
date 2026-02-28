@@ -32,11 +32,11 @@ export default function KindleMockup({
         style={{
           width: 420,
           height: 620,
-          background: "#3a3a3a",
+          background: "#4a453e",
           borderRadius: 24,
           padding: "28px 24px 40px",
           boxShadow:
-            "0 0 0 1px rgba(255,255,255,0.08), 0 4px 24px rgba(0,0,0,0.5), 0 12px 48px rgba(0,0,0,0.3)",
+            "0 0 0 1px rgba(255,255,255,0.08), 0 4px 24px rgba(0,0,0,0.12), 0 12px 48px rgba(0,0,0,0.06)",
           position: "relative",
           flexShrink: 0,
         }}
@@ -184,7 +184,7 @@ export default function KindleMockup({
             width: 6,
             height: 6,
             borderRadius: "50%",
-            background: "#4a4a4a",
+            background: "#5a554e",
           }}
         />
       </div>

@@ -1,22 +1,73 @@
 @import "tailwindcss";
 
 :root {
-  --color-bg: #0a0a0a;
-  --color-surface: #141414;
-  --color-surface-hover: #1a1a1a;
-  --color-border: #262626;
-  --color-text: #ededed;
-  --color-text-muted: #888888;
-  --color-accent: #22c55e;
-  --color-accent-hover: #16a34a;
-  --color-danger: #ef4444;
+  /* Backgrounds */
+  --color-bg: #f4f4f4;
+  --color-surface: #ffffff;
+  --color-surface-hover: #ececec;
+  --color-surface-warm: #ececec;
+  --color-surface-inset: #f0f0f0;
+
+  /* Borders */
+  --color-border: #dcdcdc;
+  --color-border-light: #e8e8e8;
+  --color-border-hover: #c4c4c4;
+
+  /* Text */
+  --color-text: #1a1a1a;
+  --color-text-muted: #3d3d3d;
+  --color-text-dim: #656565;
+
+  /* Accent (forest green) */
+  --color-accent: #2d5f2d;
+  --color-accent-hover: #3a7a3a;
+  --color-accent-pale: rgba(45, 95, 45, 0.07);
+  --color-accent-text: #f4f4f4;
+
+  /* Danger */
+  --color-danger: #c53030;
+  --color-danger-pale: rgba(197, 48, 48, 0.06);
+  --color-danger-border: rgba(197, 48, 48, 0.12);
+
+  /* Warning */
+  --color-warning: #b45309;
+
+  /* Success (reuse accent) */
+  --color-success: #2d5f2d;
+  --color-success-pale: rgba(45, 95, 45, 0.06);
+  --color-success-border: rgba(45, 95, 45, 0.12);
+
+  /* Fonts */
+  --font-heading: 'Newsreader', Georgia, serif;
+  --font-body: 'Source Serif 4', Georgia, serif;
+
+  /* Shadows */
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.04);
+  --shadow-button: 0 2px 12px rgba(45, 95, 45, 0.15);
 }
 
 body {
-  font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--font-body);
   background: var(--color-bg);
   color: var(--color-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Global keyframes */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200px 0; }
+  100% { background-position: 200px 0; }
+}
+
+.shimmer {
+  background: linear-gradient(90deg, #e8e8e8 25%, #dedede 50%, #e8e8e8 75%);
+  background-size: 400px 100%;
+  animation: shimmer 1.5s infinite ease-in-out;
 }
 
 @keyframes fadeUp {

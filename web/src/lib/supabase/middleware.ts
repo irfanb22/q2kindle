@@ -2,6 +2,20 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function updateSession(request: NextRequest) {
+  // Public pages don't need Supabase — skip auth entirely
+  const pathname = request.nextUrl.pathname;
+  const isStaticPublicRoute =
+    pathname === "/" ||
+    pathname === "/login" ||
+    pathname === "/privacy" ||
+    pathname.startsWith("/landing-") ||
+    pathname.startsWith("/auth/") ||
+    pathname.startsWith("/api/");
+
+  if (isStaticPublicRoute) {
+    return NextResponse.next();
+  }
+
   let supabaseResponse = NextResponse.next({
     request,
   });
@@ -40,7 +54,8 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname === "/login" ||
     request.nextUrl.pathname.startsWith("/auth/") ||
     request.nextUrl.pathname.startsWith("/api/") ||
-    request.nextUrl.pathname === "/privacy";
+    request.nextUrl.pathname === "/privacy" ||
+    request.nextUrl.pathname.startsWith("/landing-");
 
   if (!user && !isPublicRoute) {
     const url = request.nextUrl.clone();

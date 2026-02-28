@@ -220,11 +220,11 @@ export default function DashboardPage() {
       {/* Page header */}
       <div className="mb-8">
         <h1 className="text-3xl mb-1"
-          style={{ fontFamily: "'Instrument Serif', Georgia, serif", color: '#ededed', letterSpacing: '-0.02em' }}>
+          style={{ fontFamily: "var(--font-heading)", color: 'var(--color-text)', letterSpacing: '-0.02em' }}>
           Reading Queue
         </h1>
         <p className="text-sm"
-          style={{ fontFamily: "'DM Sans', sans-serif", color: '#888888' }}>
+          style={{ fontFamily: "var(--font-body)", color: 'var(--color-text-muted)' }}>
           {queueCount === 0
             ? "Add articles to send to your Kindle"
             : `${queueCount} article${queueCount !== 1 ? "s" : ""} queued`}
@@ -241,17 +241,17 @@ export default function DashboardPage() {
             placeholder="Paste an article URL…"
             className="flex-1 rounded-xl border px-4 py-3 text-base outline-none transition-all duration-200"
             style={{
-              fontFamily: "'DM Sans', sans-serif",
-              background: '#141414',
-              borderColor: '#262626',
-              color: '#ededed',
+              fontFamily: "var(--font-body)",
+              background: 'var(--color-surface)',
+              borderColor: 'var(--color-border)',
+              color: 'var(--color-text)',
             }}
             onFocus={(e) => {
-              e.currentTarget.style.borderColor = '#22c55e';
-              e.currentTarget.style.boxShadow = '0 0 0 3px rgba(34,197,94,0.1)';
+              e.currentTarget.style.borderColor = 'var(--color-accent)';
+              e.currentTarget.style.boxShadow = '0 0 0 3px rgba(45,95,45,0.12)';
             }}
             onBlur={(e) => {
-              e.currentTarget.style.borderColor = '#262626';
+              e.currentTarget.style.borderColor = 'var(--color-border)';
               e.currentTarget.style.boxShadow = 'none';
             }}
           />
@@ -260,13 +260,13 @@ export default function DashboardPage() {
             disabled={loading || !url.trim()}
             className="rounded-xl px-5 py-3 text-sm font-medium transition-all duration-200 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
             style={{
-              fontFamily: "'DM Sans', sans-serif",
-              background: loading ? '#16a34a' : '#22c55e',
-              color: '#0a0a0a',
-              boxShadow: '0 1px 2px rgba(0,0,0,0.2), 0 0 0 1px rgba(34,197,94,0.3)',
+              fontFamily: "var(--font-body)",
+              background: loading ? 'var(--color-accent-hover)' : 'var(--color-accent)',
+              color: 'var(--color-accent-text)',
+              boxShadow: 'var(--shadow-button)',
             }}
-            onMouseEnter={(e) => { if (!loading) e.currentTarget.style.background = '#16a34a'; }}
-            onMouseLeave={(e) => { if (!loading) e.currentTarget.style.background = '#22c55e'; }}
+            onMouseEnter={(e) => { if (!loading) e.currentTarget.style.background = 'var(--color-accent-hover)'; }}
+            onMouseLeave={(e) => { if (!loading) e.currentTarget.style.background = 'var(--color-accent)'; }}
           >
             {loading ? (
               <span className="inline-flex items-center gap-2">
@@ -284,12 +284,12 @@ export default function DashboardPage() {
 
         {error && (
           <div className="mt-3 flex items-start gap-2 rounded-lg px-3 py-2.5"
-            style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)' }}>
+            style={{ background: 'var(--color-danger-pale)', border: '1px solid var(--color-danger-border)' }}>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="mt-0.5 shrink-0">
-              <circle cx="8" cy="8" r="7" stroke="#ef4444" strokeWidth="1.5" opacity="0.7"/>
-              <path d="M8 5v3.5M8 10.5v.5" stroke="#ef4444" strokeWidth="1.5" strokeLinecap="round"/>
+              <circle cx="8" cy="8" r="7" stroke="var(--color-danger)" strokeWidth="1.5" opacity="0.7"/>
+              <path d="M8 5v3.5M8 10.5v.5" stroke="var(--color-danger)" strokeWidth="1.5" strokeLinecap="round"/>
             </svg>
-            <span className="text-sm" style={{ color: '#ef4444', fontFamily: "'DM Sans', sans-serif" }}>
+            <span className="text-sm" style={{ color: 'var(--color-danger)', fontFamily: "var(--font-body)" }}>
               {error}
             </span>
           </div>
@@ -300,22 +300,22 @@ export default function DashboardPage() {
       {fetching ? (
         <div className="flex items-center justify-center py-20">
           <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="#888888" strokeWidth="3"/>
-            <path className="opacity-75" fill="#888888" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="var(--color-text-muted)" strokeWidth="3"/>
+            <path className="opacity-75" fill="var(--color-text-muted)" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
           </svg>
         </div>
       ) : articles.length === 0 ? (
         <div className="text-center py-20" style={{ animation: 'fadeUp 0.6s ease 0.1s both' }}>
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-full mb-5"
-            style={{ background: 'rgba(136,136,136,0.08)', border: '1px solid rgba(136,136,136,0.1)' }}>
+            style={{ background: 'rgba(90,81,73,0.06)', border: '1px solid rgba(90,81,73,0.08)' }}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M12 5v14M5 12h14" stroke="#555555" strokeWidth="1.5" strokeLinecap="round"/>
+              <path d="M12 5v14M5 12h14" stroke="var(--color-text-dim)" strokeWidth="1.5" strokeLinecap="round"/>
             </svg>
           </div>
-          <p className="text-sm mb-1" style={{ fontFamily: "'DM Sans', sans-serif", color: '#888888' }}>
+          <p className="text-sm mb-1" style={{ fontFamily: "var(--font-body)", color: 'var(--color-text-muted)' }}>
             Your queue is empty
           </p>
-          <p className="text-xs" style={{ fontFamily: "'DM Sans', sans-serif", color: '#555555' }}>
+          <p className="text-xs" style={{ fontFamily: "var(--font-body)", color: 'var(--color-text-dim)' }}>
             Paste an article URL above to get started
           </p>
         </div>
@@ -332,11 +332,11 @@ export default function DashboardPage() {
                   key={article.id}
                   className="flex items-center justify-between rounded-xl border px-5 py-4 transition-colors duration-150"
                   style={{
-                    borderColor: '#1a1a1a',
-                    background: '#141414',
+                    borderColor: 'var(--color-border-light)',
+                    background: 'var(--color-surface)',
                   }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = '#1a1a1a'}
-                  onMouseLeave={(e) => e.currentTarget.style.background = '#141414'}
+                  onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-surface-hover)'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = 'var(--color-surface)'}
                 >
                   <div className="min-w-0 flex-1 mr-4">
                     {/* Title */}
@@ -348,13 +348,13 @@ export default function DashboardPage() {
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-sm truncate block transition-colors duration-150"
-                        style={{ fontFamily: "'DM Sans', sans-serif", color: '#ededed', fontWeight: 500, textDecoration: 'none' }}
+                        style={{ fontFamily: "var(--font-body)", color: 'var(--color-text)', fontWeight: 500, textDecoration: 'none' }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.color = '#22c55e';
+                          e.currentTarget.style.color = 'var(--color-accent)';
                           e.currentTarget.style.textDecoration = 'underline';
                         }}
                         onMouseLeave={(e) => {
-                          e.currentTarget.style.color = '#ededed';
+                          e.currentTarget.style.color = 'var(--color-text)';
                           e.currentTarget.style.textDecoration = 'none';
                         }}
                         onClick={(e) => e.stopPropagation()}
@@ -368,15 +368,15 @@ export default function DashboardPage() {
                       <div className="shimmer rounded" style={{ height: '12px', width: '35%', marginTop: '4px' }} />
                     ) : (
                       <p className="text-xs mt-1 flex items-center gap-1.5"
-                        style={{ fontFamily: "'DM Sans', sans-serif", color: '#888888' }}>
+                        style={{ fontFamily: "var(--font-body)", color: 'var(--color-text-muted)' }}>
                         <span className="truncate">{authorDisplay}</span>
                         {article.read_time_minutes && (
                           <>
-                            <span style={{ color: '#555555' }}>·</span>
+                            <span style={{ color: 'var(--color-text-dim)' }}>·</span>
                             <span className="shrink-0 inline-flex items-center gap-1">
                               <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-                                <circle cx="8" cy="8" r="6.5" stroke="#888888" strokeWidth="1"/>
-                                <path d="M8 5v3.5l2.5 1.5" stroke="#888888" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"/>
+                                <circle cx="8" cy="8" r="6.5" stroke="var(--color-text-muted)" strokeWidth="1"/>
+                                <path d="M8 5v3.5l2.5 1.5" stroke="var(--color-text-muted)" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"/>
                               </svg>
                               {article.read_time_minutes} min
                             </span>
@@ -388,10 +388,10 @@ export default function DashboardPage() {
                     {/* Warning for failed extraction */}
                     {hasFailed && (
                       <p className="text-xs mt-1 flex items-center gap-1"
-                        style={{ fontFamily: "'DM Sans', sans-serif", color: '#f59e0b' }}>
+                        style={{ fontFamily: "var(--font-body)", color: 'var(--color-warning)' }}>
                         <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-                          <path d="M8 1.5L1 14h14L8 1.5z" stroke="#f59e0b" strokeWidth="1.2" strokeLinejoin="round"/>
-                          <path d="M8 6.5v3M8 11.5v.5" stroke="#f59e0b" strokeWidth="1.2" strokeLinecap="round"/>
+                          <path d="M8 1.5L1 14h14L8 1.5z" stroke="var(--color-warning)" strokeWidth="1.2" strokeLinejoin="round"/>
+                          <path d="M8 6.5v3M8 11.5v.5" stroke="var(--color-warning)" strokeWidth="1.2" strokeLinecap="round"/>
                         </svg>
                         Content could not be extracted
                       </p>
@@ -403,13 +403,13 @@ export default function DashboardPage() {
                       <button
                         onClick={() => router.push(`/article/${article.id}`)}
                         className="p-1.5 rounded-lg transition-colors duration-150 cursor-pointer"
-                        style={{ color: '#888888' }}
+                        style={{ color: 'var(--color-text-muted)' }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.color = '#22c55e';
-                          e.currentTarget.style.background = 'rgba(34,197,94,0.08)';
+                          e.currentTarget.style.color = 'var(--color-accent)';
+                          e.currentTarget.style.background = 'var(--color-accent-pale)';
                         }}
                         onMouseLeave={(e) => {
-                          e.currentTarget.style.color = '#888888';
+                          e.currentTarget.style.color = 'var(--color-text-muted)';
                           e.currentTarget.style.background = 'transparent';
                         }}
                         title="Preview article"
@@ -420,19 +420,19 @@ export default function DashboardPage() {
                         </svg>
                       </button>
                     )}
-                    <span className="text-xs" style={{ fontFamily: "'DM Sans', sans-serif", color: '#555555' }}>
+                    <span className="text-xs" style={{ fontFamily: "var(--font-body)", color: 'var(--color-text-dim)' }}>
                       {timeAgo(article.created_at)}
                     </span>
                     <button
                       onClick={() => handleRemove(article.id)}
                       className="p-1.5 rounded-lg transition-colors duration-150 cursor-pointer"
-                      style={{ color: '#555555' }}
+                      style={{ color: 'var(--color-text-dim)' }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.color = '#ef4444';
-                        e.currentTarget.style.background = 'rgba(239,68,68,0.08)';
+                        e.currentTarget.style.color = 'var(--color-danger)';
+                        e.currentTarget.style.background = 'var(--color-danger-pale)';
                       }}
                       onMouseLeave={(e) => {
-                        e.currentTarget.style.color = '#555555';
+                        e.currentTarget.style.color = 'var(--color-text-dim)';
                         e.currentTarget.style.background = 'transparent';
                       }}
                       title="Remove from queue"
@@ -453,13 +453,13 @@ export default function DashboardPage() {
               disabled={sending || extractingIds.size > 0 || atSendLimit}
               className="rounded-xl px-6 py-3 text-sm font-medium transition-all duration-200 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center gap-2"
               style={{
-                fontFamily: "'DM Sans', sans-serif",
-                background: sending ? '#16a34a' : '#22c55e',
-                color: '#0a0a0a',
-                boxShadow: '0 1px 2px rgba(0,0,0,0.2), 0 0 0 1px rgba(34,197,94,0.3)',
+                fontFamily: "var(--font-body)",
+                background: sending ? 'var(--color-accent-hover)' : 'var(--color-accent)',
+                color: 'var(--color-accent-text)',
+                boxShadow: 'var(--shadow-button)',
               }}
-              onMouseEnter={(e) => { if (!sending) e.currentTarget.style.background = '#16a34a'; }}
-              onMouseLeave={(e) => { if (!sending) e.currentTarget.style.background = '#22c55e'; }}
+              onMouseEnter={(e) => { if (!sending) e.currentTarget.style.background = 'var(--color-accent-hover)'; }}
+              onMouseLeave={(e) => { if (!sending) e.currentTarget.style.background = 'var(--color-accent)'; }}
               onClick={handleSend}
             >
               {atSendLimit ? (
@@ -492,8 +492,8 @@ export default function DashboardPage() {
               <p
                 className="text-xs"
                 style={{
-                  fontFamily: "'DM Sans', sans-serif",
-                  color: atSendLimit ? "#ef4444" : "#555555",
+                  fontFamily: "var(--font-body)",
+                  color: atSendLimit ? "var(--color-danger)" : "var(--color-text-dim)",
                 }}
               >
                 {atSendLimit
@@ -504,15 +504,15 @@ export default function DashboardPage() {
 
             {sendSuccess && (
               <div className="flex items-center gap-2 rounded-lg px-3 py-2.5"
-                style={{ background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.15)' }}>
+                style={{ background: 'var(--color-success-pale)', border: '1px solid var(--color-success-border)' }}>
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="shrink-0">
-                  <circle cx="8" cy="8" r="7" stroke="#22c55e" strokeWidth="1.5"/>
-                  <path d="M5.5 8l2 2 3-4" stroke="#22c55e" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <circle cx="8" cy="8" r="7" stroke="var(--color-success)" strokeWidth="1.5"/>
+                  <path d="M5.5 8l2 2 3-4" stroke="var(--color-success)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
-                <span className="text-sm" style={{ color: '#22c55e', fontFamily: "'DM Sans', sans-serif" }}>
+                <span className="text-sm" style={{ color: 'var(--color-success)', fontFamily: "var(--font-body)" }}>
                   {sendSuccess.count} article{sendSuccess.count !== 1 ? "s" : ""} sent to Kindle!
                   {sendSuccess.skipped > 0 && (
-                    <span style={{ color: '#888888' }}>
+                    <span style={{ color: 'var(--color-text-muted)' }}>
                       {" "}({sendSuccess.skipped} skipped — no content)
                     </span>
                   )}
@@ -522,22 +522,6 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
-
-      <style jsx>{`
-        @keyframes fadeUp {
-          from { opacity: 0; transform: translateY(12px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes shimmer {
-          0% { background-position: -200px 0; }
-          100% { background-position: 200px 0; }
-        }
-        .shimmer {
-          background: linear-gradient(90deg, #1a1a1a 25%, #262626 50%, #1a1a1a 75%);
-          background-size: 400px 100%;
-          animation: shimmer 1.5s infinite ease-in-out;
-        }
-      `}</style>
     </div>
   );
 }

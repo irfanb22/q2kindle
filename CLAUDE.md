@@ -250,9 +250,11 @@ All files live under `web/`:
 
 ## V2 Design system
 
-- **Theme**: Dark (#0a0a0a bg, #141414 surfaces, #262626 borders, #22c55e green accent)
-- **Fonts**: Instrument Serif (headings), DM Sans (body) — loaded via Google Fonts
-- **Style**: Editorial/literary aesthetic — serif headings, clean sans body, subtle green glow, grid texture background
+- **Theme**: Light gray (#f4f4f4 bg, #ffffff surfaces, #dcdcdc borders, #2d5f2d forest green accent)
+- **Fonts**: Newsreader (headings), Source Serif 4 (body) — loaded via `next/font/google` in root layout
+- **Style**: Editorial/literary aesthetic — all-serif pairing, clean light background, forest green accents, pill-shaped buttons
+- **Colors centralized**: All ~150+ color values use CSS variables defined in `globals.css` `:root` block
+- **Text contrast**: Primary `#1a1a1a`, muted `#3d3d3d`, dim `#656565` — optimized for readability on light backgrounds in varied lighting
 - **Animations**: Staggered fadeUp on page load, focus ring transitions on inputs
 
 ## How to run V2
@@ -400,22 +402,47 @@ Opens at `http://localhost:3000`. Requires Node.js (installed via nvm, v24 LTS).
 - ⬜ Loading states and error handling improvements across all pages
 - ⬜ PWA manifest, service worker, app icons
 - ⬜ **Favicon / web icon** — part of branding work, designed alongside logo and app identity
-- ⬜ **Branding** — finalize logo, color palette, favicon, update cover page branding to match
+- ✅ **Visual refresh — full app** — Replaced dark theme (#0a0a0a) with light gray (#f4f4f4) + forest green (#2d5f2d) palette. Fonts changed from Instrument Serif + DM Sans to Newsreader + Source Serif 4 (all-serif). All ~150+ hardcoded color values centralized into CSS variables in `globals.css`. Font loading centralized via `next/font/google` in root layout (replaced ~8 scattered `@import` blocks). Text contrast optimized for readability: muted `#3d3d3d`, dim `#656565`. Applied to every page: landing, login, dashboard, settings, history, article preview, privacy. Kindle e-ink mockup colors intentionally kept warm (simulates real device). Landing page updated with "Paper & Ink" design. Exploration pages (landing-a/b/c) deleted after final design chosen.
+- ⬜ **Branding** — finalize logo, favicon, update cover page branding to match new palette
 - ✅ **Resend custom domain** — `q2kindle.com` verified in Resend with DKIM + SPF DNS records. Supabase SMTP sender updated from `onboarding@resend.dev` to `team@q2kindle.com`. Fixes new user sign-up (shared Resend domain only sends to verified emails).
 - ✅ **App-owned email for Kindle delivery** — Replaced user-provided Gmail SMTP credentials with app-owned sending. Users only provide Kindle email and add `kindle@q2kindle.com` to Amazon approved senders. Shared `email.ts` module centralizes sending logic. Initially used Amazon SES (denied production access twice), switched to Brevo SMTP (300 emails/day free, 4MB attachment limit). Resend stays for auth emails via Supabase SMTP.
 - ✅ **Daily send limit (10/day per user)** — Protects SES costs and prevents abuse. Each "send" = one email (all queued articles bundled into one EPUB). Both manual and scheduled/cron sends count. Test emails do NOT count. No database migration needed — counts successful sends from `send_history` table. Shared `send-limits.ts` module with `DAILY_SEND_LIMIT` constant, timezone-aware `getDailySendCount()`. Manual send returns HTTP 429 at limit; cron skips silently. Settings page shows usage card with progress bar (green/red). Dashboard shows usage text below send button, disables button at limit.
 - ✅ **Privacy policy page** — `/privacy` route with 7 content sections (dark editorial design, server component). Added to middleware public routes. Link in login page footer.
 - ⬜ **Test email feedback position** — success/failure message appears at bottom of settings page, should be near the test send button so users can see the result without scrolling
 
-## V2 Pages (planned)
+### Visual Refresh — CSS Variable Architecture
+
+All colors are centralized in `web/src/app/globals.css` `:root` block. No hardcoded color values in page components — everything references CSS variables. This makes future palette changes a single-file edit.
+
+**Key variables:**
+| Variable | Value | Usage |
+|----------|-------|-------|
+| `--color-bg` | `#f4f4f4` | Page background |
+| `--color-surface` | `#ffffff` | Cards, inputs |
+| `--color-border` | `#dcdcdc` | Borders |
+| `--color-text` | `#1a1a1a` | Primary text |
+| `--color-text-muted` | `#3d3d3d` | Secondary text (authors, descriptions) |
+| `--color-text-dim` | `#656565` | Tertiary text (timestamps, read time) |
+| `--color-accent` | `#2d5f2d` | Forest green (buttons, links, active states) |
+| `--color-accent-text` | `#f4f4f4` | Text on green buttons |
+| `--font-heading` | Newsreader | Headings, logo |
+| `--font-body` | Source Serif 4 | Body text, inputs, buttons |
+
+**Kindle mockup exception:** `web/src/app/(app)/article/[id]/kindle-mockup.tsx` uses warm browns (`#8a7e6b`, `#4a4437`, `#f5f1e8`) intentionally — these simulate real Kindle e-ink screen aesthetics and are not part of the app's design system.
+
+**Landing page note:** `web/src/app/page.tsx` has its own `<style jsx global>` block with local CSS variables (`--bg`, `--text`, `--accent`, etc.) that mirror the global palette. This is because the landing page uses styled-jsx for component-scoped CSS rather than inline styles.
+
+## V2 Pages
 
 | Route | Purpose |
 |-------|---------|
-| `/` | Login — magic link email input |
+| `/` | Landing page — marketing/hero, links to login |
+| `/login` | Login — magic link auth via Supabase |
 | `/dashboard` | Main app — URL input, article queue, send button |
 | `/article/:id` | Article reader/preview — read extracted content before sending |
 | `/history` | Last 10 sends with status |
-| `/settings` | Kindle email, SMTP config, auto-send preferences |
+| `/settings` | Kindle email, delivery schedule, EPUB prefs |
+| `/privacy` | Privacy policy (public, no auth) |
 
 ## V2 Deployment
 
@@ -525,3 +552,9 @@ Opens at `http://localhost:3000`. Requires Node.js (installed via nvm, v24 LTS).
 | 2026-02-23 | Daily send limit (10/day per user) | Protects SES costs at scale. Reuses `send_history` table — no migration needed. Counts successful sends since midnight in user's timezone. Both manual and cron sends count; test emails don't. Fail-open pattern (returns 0 on query error, doesn't block sends). Usage displayed on settings page (progress bar) and dashboard (text + disabled button at limit). |
 | 2026-02-25 | Brevo SMTP for Kindle delivery (replaces Amazon SES) | AWS denied SES production access twice — sandbox mode blocks sending to Kindle addresses (can't verify them). Brevo offers 300 emails/day free with SMTP access, no monthly fee. 4MB per-file attachment limit (text-only EPUBs are well under 1MB; image toggle available). Supports ~30 active users at 10 sends/day before needing $9/mo paid plan. Nodemailer kept with SMTP transport. Only `email.ts` changed — send routes untouched. |
 | 2026-02-25 | Privacy policy page at /privacy | Added to strengthen SES reapplication (ultimately switched providers). Public page accessible without login, matches dark editorial design. Linked from login page footer. |
+| 2026-02-27 | Paper & Ink color palette for visual refresh | Chose forest green (#2d5f2d) with Newsreader + Source Serif 4 over dark navy/amber and cool gray/indigo options. All-serif pairing, pill buttons, italic step numbers. |
+| 2026-02-28 | Light gray bg instead of warm cream | Shifted from warm cream (#faf7f2) to neutral light gray (#f4f4f4). Warm yellow undertone competed with green accent; neutral gray lets the green pop. All borders, hover states, and text colors desaturated to match. |
+| 2026-02-28 | Improved text contrast for readability | Darkened muted text from #4a4a4a → #3d3d3d and dim text from #757575 → #656565. Ensures readability on laptop screens in bright daylight (~9:1 and ~6.5:1 contrast ratios). |
+| 2026-02-28 | CSS variables for all colors (no hardcoded hex in components) | Centralized ~150+ color values from 13 files into `:root` variables in globals.css. Future palette changes are a single-file edit. Kindle e-ink mockup colors intentionally excluded (device simulation). |
+| 2026-02-28 | Removed paper texture on light gray bg | SVG fractal noise `body::before` was designed for warm cream to simulate paper grain. On neutral gray it added visual noise without purpose. Removed entirely. |
+| 2026-02-28 | Centralized font loading via next/font/google | Replaced ~8 scattered `@import url(fonts.googleapis.com)` blocks with two `next/font/google` imports in root layout. Fonts bound to CSS variables `--font-heading` and `--font-body`. Better performance (no render-blocking requests). |

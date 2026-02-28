@@ -74,8 +74,8 @@ export default function HistoryPage() {
         <h1
           className="text-3xl mb-1"
           style={{
-            fontFamily: "'Instrument Serif', Georgia, serif",
-            color: "#ededed",
+            fontFamily: "var(--font-heading)",
+            color: "var(--color-text)",
             letterSpacing: "-0.02em",
           }}
         >
@@ -83,7 +83,7 @@ export default function HistoryPage() {
         </h1>
         <p
           className="text-sm"
-          style={{ fontFamily: "'DM Sans', sans-serif", color: "#888888" }}
+          style={{ fontFamily: "var(--font-body)", color: "var(--color-text-muted)" }}
         >
           Your recent sends to Kindle
         </p>
@@ -101,12 +101,12 @@ export default function HistoryPage() {
               cx="12"
               cy="12"
               r="10"
-              stroke="#888888"
+              style={{ stroke: "var(--color-text-muted)" }}
               strokeWidth="3"
             />
             <path
               className="opacity-75"
-              fill="#888888"
+              style={{ fill: "var(--color-text-muted)" }}
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
             />
           </svg>
@@ -128,12 +128,12 @@ export default function HistoryPage() {
                 cx="12"
                 cy="12"
                 r="9"
-                stroke="#555555"
+                style={{ stroke: "var(--color-text-dim)" }}
                 strokeWidth="1.5"
               />
               <path
                 d="M12 7v5l3 3"
-                stroke="#555555"
+                style={{ stroke: "var(--color-text-dim)" }}
                 strokeWidth="1.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -142,13 +142,13 @@ export default function HistoryPage() {
           </div>
           <p
             className="text-sm mb-1"
-            style={{ fontFamily: "'DM Sans', sans-serif", color: "#888888" }}
+            style={{ fontFamily: "var(--font-body)", color: "var(--color-text-muted)" }}
           >
             No sends yet
           </p>
           <p
             className="text-xs"
-            style={{ fontFamily: "'DM Sans', sans-serif", color: "#555555" }}
+            style={{ fontFamily: "var(--font-body)", color: "var(--color-text-dim)" }}
           >
             Your send history will appear here
           </p>
@@ -169,16 +169,16 @@ export default function HistoryPage() {
                 <div
                   className={`flex items-center justify-between border px-5 py-4 transition-colors duration-150 ${hasArticleData ? "cursor-pointer" : ""}`}
                   style={{
-                    borderColor: isExpanded ? "#262626" : "#1a1a1a",
-                    background: "#141414",
+                    borderColor: isExpanded ? "var(--color-border)" : "var(--color-border-light)",
+                    background: "var(--color-surface)",
                     borderRadius: isExpanded ? "12px 12px 0 0" : "12px",
                   }}
                   onClick={() => hasArticleData && setExpandedId(isExpanded ? null : entry.id)}
                   onMouseEnter={(e) =>
-                    (e.currentTarget.style.background = "#1a1a1a")
+                    (e.currentTarget.style.background = "var(--color-surface-hover)")
                   }
                   onMouseLeave={(e) =>
-                    (e.currentTarget.style.background = "#141414")
+                    (e.currentTarget.style.background = "var(--color-surface)")
                   }
                 >
                   <div className="flex items-center gap-4">
@@ -187,9 +187,9 @@ export default function HistoryPage() {
                       className="flex items-center justify-center w-9 h-9 rounded-full shrink-0"
                       style={{
                         background: isSuccess
-                          ? "rgba(34,197,94,0.1)"
-                          : "rgba(239,68,68,0.1)",
-                        border: `1px solid ${isSuccess ? "rgba(34,197,94,0.2)" : "rgba(239,68,68,0.2)"}`,
+                          ? "var(--color-accent-pale)"
+                          : "var(--color-danger-pale)",
+                        border: `1px solid ${isSuccess ? "var(--color-accent-border, rgba(45,95,45,0.2))" : "var(--color-danger-border, rgba(239,68,68,0.2))"}`,
                       }}
                     >
                       {isSuccess ? (
@@ -201,7 +201,7 @@ export default function HistoryPage() {
                         >
                           <path
                             d="M4 8.5l3 3 5-6"
-                            stroke="#22c55e"
+                            style={{ stroke: "var(--color-accent)" }}
                             strokeWidth="1.5"
                             strokeLinecap="round"
                             strokeLinejoin="round"
@@ -216,7 +216,7 @@ export default function HistoryPage() {
                         >
                           <path
                             d="M5 5l6 6M11 5l-6 6"
-                            stroke="#ef4444"
+                            style={{ stroke: "var(--color-danger)" }}
                             strokeWidth="1.5"
                             strokeLinecap="round"
                           />
@@ -229,8 +229,8 @@ export default function HistoryPage() {
                       <p
                         className="text-sm"
                         style={{
-                          fontFamily: "'DM Sans', sans-serif",
-                          color: "#ededed",
+                          fontFamily: "var(--font-body)",
+                          color: "var(--color-text)",
                           fontWeight: 500,
                         }}
                       >
@@ -244,8 +244,8 @@ export default function HistoryPage() {
                         <p
                           className="text-xs mt-0.5 max-w-md truncate"
                           style={{
-                            fontFamily: "'DM Sans', sans-serif",
-                            color: "#ef4444",
+                            fontFamily: "var(--font-body)",
+                            color: "var(--color-danger)",
                           }}
                         >
                           {entry.error_message}
@@ -259,8 +259,8 @@ export default function HistoryPage() {
                     <span
                       className="text-xs"
                       style={{
-                        fontFamily: "'DM Sans', sans-serif",
-                        color: "#555555",
+                        fontFamily: "var(--font-body)",
+                        color: "var(--color-text-dim)",
                       }}
                     >
                       {formatDate(entry.sent_at)}
@@ -274,7 +274,7 @@ export default function HistoryPage() {
                         className="transition-transform duration-200"
                         style={{
                           transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)",
-                          color: "#555555",
+                          color: "var(--color-text-dim)",
                         }}
                       >
                         <path
@@ -294,8 +294,8 @@ export default function HistoryPage() {
                   <div
                     className="border border-t-0 px-5 py-3"
                     style={{
-                      borderColor: "#262626",
-                      background: "#111111",
+                      borderColor: "var(--color-border)",
+                      background: "var(--color-surface-inset)",
                       borderRadius: "0 0 12px 12px",
                     }}
                   >
@@ -304,7 +304,7 @@ export default function HistoryPage() {
                         <div key={idx} className="flex items-center gap-3 py-1.5">
                           <span
                             className="text-xs shrink-0 w-5 text-right"
-                            style={{ color: "#555555", fontFamily: "'DM Sans', sans-serif" }}
+                            style={{ color: "var(--color-text-dim)", fontFamily: "var(--font-body)" }}
                           >
                             {idx + 1}.
                           </span>
@@ -314,16 +314,16 @@ export default function HistoryPage() {
                             rel="noopener noreferrer"
                             className="text-sm truncate transition-colors duration-150"
                             style={{
-                              fontFamily: "'DM Sans', sans-serif",
-                              color: "#ededed",
+                              fontFamily: "var(--font-body)",
+                              color: "var(--color-text)",
                               textDecoration: "none",
                             }}
                             onMouseEnter={(e) => {
-                              e.currentTarget.style.color = "#22c55e";
+                              e.currentTarget.style.color = "var(--color-accent)";
                               e.currentTarget.style.textDecoration = "underline";
                             }}
                             onMouseLeave={(e) => {
-                              e.currentTarget.style.color = "#ededed";
+                              e.currentTarget.style.color = "var(--color-text)";
                               e.currentTarget.style.textDecoration = "none";
                             }}
                             onClick={(e) => e.stopPropagation()}
@@ -340,19 +340,6 @@ export default function HistoryPage() {
           })}
         </div>
       )}
-
-      <style jsx>{`
-        @keyframes fadeUp {
-          from {
-            opacity: 0;
-            transform: translateY(12px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-      `}</style>
     </div>
   );
 }
