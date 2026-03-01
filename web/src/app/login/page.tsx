@@ -57,7 +57,7 @@ function LoginForm() {
 
   const handleVerifyOtp = useCallback(async (code?: string) => {
     const token = code || otp;
-    if (token.length !== 6) return;
+    if (token.length < 6) return;
 
     setVerifying(true);
     setError(null);
@@ -90,6 +90,8 @@ function LoginForm() {
   // Auto-submit when 6 digits entered
   useEffect(() => {
     if (otp.length === 6 && !verifying) {
+      handleVerifyOtp(otp);
+    } else if (otp.length === 8 && !verifying) {
       handleVerifyOtp(otp);
     }
   }, [otp, verifying, handleVerifyOtp]);
@@ -291,9 +293,9 @@ function LoginForm() {
                     type="text"
                     inputMode="numeric"
                     autoComplete="one-time-code"
-                    maxLength={6}
+                    maxLength={8}
                     value={otp}
-                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 8))}
                     placeholder="000000"
                     autoFocus
                     className="w-full rounded-xl border px-4 py-3.5 text-center outline-none transition-all duration-200"
@@ -330,7 +332,7 @@ function LoginForm() {
 
                   <button
                     type="submit"
-                    disabled={verifying || otp.length !== 6}
+                    disabled={verifying || otp.length < 6}
                     className="w-full mt-4 rounded-xl px-4 py-3.5 text-base font-medium transition-all duration-200 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                     style={{
                       fontFamily: "'DM Sans', sans-serif",
