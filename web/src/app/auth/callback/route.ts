@@ -14,6 +14,6 @@ export async function GET(request: Request) {
     }
   }
 
-  // Auth error — redirect to login with error
-  return NextResponse.redirect(`${origin}/login?error=auth`);
+  // Auth error — redirect to login with specific error for cross-browser guidance
+  return NextResponse.redirect(`${origin}/login?error=link_failed`);
 }

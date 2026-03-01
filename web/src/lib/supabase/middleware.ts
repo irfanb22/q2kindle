@@ -38,6 +38,7 @@ export async function updateSession(request: NextRequest) {
   const isPublicRoute =
     request.nextUrl.pathname === "/" ||
     request.nextUrl.pathname === "/login" ||
+    request.nextUrl.pathname === "/signup" ||
     request.nextUrl.pathname.startsWith("/auth/") ||
     request.nextUrl.pathname.startsWith("/api/") ||
     request.nextUrl.pathname === "/privacy";
@@ -48,8 +49,8 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // If user is logged in and hits / or /login, redirect to dashboard
-  if (user && (request.nextUrl.pathname === "/" || request.nextUrl.pathname === "/login")) {
+  // If user is logged in and hits / or /login or /signup, redirect to dashboard
+  if (user && (request.nextUrl.pathname === "/" || request.nextUrl.pathname === "/login" || request.nextUrl.pathname === "/signup")) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
     return NextResponse.redirect(url);

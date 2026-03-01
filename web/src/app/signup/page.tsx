@@ -1,27 +1,17 @@
 "use client";
 
 import { useState, useEffect, useRef, Suspense, useCallback } from "react";
-import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
-function LoginForm() {
+function SignupForm() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [linkError, setLinkError] = useState(false);
   const [otp, setOtp] = useState("");
   const [verifying, setVerifying] = useState(false);
   const otpInputRef = useRef<HTMLInputElement>(null);
-  const searchParams = useSearchParams();
-
-  useEffect(() => {
-    const errorParam = searchParams.get("error");
-    if (errorParam === "auth" || errorParam === "link_failed") {
-      setLinkError(true);
-    }
-  }, [searchParams]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -34,7 +24,6 @@ function LoginForm() {
     const { error: authError } = await supabase.auth.signInWithOtp({
       email: email.trim(),
       options: {
-        shouldCreateUser: false,
         emailRedirectTo: `${window.location.origin}/auth/callback`,
       },
     });
@@ -42,15 +31,8 @@ function LoginForm() {
     setLoading(false);
 
     if (authError) {
-      if (authError.message.toLowerCase().includes("signups not allowed") ||
-          authError.message.toLowerCase().includes("user not found") ||
-          authError.message.toLowerCase().includes("otp")) {
-        setError("We couldn't find an account with this email address.");
-      } else {
-        setError(authError.message);
-      }
+      setError(authError.message);
     } else {
-      setLinkError(false);
       setSent(true);
     }
   }
@@ -160,29 +142,15 @@ function LoginForm() {
                     fontFamily: "'DM Sans', sans-serif",
                     color: '#ededed',
                   }}>
-                  Welcome back.
+                  Sign up to q2kindle
                 </h2>
                 <p className="text-sm leading-relaxed mb-6"
                   style={{
                     fontFamily: "'DM Sans', sans-serif",
                     color: '#888888',
                   }}>
-                  Enter the email that you signed up with and we&apos;ll email you a magic link to log in.
+                  We&apos;ll email you a magic link so we can verify your email address.
                 </p>
-
-                {/* Link failed warning */}
-                {linkError && (
-                  <div className="mb-4 flex items-start gap-2 rounded-lg px-3 py-2.5"
-                    style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.15)' }}>
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="mt-0.5 shrink-0">
-                      <circle cx="8" cy="8" r="7" stroke="#f59e0b" strokeWidth="1.5" opacity="0.7"/>
-                      <path d="M8 5v3.5M8 10.5v.5" stroke="#f59e0b" strokeWidth="1.5" strokeLinecap="round"/>
-                    </svg>
-                    <span className="text-sm" style={{ color: '#f59e0b', fontFamily: "'DM Sans', sans-serif" }}>
-                      The sign-in link didn&apos;t work — this usually happens when it opens in a different browser. Enter your email and use the 6-digit code instead.
-                    </span>
-                  </div>
-                )}
 
                 <form onSubmit={handleSubmit}>
                   <label className="block text-xs uppercase tracking-widest mb-3"
@@ -280,7 +248,7 @@ function LoginForm() {
                 </h2>
                 <p className="text-sm leading-relaxed mb-6"
                   style={{ fontFamily: "'DM Sans', sans-serif", color: '#888888' }}>
-                  We sent a sign-in code to<br/>
+                  We sent a verification code to<br/>
                   <span style={{ color: '#ededed' }}>{email}</span>
                 </p>
 
@@ -389,11 +357,11 @@ function LoginForm() {
               color: '#888888',
               animation: 'fadeUp 0.8s ease 0.3s both',
             }}>
-            Don&apos;t have an account?{' '}
-            <Link href="/signup" style={{ color: '#22c55e', textDecoration: 'none' }}
+            Already have an account?{' '}
+            <Link href="/login" style={{ color: '#22c55e', textDecoration: 'none' }}
               onMouseEnter={(e) => e.currentTarget.style.textDecoration = 'underline'}
               onMouseLeave={(e) => e.currentTarget.style.textDecoration = 'none'}>
-              Sign up
+              Log In
             </Link>
           </p>
         </div>
@@ -415,10 +383,10 @@ function LoginForm() {
   );
 }
 
-export default function LoginPage() {
+export default function SignupPage() {
   return (
     <Suspense>
-      <LoginForm />
+      <SignupForm />
     </Suspense>
   );
 }
