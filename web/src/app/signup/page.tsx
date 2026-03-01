@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, Suspense, useCallback } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
@@ -11,6 +11,7 @@ function SignupForm() {
   const [error, setError] = useState<string | null>(null);
   const [otp, setOtp] = useState("");
   const [verifying, setVerifying] = useState(false);
+  const verifyingRef = useRef(false);
   const otpInputRef = useRef<HTMLInputElement>(null);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -37,20 +38,21 @@ function SignupForm() {
     }
   }
 
-  const handleVerifyOtp = useCallback(async (code?: string) => {
-    const token = code || otp;
-    if (token.length < 6) return;
+  async function handleVerifyOtp(code: string) {
+    if (code.length < 6 || verifyingRef.current) return;
 
+    verifyingRef.current = true;
     setVerifying(true);
     setError(null);
 
     const supabase = createClient();
     const { error: verifyError } = await supabase.auth.verifyOtp({
       email: email.trim(),
-      token,
+      token: code,
       type: "email",
     });
 
+    verifyingRef.current = false;
     setVerifying(false);
 
     if (verifyError) {
@@ -67,16 +69,15 @@ function SignupForm() {
     } else {
       window.location.href = "/dashboard";
     }
-  }, [otp, email]);
+  }
 
   // Auto-submit when 6 digits entered
   useEffect(() => {
-    if (otp.length === 6 && !verifying) {
-      handleVerifyOtp(otp);
-    } else if (otp.length === 8 && !verifying) {
+    if ((otp.length === 6 || otp.length === 8) && !verifyingRef.current) {
       handleVerifyOtp(otp);
     }
-  }, [otp, verifying, handleVerifyOtp]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [otp]);
 
   return (
     <>
@@ -255,7 +256,7 @@ function SignupForm() {
                 </p>
 
                 {/* OTP input */}
-                <form onSubmit={(e) => { e.preventDefault(); handleVerifyOtp(); }}>
+                <form onSubmit={(e) => { e.preventDefault(); handleVerifyOtp(otp); }}>
                   <input
                     ref={otpInputRef}
                     type="text"
