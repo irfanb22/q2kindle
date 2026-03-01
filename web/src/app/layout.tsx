@@ -12,7 +12,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" data-v="2">
       <body className="antialiased min-h-screen">{children}</body>
     </html>
   );

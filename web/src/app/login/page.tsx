@@ -1,5 +1,6 @@
 "use client";
 
+// Force fresh build chunks — v2
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";

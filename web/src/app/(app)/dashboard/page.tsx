@@ -1,5 +1,6 @@
 "use client";
 
+// Force fresh build chunks — v2
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";

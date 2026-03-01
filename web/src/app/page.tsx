@@ -1,5 +1,6 @@
 "use client";
 
+// Force fresh build chunks — v2
 import { useEffect, useRef } from "react";
 import Link from "next/link";
 
