@@ -99,10 +99,6 @@ function LoginForm() {
 
   return (
     <>
-      <style jsx global>{`
-        @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@400;500&display=swap');
-      `}</style>
-
       <div className="min-h-screen flex items-center justify-center px-6 relative overflow-hidden"
         style={{ background: '#0a0a0a' }}>
 
@@ -138,7 +134,7 @@ function LoginForm() {
 
             <h1 className="text-4xl tracking-tight mb-3"
               style={{
-                fontFamily: "'Instrument Serif', Georgia, serif",
+                fontFamily: "var(--font-serif, 'Instrument Serif'), Georgia, serif",
                 color: '#ededed',
                 letterSpacing: '-0.02em',
               }}>
@@ -160,14 +156,14 @@ function LoginForm() {
                 {/* Heading */}
                 <h2 className="text-2xl font-bold mb-2"
                   style={{
-                    fontFamily: "'DM Sans', sans-serif",
+                    fontFamily: "var(--font-sans, 'DM Sans'), sans-serif",
                     color: '#ededed',
                   }}>
                   Welcome back.
                 </h2>
                 <p className="text-sm leading-relaxed mb-6"
                   style={{
-                    fontFamily: "'DM Sans', sans-serif",
+                    fontFamily: "var(--font-sans, 'DM Sans'), sans-serif",
                     color: '#888888',
                   }}>
                   Enter the email that you signed up with and we&apos;ll email you a magic link to log in.
@@ -181,7 +177,7 @@ function LoginForm() {
                       <circle cx="8" cy="8" r="7" stroke="#f59e0b" strokeWidth="1.5" opacity="0.7"/>
                       <path d="M8 5v3.5M8 10.5v.5" stroke="#f59e0b" strokeWidth="1.5" strokeLinecap="round"/>
                     </svg>
-                    <span className="text-sm" style={{ color: '#f59e0b', fontFamily: "'DM Sans', sans-serif" }}>
+                    <span className="text-sm" style={{ color: '#f59e0b', fontFamily: "var(--font-sans, 'DM Sans'), sans-serif" }}>
                       The sign-in link didn&apos;t work — this usually happens when it opens in a different browser. Enter your email and use the 6-digit code instead.
                     </span>
                   </div>
@@ -190,7 +186,7 @@ function LoginForm() {
                 <form onSubmit={handleSubmit}>
                   <label className="block text-xs uppercase tracking-widest mb-3"
                     style={{
-                      fontFamily: "'DM Sans', sans-serif",
+                      fontFamily: "var(--font-sans, 'DM Sans'), sans-serif",
                       color: '#888888',
                       fontWeight: 500,
                       letterSpacing: '0.1em',
@@ -207,7 +203,7 @@ function LoginForm() {
                     autoFocus
                     className="w-full rounded-xl border px-4 py-3.5 text-base outline-none transition-all duration-200"
                     style={{
-                      fontFamily: "'DM Sans', sans-serif",
+                      fontFamily: "var(--font-sans, 'DM Sans'), sans-serif",
                       background: '#0a0a0a',
                       borderColor: '#262626',
                       color: '#ededed',
@@ -229,7 +225,7 @@ function LoginForm() {
                         <circle cx="8" cy="8" r="7" stroke="#ef4444" strokeWidth="1.5" opacity="0.7"/>
                         <path d="M8 5v3.5M8 10.5v.5" stroke="#ef4444" strokeWidth="1.5" strokeLinecap="round"/>
                       </svg>
-                      <span className="text-sm" style={{ color: '#ef4444', fontFamily: "'DM Sans', sans-serif" }}>
+                      <span className="text-sm" style={{ color: '#ef4444', fontFamily: "var(--font-sans, 'DM Sans'), sans-serif" }}>
                         {error}
                       </span>
                     </div>
@@ -240,7 +236,7 @@ function LoginForm() {
                     disabled={loading || !email.trim()}
                     className="w-full mt-5 rounded-xl px-4 py-3.5 text-base font-medium transition-all duration-200 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                     style={{
-                      fontFamily: "'DM Sans', sans-serif",
+                      fontFamily: "var(--font-sans, 'DM Sans'), sans-serif",
                       background: loading ? '#16a34a' : '#22c55e',
                       color: '#0a0a0a',
                       boxShadow: '0 1px 2px rgba(0,0,0,0.2), 0 0 0 1px rgba(34,197,94,0.3)',
@@ -278,11 +274,11 @@ function LoginForm() {
                 </div>
 
                 <h2 className="text-xl mb-2"
-                  style={{ fontFamily: "'Instrument Serif', Georgia, serif", color: '#ededed' }}>
+                  style={{ fontFamily: "var(--font-serif, 'Instrument Serif'), Georgia, serif", color: '#ededed' }}>
                   Check your email
                 </h2>
                 <p className="text-sm leading-relaxed mb-6"
-                  style={{ fontFamily: "'DM Sans', sans-serif", color: '#888888' }}>
+                  style={{ fontFamily: "var(--font-sans, 'DM Sans'), sans-serif", color: '#888888' }}>
                   We sent a sign-in code to<br/>
                   <span style={{ color: '#ededed' }}>{email}</span>
                 </p>
@@ -301,7 +297,7 @@ function LoginForm() {
                     autoFocus
                     className="w-full rounded-xl border px-4 py-3.5 text-center outline-none transition-all duration-200"
                     style={{
-                      fontFamily: "'DM Sans', monospace",
+                      fontFamily: "var(--font-sans, 'DM Sans'), monospace",
                       fontSize: '24px',
                       letterSpacing: '0.3em',
                       background: '#0a0a0a',
@@ -325,7 +321,7 @@ function LoginForm() {
                         <circle cx="8" cy="8" r="7" stroke="#ef4444" strokeWidth="1.5" opacity="0.7"/>
                         <path d="M8 5v3.5M8 10.5v.5" stroke="#ef4444" strokeWidth="1.5" strokeLinecap="round"/>
                       </svg>
-                      <span className="text-sm" style={{ color: '#ef4444', fontFamily: "'DM Sans', sans-serif" }}>
+                      <span className="text-sm" style={{ color: '#ef4444', fontFamily: "var(--font-sans, 'DM Sans'), sans-serif" }}>
                         {error}
                       </span>
                     </div>
@@ -336,7 +332,7 @@ function LoginForm() {
                     disabled={verifying || otp.length < 6}
                     className="w-full mt-4 rounded-xl px-4 py-3.5 text-base font-medium transition-all duration-200 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                     style={{
-                      fontFamily: "'DM Sans', sans-serif",
+                      fontFamily: "var(--font-sans, 'DM Sans'), sans-serif",
                       background: verifying ? '#16a34a' : '#22c55e',
                       color: '#0a0a0a',
                       boxShadow: '0 1px 2px rgba(0,0,0,0.2), 0 0 0 1px rgba(34,197,94,0.3)',
@@ -363,7 +359,7 @@ function LoginForm() {
                 </form>
 
                 <p className="text-xs mt-4 mb-4"
-                  style={{ fontFamily: "'DM Sans', sans-serif", color: '#555555' }}>
+                  style={{ fontFamily: "var(--font-sans, 'DM Sans'), sans-serif", color: '#555555' }}>
                   or click the magic link in your email
                 </p>
 
@@ -371,7 +367,7 @@ function LoginForm() {
                   onClick={() => { setSent(false); setOtp(""); setError(null); }}
                   className="text-sm transition-colors duration-200 cursor-pointer"
                   style={{
-                    fontFamily: "'DM Sans', sans-serif",
+                    fontFamily: "var(--font-sans, 'DM Sans'), sans-serif",
                     color: '#888888',
                     background: 'none',
                     border: 'none',
@@ -388,7 +384,7 @@ function LoginForm() {
           {/* Footer */}
           <p className="text-center mt-8 text-sm"
             style={{
-              fontFamily: "'DM Sans', sans-serif",
+              fontFamily: "var(--font-sans, 'DM Sans'), sans-serif",
               color: '#888888',
               animation: 'fadeUp 0.8s ease 0.3s both',
             }}>
@@ -402,18 +398,6 @@ function LoginForm() {
         </div>
       </div>
 
-      <style jsx>{`
-        @keyframes fadeUp {
-          from {
-            opacity: 0;
-            transform: translateY(12px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-      `}</style>
     </>
   );
 }
