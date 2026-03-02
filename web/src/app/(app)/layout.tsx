@@ -63,10 +63,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <>
-      <style jsx global>{`
-        @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@400;500&display=swap');
-      `}</style>
-
       <div className="min-h-screen" style={{ background: '#0a0a0a' }}>
 
         {/* Top navigation bar */}

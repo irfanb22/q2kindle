@@ -524,21 +524,6 @@ export default function DashboardPage() {
         </div>
       )}
 
-      <style jsx>{`
-        @keyframes fadeUp {
-          from { opacity: 0; transform: translateY(12px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes shimmer {
-          0% { background-position: -200px 0; }
-          100% { background-position: 200px 0; }
-        }
-        .shimmer {
-          background: linear-gradient(90deg, #1a1a1a 25%, #262626 50%, #1a1a1a 75%);
-          background-size: 400px 100%;
-          animation: shimmer 1.5s infinite ease-in-out;
-        }
-      `}</style>
     </div>
   );
 }
