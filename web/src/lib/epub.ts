@@ -42,48 +42,11 @@ function formatDate(dateStr: string): string {
   }
 }
 
-function buildCoverHtml(options: {
-  issueNumber: number | null;
-  date: string;
-  articleCount: number;
-  totalReadTime: number;
-}): string {
-  const { issueNumber, date, articleCount, totalReadTime } = options;
-
-  const formattedDate = new Date(date).toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
-
-  const issueLine = issueNumber
-    ? `<h1 class="issue">Issue #${issueNumber}</h1>`
-    : "";
-
-  return `<div class="cover">
-  <p class="brand">q2kindle</p>
-  ${issueLine}
-  <p class="date">${escapeHtml(formattedDate)}</p>
-  <div class="divider"></div>
-  <div class="stats">
-    <p>${articleCount} article${articleCount !== 1 ? "s" : ""}</p>
-    <p>~${totalReadTime} min total read time</p>
-  </div>
-</div>`;
-}
-
 function buildCss(): string {
   return `body { line-height: 1.7; margin: 1em; color: #1a1a1a; }
 h1 { font-size: 1.35em; margin: 0 0 0.3em; }
 .meta { color: #666; font-size: 0.82em; margin-bottom: 1.8em; }
-p { margin: 0 0 0.75em; text-indent: 0; }
-.cover { text-align: center; padding: 3em 1em; }
-.cover .brand { font-size: 0.8em; text-transform: uppercase; letter-spacing: 0.2em; color: #999; margin-bottom: 2em; }
-.cover .issue { font-size: 1.8em; margin: 0 0 0.2em; }
-.cover .date { font-size: 0.95em; color: #555; margin-bottom: 1.5em; }
-.cover .divider { width: 40px; height: 1px; background: #ccc; margin: 0 auto 1.5em; }
-.cover .stats { font-size: 0.85em; color: #777; }
-.cover .stats p { margin: 0.2em 0; }`;
+p { margin: 0 0 0.75em; text-indent: 0; }`;
 }
 
 export type EpubArticle = {
@@ -108,20 +71,6 @@ export async function generateKindleEpub(options: {
     (sum, a) => sum + (a.read_time_minutes || 0),
     0
   );
-
-  // Build cover page chapter — beforeToc places it before the auto-generated TOC
-  const coverChapter = {
-    title: "Cover",
-    content: buildCoverHtml({
-      issueNumber,
-      date: dateStr,
-      articleCount: articles.length,
-      totalReadTime,
-    }),
-    filename: "cover.xhtml",
-    beforeToc: true,
-    excludeFromToc: true,
-  };
 
   // Build article chapters
   const articleChapters = articles.map((article, i) => {
@@ -165,7 +114,6 @@ export async function generateKindleEpub(options: {
     };
   });
 
-  const chapters = [coverChapter, ...articleChapters];
   const title = `q2kindle - ${dateStr}`;
 
   // Generate cover image for Kindle library thumbnail
@@ -191,7 +139,7 @@ export async function generateKindleEpub(options: {
       fetchTimeout: 10000,
       verbose: false,
     },
-    chapters
+    articleChapters
   );
 
   let buffer: Buffer;
