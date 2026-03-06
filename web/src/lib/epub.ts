@@ -1,4 +1,5 @@
 import type { EpubPreferences } from "./types";
+import { generateCoverImage } from "./cover-image";
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const epubModule = require("epub-gen-memory");
@@ -167,10 +168,24 @@ export async function generateKindleEpub(options: {
   const chapters = [coverChapter, ...articleChapters];
   const title = `q2kindle - ${dateStr}`;
 
+  // Generate cover image for Kindle library thumbnail
+  const coverImageBuffer = await generateCoverImage({
+    issueNumber,
+    date: dateStr,
+    articleCount: articles.length,
+    totalReadTime,
+  });
+  const coverFile = new File(
+    [new Uint8Array(coverImageBuffer)],
+    "cover.png",
+    { type: "image/png" }
+  );
+
   const rawResult = await generateEpub(
     {
       title,
       author: "q2kindle",
+      cover: coverFile,
       css: buildCss(),
       ignoreFailedDownloads: true,
       fetchTimeout: 10000,
