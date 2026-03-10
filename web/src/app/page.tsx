@@ -1,101 +1,124 @@
+"use client";
+
+import { useEffect } from "react";
 import Link from "next/link";
-import { LandingAnimations } from "./landing-animations";
 import "./landing.css";
 
 export default function LandingPage() {
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("in-view");
+          }
+        });
+      },
+      { threshold: 0.12, rootMargin: "0px 0px -40px 0px" }
+    );
+
+    document.querySelectorAll("[data-reveal]").forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <>
-      <LandingAnimations />
-
       {/* NAV */}
-      <nav className="landing-nav">
+      <nav className="nav">
         <Link href="/" className="nav-logo">q2kindle</Link>
-        <div className="nav-right">
-          <Link href="/login" className="nav-login">Log in</Link>
-          <Link href="/signup" className="nav-cta">Send your first article</Link>
+        <div className="nav-links">
+          <Link href="/login" className="nav-link">Log in</Link>
+          <Link href="/login" className="nav-cta">Get started</Link>
         </div>
       </nav>
 
       {/* HERO */}
       <section className="hero">
-        <div className="hero-inner">
-          <h1>Your articles,<br />delivered to<br />your <em>Kindle.</em></h1>
+        <div className="hero-ornament" />
+        <div className="hero-content">
+          <p className="hero-label">A reading companion for your <span className="hero-label-kindle">Kindle</span></p>
+          <h1>Articles deserve<br />a quieter place<br />to be <em>read.</em></h1>
           <p className="hero-sub">
-            Queue articles. We compile them into a beautiful ebook and deliver it to your Kindle — on your schedule.
+            Queue the articles you find. We compile them into a beautiful ebook and deliver it straight to your <strong style={{fontWeight: 600, color: 'var(--color-text)'}}>Kindle</strong>.
           </p>
-          <div className="hero-cta-row">
-            <Link href="/signup" className="btn-primary">Send your first article</Link>
-            <a href="#features" className="btn-ghost">See how it works ↓</a>
+          <div className="hero-actions">
+            <Link href="/login" className="btn-primary">Send your first article</Link>
+            <a href="#features" className="btn-text">See how it works</a>
           </div>
-          <p className="hero-note">Free forever · Works with any Kindle · 30-second setup</p>
+          <p className="hero-proof">Free forever<span>&middot;</span>Any Kindle device<span>&middot;</span>30-second setup</p>
         </div>
       </section>
 
       {/* FEATURES */}
       <section className="features" id="features">
-        <div className="features-header">
-          <h2>Three steps to distraction-free reading</h2>
-          <p>Your articles, beautifully formatted on your Kindle.</p>
+        <div data-reveal>
+          <div className="features-divider">
+            <div className="divider-line" />
+            <div className="divider-diamond" />
+            <div className="divider-line" />
+          </div>
+          <h2 className="section-heading">Three steps to distraction-free reading</h2>
+          <p className="section-sub">No apps to install, no accounts to sync. Just your articles, beautifully set on your Kindle.</p>
         </div>
 
-        {/* Feature 1: Queue */}
+        {/* Feature 1 */}
         <div className="feature-row">
-          <div className="feature-text" data-animate>
-            <div className="step-number">1</div>
-            <h3>Queue articles from anywhere</h3>
-            <p>Found a great longread? Paste the URL. We extract the title, author, and content. It joins your queue.</p>
+          <div data-reveal>
+            <div className="feature-num">01</div>
+            <h3 className="feature-title">Queue articles from anywhere</h3>
+            <p className="feature-desc">Found something worth reading later? Paste the URL. We extract the title, author, and full text. It joins your personal queue.</p>
           </div>
-          <div className="feature-visual" data-animate>
-            <div className="queue-card">
-              <div className="queue-item">
-                <div className="queue-dot"></div>
-                <div className="queue-item-lines">
-                  <div className="queue-line-title" style={{width: '88%'}}></div>
-                  <div className="queue-line-meta" style={{width: '50%'}}></div>
+          <div data-reveal="d1">
+            <div className="v-card">
+              <div className="q-item">
+                <div className="q-marker" />
+                <div className="q-lines">
+                  <div className="q-title-line" style={{width: '88%'}} />
+                  <div className="q-meta-line" style={{width: '50%'}} />
                 </div>
               </div>
-              <div className="queue-item">
-                <div className="queue-dot"></div>
-                <div className="queue-item-lines">
-                  <div className="queue-line-title" style={{width: '72%'}}></div>
-                  <div className="queue-line-meta" style={{width: '42%'}}></div>
+              <div className="q-item">
+                <div className="q-marker" />
+                <div className="q-lines">
+                  <div className="q-title-line" style={{width: '72%'}} />
+                  <div className="q-meta-line" style={{width: '42%'}} />
                 </div>
               </div>
-              <div className="queue-item">
-                <div className="queue-dot"></div>
-                <div className="queue-item-lines">
-                  <div className="queue-line-title" style={{width: '82%'}}></div>
-                  <div className="queue-line-meta" style={{width: '58%'}}></div>
+              <div className="q-item">
+                <div className="q-marker" />
+                <div className="q-lines">
+                  <div className="q-title-line" style={{width: '82%'}} />
+                  <div className="q-meta-line" style={{width: '56%'}} />
                 </div>
               </div>
-              <div className="queue-item">
-                <div className="queue-dot" style={{opacity: 0.4}}></div>
-                <div className="queue-item-lines">
-                  <div className="queue-line-title" style={{width: '65%', opacity: 0.5}}></div>
-                  <div className="queue-line-meta" style={{width: '38%', opacity: 0.5}}></div>
+              <div className="q-item">
+                <div className="q-marker" style={{opacity: 0.3}} />
+                <div className="q-lines">
+                  <div className="q-title-line" style={{width: '64%', opacity: 0.45}} />
+                  <div className="q-meta-line" style={{width: '36%', opacity: 0.45}} />
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Feature 2: Ebook — flipped */}
-        <div className="feature-row flipped">
-          <div className="feature-text" data-animate>
-            <div className="step-number">2</div>
-            <h3>We build your ebook</h3>
-            <p>Your articles become a formatted ebook — cover page, table of contents, clean typography. A real book, not a web page.</p>
+        {/* Feature 2 — flipped */}
+        <div className="feature-row flip">
+          <div data-reveal>
+            <div className="feature-num">02</div>
+            <h3 className="feature-title">We craft your ebook</h3>
+            <p className="feature-desc">Your queue becomes a properly bound ebook — cover page, table of contents, clean typography. A real book, not a web clipping.</p>
           </div>
-          <div className="feature-visual" data-animate>
-            <div className="kindle-visual-wrap">
-              <div className="kindle-glow"></div>
-              <div className="kindle-device">
+          <div data-reveal="d1">
+            <div className="kindle-wrap">
+              <div className="kindle-shadow" />
+              <div className="kindle-frame">
                 <div className="kindle-screen">
-                  <div className="k-brand">q2kindle</div>
-                  <div className="k-issue-num">Issue #14</div>
-                  <div className="k-date">February 21, 2026</div>
-                  <div className="k-sep"></div>
-                  <ul className="k-toc">
+                  <div className="ks-brand">q2kindle</div>
+                  <div className="ks-issue">Issue #14</div>
+                  <div className="ks-date">February 21, 2026</div>
+                  <div className="ks-rule" />
+                  <ul className="ks-toc">
                     <li>The Arc of the Practical Creator <span>12 min</span></li>
                     <li>Why We Can&apos;t Have Nice Software <span>8 min</span></li>
                     <li>Reflections on a Year of Building <span>6 min</span></li>
@@ -107,36 +130,36 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* Feature 3: Schedule */}
+        {/* Feature 3 */}
         <div className="feature-row">
-          <div className="feature-text" data-animate>
-            <div className="step-number">3</div>
-            <h3>Set your schedule.<br />We handle the rest.</h3>
-            <p>Pick your days and time. q2kindle bundles your queue and delivers it — no button to press, nothing to remember.</p>
+          <div data-reveal>
+            <div className="feature-num">03</div>
+            <h3 className="feature-title">Set your next<br />reading session.</h3>
+            <p className="feature-desc">Pick your days and time. We bundle your queue into a fresh ebook and deliver it to your Kindle — nothing to press, nothing to remember.</p>
           </div>
-          <div className="feature-visual" data-animate>
-            <div className="schedule-card">
-              <div className="sc-label">Delivery schedule</div>
-              <div className="sc-days">
-                <div className="sc-pill on">M</div>
-                <div className="sc-pill">T</div>
-                <div className="sc-pill">W</div>
-                <div className="sc-pill on">T</div>
-                <div className="sc-pill">F</div>
-                <div className="sc-pill on">S</div>
-                <div className="sc-pill">S</div>
+          <div data-reveal="d1">
+            <div className="v-card">
+              <div className="sched-label">Delivery schedule</div>
+              <div className="sched-days">
+                <div className="sched-pill active">M</div>
+                <div className="sched-pill">T</div>
+                <div className="sched-pill">W</div>
+                <div className="sched-pill active">T</div>
+                <div className="sched-pill">F</div>
+                <div className="sched-pill active">S</div>
+                <div className="sched-pill">S</div>
               </div>
-              <div className="sc-row">
-                <div className="sc-row-label">Delivery time</div>
-                <div className="sc-row-value">7:00 AM</div>
+              <div className="sched-row">
+                <div className="sched-row-label">Delivery time</div>
+                <div className="sched-row-val">7:00 AM</div>
               </div>
-              <div className="sc-row">
-                <div className="sc-row-label">Minimum articles</div>
-                <div className="sc-row-value">3</div>
+              <div className="sched-row">
+                <div className="sched-row-label">Minimum articles</div>
+                <div className="sched-row-val">3</div>
               </div>
-              <div className="sc-row">
-                <div className="sc-row-label">Timezone</div>
-                <div className="sc-row-value">America/New_York</div>
+              <div className="sched-row">
+                <div className="sched-row-label">Timezone</div>
+                <div className="sched-row-val">America / New York</div>
               </div>
             </div>
           </div>
@@ -145,17 +168,17 @@ export default function LandingPage() {
 
       {/* BOTTOM CTA */}
       <section className="bottom-cta">
-        <div className="bottom-inner">
+        <div className="bottom-inner" data-reveal>
           <h2>Stop saving.<br />Start <em>reading.</em></h2>
           <p className="bottom-sub">Your articles deserve better than a browser tab.</p>
-          <Link href="/signup" className="btn-primary">Send your first article</Link>
-          <p className="bottom-fine">Free forever · Works with any Kindle · 30-second setup</p>
+          <Link href="/login" className="btn-primary">Send your first article</Link>
+          <p className="bottom-fine">Free forever &middot; Any Kindle device &middot; 30-second setup</p>
         </div>
       </section>
 
       {/* FOOTER */}
       <footer className="landing-footer">
-        <p>q2kindle — Queue articles. Get a beautiful ebook. Read distraction-free.</p>
+        <p>q2kindle &mdash; Queue articles. Get a beautiful ebook. Read distraction-free.</p>
       </footer>
     </>
   );
