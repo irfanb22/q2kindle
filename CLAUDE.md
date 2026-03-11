@@ -237,6 +237,7 @@ All files live under `web/`:
 | `web/src/app/api/settings/route.ts` | Settings API — GET (load settings) / POST (upsert Kindle email + delivery + EPUB prefs) |
 | `web/src/lib/email.ts` | Shared email sending — `sendToKindle()` via Brevo SMTP + Nodemailer, `KINDLE_SENDER` constant |
 | `web/src/lib/epub.ts` | Shared EPUB generation — `generateKindleEpub()`, cover page, image stripping, CSS builder |
+| `web/src/lib/cover-image.ts` | Dynamic cover image — satori + @resvg/resvg-js, generates 1600×2400 PNG with branding, date, volume/issue, stats |
 | `web/src/lib/send-limits.ts` | Daily send limit — `DAILY_SEND_LIMIT` constant, `getDailySendCount()`, `getStartOfDayUtc()` timezone helper |
 | `web/src/lib/types.ts` | Shared TypeScript types (Article, Settings, SendHistory, EpubPreferences) used across pages |
 | `web/supabase/migrations/001_create_tables.sql` | Database schema — articles, send_history, settings tables + RLS policies |
@@ -409,7 +410,7 @@ SUPABASE_SERVICE_ROLE_KEY=<service role key from Supabase dashboard>
 - ✅ **EPUB cover page ordering** — cover chapter uses `beforeToc: true` + `excludeFromToc: true` so it appears before the auto-generated TOC in reading order.
 - ✅ **Hourly delivery time picker** — replaced free-form `<input type="time">` with `<select>` of hourly slots (12 AM–11 PM), since pg_cron runs hourly. Normalizes existing minute-based values on load.
 - ✅ **Custom domain** — `q2kindle.com` configured via Squarespace DNS + Netlify + Supabase auth URL updates
-- ⬜ **Dynamic cover image for Kindle library** — Kindle's library grid needs an actual image file (not just an HTML chapter) registered in EPUB metadata via `<meta name="cover"/>`. `epub-gen-memory` supports a `cover` option (URL or File) that handles this. Current HTML cover page renders when reading but doesn't appear in the Kindle library view. Need to dynamically generate a cover image (using @vercel/og, sharp+canvas, or SVG-to-PNG) matching the current cover design (brand, issue number, date, article count) and pass it to `generateEpub()`. Instapaper does this — their cover shows in the library.
+- ✅ **Dynamic cover image for Kindle library** — satori (React-to-SVG) + @resvg/resvg-js (SVG-to-PNG) generates a 1600×2400 cover image at send time. Shows "Q2KINDLE" branding, date, volume/issue, article count, and read time. Passed as `File` to `epub-gen-memory`'s `cover` option. Replaces the old HTML-only cover chapter. `web/src/lib/cover-image.ts`.
 - ⬜ Mobile responsive design — breakpoints for phone/tablet, responsive Kindle mockup
 - ⬜ Loading states and error handling improvements across all pages
 - ⬜ PWA manifest, service worker, app icons
@@ -537,7 +538,7 @@ SUPABASE_SERVICE_ROLE_KEY=<service role key from Supabase dashboard>
 | 2026-02-18 | Inline expandable history (not separate detail page) | Data is lightweight (just titles and URLs). Expanding in-place is more natural UX than navigating to a separate page. |
 | 2026-02-18 | EPUB cover uses `beforeToc: true` | `epub-gen-memory` auto-generates a TOC page. Without `beforeToc`, cover was placed after TOC. Spine order: beforeToc chapters → TOC → regular chapters. |
 | 2026-02-18 | Hourly delivery time picker (not free-form) | pg_cron runs every hour (`'0 * * * *'`), cron route matches by hour only. Free-form minute input was misleading — users could set 7:30 PM but cron only fires at 7:00 PM. Replaced with `<select>` dropdown of hourly slots. |
-| 2026-02-18 | Dynamic cover image for Kindle library (TODO) | Kindle library grid shows cover image from EPUB metadata (`<meta name="cover"/>`), not from HTML chapters. `epub-gen-memory` supports `cover` option (URL or File). Need to generate image server-side matching current cover design. Deferred for later implementation. |
+| 2026-02-18 | Dynamic cover image for Kindle library | Implemented with satori + @resvg/resvg-js. Generates 1600×2400 PNG at send time with branding, date, volume/issue, stats. Passed to `epub-gen-memory` `cover` option. Fonts loaded from Google Fonts (DM Sans TTF). `web/src/lib/cover-image.ts`. |
 | 2026-02-18 | Custom domain `q2kindle.com` (Squarespace) | Bought `.com` over `.app` — cheaper ($14 vs $20), more universally recognized, HTTPS-only benefit of `.app` is moot with Netlify auto-SSL. DNS: A record + www CNAME → Netlify. Supabase auth URLs updated. |
 | 2026-02-19 | Resend custom domain `q2kindle.com` (replaces shared `onboarding@resend.dev`) | Shared Resend domain only delivers to verified email addresses — blocked new user sign-ups. Custom domain with DKIM + SPF DNS records allows sending to any recipient. Sender updated to `team@q2kindle.com`. |
 | 2026-02-21 | Amazon SES for Kindle delivery (replaces user-provided Gmail SMTP) | Storing user Gmail app passwords was a security risk and trust barrier. SES sends from `kindle@q2kindle.com` — users only provide Kindle email. SES scales to thousands/day at $0.10/1000 vs Resend's 100/day free cap. Nodemailer kept with SES transport for minimal code change. Resend stays for Supabase auth emails. |
