@@ -264,6 +264,20 @@ npm run dev
 
 Opens at `http://localhost:3000`. Requires Node.js (installed via nvm, v24 LTS).
 
+## Local dev environment variables
+
+`web/.env.local` is gitignored. It must contain:
+
+```
+NEXT_PUBLIC_SUPABASE_URL=https://scxkmenczzxpwustppee.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon key from Supabase dashboard>
+BREVO_SMTP_LOGIN=a364d9001@smtp-brevo.com
+BREVO_SMTP_KEY=<must match the BREVO_SMTP_KEY value in Netlify env vars>
+SUPABASE_SERVICE_ROLE_KEY=<service role key from Supabase dashboard>
+```
+
+**SMTP gotcha**: If local email sending fails with `535 5.7.8 Authentication failed`, the `BREVO_SMTP_KEY` in `.env.local` is stale. The key gets regenerated in Brevo and only Netlify gets updated. Fix: copy the current value from Netlify → Site configuration → Environment variables → `BREVO_SMTP_KEY` into `.env.local`, then restart `npm run dev`.
+
 ## V2 Build phases
 
 | Phase | Description | Status |
@@ -406,7 +420,9 @@ Opens at `http://localhost:3000`. Requires Node.js (installed via nvm, v24 LTS).
 - ✅ **Daily send limit (10/day per user)** — Protects SES costs and prevents abuse. Each "send" = one email (all queued articles bundled into one EPUB). Both manual and scheduled/cron sends count. Test emails do NOT count. No database migration needed — counts successful sends from `send_history` table. Shared `send-limits.ts` module with `DAILY_SEND_LIMIT` constant, timezone-aware `getDailySendCount()`. Manual send returns HTTP 429 at limit; cron skips silently. Settings page shows usage card with progress bar (green/red). Dashboard shows usage text below send button, disables button at limit.
 - ✅ **Privacy policy page** — `/privacy` route with 7 content sections (dark editorial design, server component). Added to middleware public routes. Link in login page footer.
 - ⬜ **Test email feedback position** — success/failure message appears at bottom of settings page, should be near the test send button so users can see the result without scrolling
-- ⬜ **Visual refresh merge** — The light gray (#f4f4f4) + forest green (#2d5f2d) palette with Newsreader + Source Serif 4 fonts was built on a branch but not yet merged to main. Main still has the dark theme (#0a0a0a). The visual refresh branch needs to be rebased onto current main (which includes the settings page fix and deployment fixes) and merged. Previous merge attempts caused deployment issues due to rapid force-pushes — merge carefully with a single clean push.
+- ✅ **Visual refresh merge** — Light gray (#f4f4f4) + forest green (#2d5f2d) palette with Newsreader + Source Serif 4 fonts. Ported file-by-file to a clean branch (`q2kindle/visual-refresh-clean`) from current main, removing all styled-jsx. Merged via PR and deployed to production 2026-03-10.
+- ⬜ **UI refinements and new design** — Follow-up polish pass on the visual refresh. Exact scope TBD.
+- ⬜ **OTP code entry form on login page** — When a user clicks the magic link in a different browser than where they initiated login, Supabase redirects fail. Need a fallback 6-digit OTP code input form on the login page so users can manually enter the code they receive. Supabase supports both link-click and OTP flows from the same `signInWithOtp()` call — just needs a second step UI (`supabase.auth.verifyOtp({ email, token, type: 'email' })`).
 
 ## V2 Pages (planned)
 
