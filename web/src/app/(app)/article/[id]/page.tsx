@@ -39,7 +39,7 @@ export default function ArticlePreviewPage() {
     async function loadArticle() {
       const { data, error: fetchError } = await supabase
         .from("articles")
-        .select("id, url, title, author, description, content, read_time_minutes, published_at, status, created_at, sent_at")
+        .select("id, url, title, author, description, content, read_time_minutes, image, published_at, status, created_at, sent_at")
         .eq("id", id)
         .single();
 
@@ -103,8 +103,9 @@ export default function ArticlePreviewPage() {
         <div className="flex flex-col items-center">
           <div
             style={{
-              width: 420,
-              height: 620,
+              width: "100%",
+              maxWidth: 420,
+              aspectRatio: "420 / 620",
               background: "#4a453e",
               borderRadius: 24,
               padding: "28px 24px 40px",
