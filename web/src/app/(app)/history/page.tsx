@@ -163,7 +163,7 @@ export default function HistoryPage() {
               <div key={entry.id}>
                 {/* Summary row */}
                 <div
-                  className={`flex items-center justify-between border px-5 py-4 transition-colors duration-150 ${hasArticleData ? "cursor-pointer" : ""}`}
+                  className={`flex items-center justify-between border px-3 sm:px-5 py-3 sm:py-4 transition-colors duration-150 ${hasArticleData ? "cursor-pointer" : ""}`}
                   style={{
                     borderColor: isExpanded ? "var(--color-border)" : "var(--color-border-light)",
                     background: "var(--color-surface)",
@@ -177,7 +177,7 @@ export default function HistoryPage() {
                     (e.currentTarget.style.background = "var(--color-surface)")
                   }
                 >
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-3 sm:gap-4 min-w-0">
                     {/* Status icon */}
                     <div
                       className="flex items-center justify-center w-9 h-9 rounded-full shrink-0"
@@ -211,7 +211,7 @@ export default function HistoryPage() {
                     </div>
 
                     {/* Details */}
-                    <div>
+                    <div className="min-w-0">
                       <p
                         className="text-sm"
                         style={{
@@ -226,10 +226,16 @@ export default function HistoryPage() {
                       </p>
                       {entry.error_message && (
                         <p
-                          className="text-xs mt-0.5 max-w-md truncate"
+                          className="text-xs mt-0.5"
                           style={{
                             fontFamily: "var(--font-body)",
                             color: "var(--color-danger)",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            display: "-webkit-box",
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: "vertical",
+                            wordBreak: "break-word",
                           }}
                         >
                           {entry.error_message}
@@ -239,9 +245,9 @@ export default function HistoryPage() {
                   </div>
 
                   {/* Timestamp + chevron */}
-                  <div className="flex items-center gap-3 shrink-0">
+                  <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                     <span
-                      className="text-xs"
+                      className="hidden sm:inline text-xs"
                       style={{
                         fontFamily: "var(--font-body)",
                         color: "var(--color-text-dim)",
@@ -276,7 +282,7 @@ export default function HistoryPage() {
                 {/* Expanded article list */}
                 {isExpanded && entry.articles_data && (
                   <div
-                    className="border border-t-0 px-5 py-3"
+                    className="border border-t-0 px-3 sm:px-5 py-3"
                     style={{
                       borderColor: "var(--color-border)",
                       background: "var(--color-surface-inset)",

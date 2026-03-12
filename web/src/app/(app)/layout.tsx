@@ -70,9 +70,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         backdropFilter: 'blur(20px) saturate(1.3)',
         WebkitBackdropFilter: 'blur(20px) saturate(1.3)',
       }}>
-        <div className="max-w-4xl mx-auto px-6 h-14 flex items-center justify-between">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
 
-          {/* Left: logo + nav */}
+          {/* Left: logo + nav (nav hidden on mobile) */}
           <div className="flex items-center gap-8">
             <span
               className="text-lg cursor-pointer"
@@ -82,7 +82,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               q2kindle
             </span>
 
-            <nav className="flex items-center gap-1">
+            {/* Desktop nav — hidden on mobile */}
+            <nav className="hidden sm:flex items-center gap-1">
               {NAV_ITEMS.map((item) => {
                 const active = item.href === "/dashboard"
                   ? pathname === "/dashboard"
@@ -114,10 +115,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </nav>
           </div>
 
-          {/* Right: user + sign out */}
+          {/* Right: user (desktop only) + sign out */}
           <div className="flex items-center gap-4">
             {userEmail && (
-              <span className="text-xs" style={{ fontFamily: 'var(--font-body)', color: 'var(--color-text-dim)' }}>
+              <span className="hidden sm:inline text-xs" style={{ fontFamily: 'var(--font-body)', color: 'var(--color-text-dim)' }}>
                 {userEmail}
               </span>
             )}
@@ -145,10 +146,46 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       </header>
 
-      {/* Page content */}
-      <main className={`${pathname.startsWith('/article/') ? 'max-w-6xl' : 'max-w-4xl'} mx-auto px-6 py-10`}>
+      {/* Page content — extra bottom padding on mobile for fixed tab bar */}
+      <main className={`${pathname.startsWith('/article/') ? 'max-w-6xl' : 'max-w-4xl'} mx-auto px-4 sm:px-6 py-6 sm:py-10 pb-20 sm:pb-10`}>
         {children}
       </main>
+
+      {/* Mobile bottom tab bar — visible only on small screens */}
+      <nav
+        className="fixed bottom-0 left-0 right-0 sm:hidden border-t flex items-center justify-around"
+        style={{
+          borderColor: 'var(--color-border-light)',
+          background: 'rgba(244,244,244,0.92)',
+          backdropFilter: 'blur(20px) saturate(1.3)',
+          WebkitBackdropFilter: 'blur(20px) saturate(1.3)',
+          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+          height: 'calc(56px + env(safe-area-inset-bottom, 0px))',
+        }}
+      >
+        {NAV_ITEMS.map((item) => {
+          const active = item.href === "/dashboard"
+            ? pathname === "/dashboard"
+            : pathname.startsWith(item.href);
+
+          return (
+            <button
+              key={item.href}
+              onClick={() => router.push(item.href)}
+              className="flex flex-col items-center justify-center gap-0.5 flex-1 pt-2 cursor-pointer"
+              style={{
+                fontFamily: 'var(--font-body)',
+                color: active ? 'var(--color-accent)' : 'var(--color-text-muted)',
+                background: 'transparent',
+                border: 'none',
+              }}
+            >
+              <NavIcon icon={item.icon} active={active} />
+              <span className="text-[10px] font-medium">{item.label}</span>
+            </button>
+          );
+        })}
+      </nav>
     </div>
   );
 }

@@ -233,7 +233,7 @@ export default function DashboardPage() {
 
       {/* URL input */}
       <form onSubmit={handleAddUrl} className="mb-10">
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-3">
           <input
             type="text"
             value={url}
@@ -321,34 +321,40 @@ export default function DashboardPage() {
         </div>
       ) : (
         <div>
-          <div className="space-y-2" style={{ animation: 'fadeUp 0.6s ease 0.1s both' }}>
+          <div className="divide-y" style={{ animation: 'fadeUp 0.6s ease 0.1s both', borderColor: 'var(--color-border-light)' }}>
             {articles.map((article) => {
               const isExtracting = extractingIds.has(article.id);
               const hasFailed = !isExtracting && !article.content;
-              const authorDisplay = article.author || extractDomain(article.url);
+              const domain = extractDomain(article.url);
 
               return (
                 <div
                   key={article.id}
-                  className="flex items-center justify-between rounded-xl border px-5 py-4 transition-colors duration-150"
-                  style={{
-                    borderColor: 'var(--color-border-light)',
-                    background: 'var(--color-surface)',
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-surface-hover)'}
-                  onMouseLeave={(e) => e.currentTarget.style.background = 'var(--color-surface)'}
+                  className="py-4 first:pt-0 transition-colors duration-150"
+                  style={{ borderColor: 'var(--color-border-light)' }}
                 >
-                  <div className="min-w-0 flex-1 mr-4">
-                    {/* Title */}
-                    {isExtracting ? (
-                      <div className="shimmer rounded" style={{ height: '16px', width: '60%', marginBottom: '8px' }} />
-                    ) : (
+                  {isExtracting ? (
+                    /* Shimmer loading state */
+                    <div>
+                      <div className="shimmer rounded" style={{ height: '16px', width: '75%', marginBottom: '8px' }} />
+                      <div className="shimmer rounded" style={{ height: '12px', width: '100%', marginBottom: '6px' }} />
+                      <div className="shimmer rounded" style={{ height: '12px', width: '55%', marginBottom: '10px' }} />
+                      <div className="shimmer rounded" style={{ height: '10px', width: '30%' }} />
+                    </div>
+                  ) : (
+                    <div>
+                      {/* Title */}
                       <a
                         href={article.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-sm truncate block transition-colors duration-150"
-                        style={{ fontFamily: "var(--font-body)", color: 'var(--color-text)', fontWeight: 500, textDecoration: 'none' }}
+                        className="text-sm leading-snug block transition-colors duration-150"
+                        style={{
+                          fontFamily: "var(--font-body)",
+                          color: 'var(--color-text)',
+                          fontWeight: 500,
+                          textDecoration: 'none',
+                        }}
                         onMouseEnter={(e) => {
                           e.currentTarget.style.color = 'var(--color-accent)';
                           e.currentTarget.style.textDecoration = 'underline';
@@ -359,89 +365,94 @@ export default function DashboardPage() {
                         }}
                         onClick={(e) => e.stopPropagation()}
                       >
-                        {article.title || extractDomain(article.url)}
+                        {article.title || domain}
                       </a>
-                    )}
 
-                    {/* Author + Read time */}
-                    {isExtracting ? (
-                      <div className="shimmer rounded" style={{ height: '12px', width: '35%', marginTop: '4px' }} />
-                    ) : (
-                      <p className="text-xs mt-1 flex items-center gap-1.5"
-                        style={{ fontFamily: "var(--font-body)", color: 'var(--color-text-muted)' }}>
-                        <span className="truncate">{authorDisplay}</span>
-                        {article.read_time_minutes && (
-                          <>
-                            <span style={{ color: 'var(--color-text-dim)' }}>·</span>
-                            <span className="shrink-0 inline-flex items-center gap-1">
-                              <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-                                <circle cx="8" cy="8" r="6.5" stroke="var(--color-text-muted)" strokeWidth="1"/>
-                                <path d="M8 5v3.5l2.5 1.5" stroke="var(--color-text-muted)" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"/>
-                              </svg>
-                              {article.read_time_minutes} min
-                            </span>
-                          </>
-                        )}
-                      </p>
-                    )}
+                      {/* Description */}
+                      {article.description && (
+                        <p
+                          className="text-xs mt-1 leading-relaxed"
+                          style={{
+                            fontFamily: "var(--font-body)",
+                            color: 'var(--color-text-muted)',
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden',
+                          }}
+                        >
+                          {article.description}
+                        </p>
+                      )}
 
-                    {/* Warning for failed extraction */}
-                    {hasFailed && (
-                      <p className="text-xs mt-1 flex items-center gap-1"
-                        style={{ fontFamily: "var(--font-body)", color: 'var(--color-warning)' }}>
-                        <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
-                          <path d="M8 1.5L1 14h14L8 1.5z" stroke="var(--color-warning)" strokeWidth="1.2" strokeLinejoin="round"/>
-                          <path d="M8 6.5v3M8 11.5v.5" stroke="var(--color-warning)" strokeWidth="1.2" strokeLinecap="round"/>
-                        </svg>
-                        Content could not be extracted
-                      </p>
-                    )}
-                  </div>
+                      {/* Footer: domain · read time + action buttons */}
+                      <div className="flex items-center justify-between mt-2">
+                        <p className="text-xs flex items-center gap-1.5"
+                          style={{ fontFamily: "var(--font-body)", color: 'var(--color-text-dim)' }}>
+                          <span>{domain}</span>
+                          {article.read_time_minutes && (
+                            <>
+                              <span>·</span>
+                              <span>{article.read_time_minutes} min</span>
+                            </>
+                          )}
+                        </p>
 
-                  <div className="flex items-center gap-4 shrink-0">
-                    {!isExtracting && (
-                      <button
-                        onClick={() => router.push(`/article/${article.id}`)}
-                        className="p-1.5 rounded-lg transition-colors duration-150 cursor-pointer"
-                        style={{ color: 'var(--color-text-muted)' }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.color = 'var(--color-accent)';
-                          e.currentTarget.style.background = 'var(--color-accent-pale)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.color = 'var(--color-text-muted)';
-                          e.currentTarget.style.background = 'transparent';
-                        }}
-                        title="Preview article"
-                      >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                          <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.5"/>
-                        </svg>
-                      </button>
-                    )}
-                    <span className="text-xs" style={{ fontFamily: "var(--font-body)", color: 'var(--color-text-dim)' }}>
-                      {timeAgo(article.created_at)}
-                    </span>
-                    <button
-                      onClick={() => handleRemove(article.id)}
-                      className="p-1.5 rounded-lg transition-colors duration-150 cursor-pointer"
-                      style={{ color: 'var(--color-text-dim)' }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.color = 'var(--color-danger)';
-                        e.currentTarget.style.background = 'var(--color-danger-pale)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.color = 'var(--color-text-dim)';
-                        e.currentTarget.style.background = 'transparent';
-                      }}
-                      title="Remove from queue"
-                    >
-                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                        <path d="M4.5 4.5l7 7M11.5 4.5l-7 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                      </svg>
-                    </button>
-                  </div>
+                        {/* Action buttons */}
+                        <div className="flex items-center gap-1 shrink-0">
+                          <button
+                            onClick={() => router.push(`/article/${article.id}`)}
+                            className="p-1.5 rounded-lg transition-colors duration-150 cursor-pointer"
+                            style={{ color: 'var(--color-text-dim)' }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.color = 'var(--color-accent)';
+                              e.currentTarget.style.background = 'var(--color-accent-pale)';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.color = 'var(--color-text-dim)';
+                              e.currentTarget.style.background = 'transparent';
+                            }}
+                            title="Preview article"
+                          >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                              <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.5"/>
+                            </svg>
+                          </button>
+                          <button
+                            onClick={() => handleRemove(article.id)}
+                            className="p-1.5 rounded-lg transition-colors duration-150 cursor-pointer"
+                            style={{ color: 'var(--color-text-dim)' }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.color = 'var(--color-danger)';
+                              e.currentTarget.style.background = 'var(--color-danger-pale)';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.color = 'var(--color-text-dim)';
+                              e.currentTarget.style.background = 'transparent';
+                            }}
+                            title="Remove from queue"
+                          >
+                            <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                              <path d="M4.5 4.5l7 7M11.5 4.5l-7 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Warning for failed extraction */}
+                      {hasFailed && (
+                        <p className="text-xs mt-1.5 flex items-center gap-1"
+                          style={{ fontFamily: "var(--font-body)", color: 'var(--color-warning)' }}>
+                          <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+                            <path d="M8 1.5L1 14h14L8 1.5z" stroke="var(--color-warning)" strokeWidth="1.2" strokeLinejoin="round"/>
+                            <path d="M8 6.5v3M8 11.5v.5" stroke="var(--color-warning)" strokeWidth="1.2" strokeLinecap="round"/>
+                          </svg>
+                          Content could not be extracted
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
               );
             })}

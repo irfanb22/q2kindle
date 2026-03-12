@@ -3,13 +3,13 @@
 import { useState, useEffect, useRef } from "react";
 
 const DAY_OPTIONS = [
-  { value: "mon", label: "Mon" },
-  { value: "tue", label: "Tue" },
-  { value: "wed", label: "Wed" },
-  { value: "thu", label: "Thu" },
-  { value: "fri", label: "Fri" },
-  { value: "sat", label: "Sat" },
-  { value: "sun", label: "Sun" },
+  { value: "mon", label: "Mon", short: "M" },
+  { value: "tue", label: "Tue", short: "T" },
+  { value: "wed", label: "Wed", short: "W" },
+  { value: "thu", label: "Thu", short: "T" },
+  { value: "fri", label: "Fri", short: "F" },
+  { value: "sat", label: "Sat", short: "S" },
+  { value: "sun", label: "Sun", short: "S" },
 ] as const;
 
 function getTimezoneList(): string[] {
@@ -391,7 +391,7 @@ export default function SettingsPage() {
       <form onSubmit={handleSave}>
         {/* Email Configuration */}
         <div
-          className="rounded-xl border p-6 mb-4"
+          className="rounded-xl border p-4 sm:p-6 mb-4"
           style={{
             background: "var(--color-surface)",
             borderColor: "var(--color-border)",
@@ -565,7 +565,7 @@ export default function SettingsPage() {
 
         {/* Automatic Delivery */}
         <div
-          className="rounded-xl border p-6 mb-4"
+          className="rounded-xl border p-4 sm:p-6 mb-4"
           style={{
             background: "var(--color-surface)",
             borderColor: "var(--color-border)",
@@ -638,7 +638,8 @@ export default function SettingsPage() {
                         }
                       }}
                     >
-                      {day.label}
+                      <span className="sm:hidden">{day.short}</span>
+                      <span className="hidden sm:inline">{day.label}</span>
                     </button>
                   );
                 })}
@@ -654,7 +655,7 @@ export default function SettingsPage() {
             </div>
 
             {/* Time + Timezone row */}
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
               <div className="flex-1">
                 <label
                   className="block text-xs mb-1.5"
@@ -746,7 +747,7 @@ export default function SettingsPage() {
 
         {/* EPUB Formatting */}
         <div
-          className="rounded-xl border p-6 mb-4"
+          className="rounded-xl border p-4 sm:p-6 mb-4"
           style={{
             background: "var(--color-surface)",
             borderColor: "var(--color-border)",
@@ -831,9 +832,9 @@ export default function SettingsPage() {
               </label>
               <div className="flex gap-2">
                 {([
-                  { label: "Author", value: epubShowAuthor, setter: setEpubShowAuthor },
-                  { label: "Read time", value: epubShowReadTime, setter: setEpubShowReadTime },
-                  { label: "Published date", value: epubShowPublishedDate, setter: setEpubShowPublishedDate },
+                  { label: "Author", shortLabel: "Author", value: epubShowAuthor, setter: setEpubShowAuthor },
+                  { label: "Read time", shortLabel: "Time", value: epubShowReadTime, setter: setEpubShowReadTime },
+                  { label: "Published date", shortLabel: "Date", value: epubShowPublishedDate, setter: setEpubShowPublishedDate },
                 ] as const).map((item) => (
                   <button
                     key={item.label}
@@ -859,7 +860,8 @@ export default function SettingsPage() {
                       }
                     }}
                   >
-                    {item.label}
+                    <span className="sm:hidden">{item.shortLabel}</span>
+                    <span className="hidden sm:inline">{item.label}</span>
                   </button>
                 ))}
               </div>
