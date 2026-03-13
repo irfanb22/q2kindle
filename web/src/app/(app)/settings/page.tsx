@@ -87,6 +87,8 @@ export default function SettingsPage() {
   const [testing, setTesting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [testError, setTestError] = useState<string | null>(null);
+  const [testSuccess, setTestSuccess] = useState<string | null>(null);
 
   const timezones = useRef(getTimezoneList());
 
@@ -197,8 +199,8 @@ export default function SettingsPage() {
 
   async function handleTestEmail() {
     setTesting(true);
-    setError(null);
-    setSuccess(null);
+    setTestError(null);
+    setTestSuccess(null);
 
     try {
       const res = await fetch("/api/send/test", {
@@ -210,19 +212,19 @@ export default function SettingsPage() {
 
       if (!res.ok) {
         if (data.error === "settings_not_configured") {
-          setError("Please save your email settings first");
+          setTestError("Please save your email settings first");
         } else {
-          setError(data.message || "Test email failed");
+          setTestError(data.message || "Test email failed");
         }
         setTesting(false);
         return;
       }
 
-      setSuccess("Test EPUB sent — check your Kindle in a few minutes");
+      setTestSuccess("Test EPUB sent — check your Kindle in a few minutes");
       setTesting(false);
-      setTimeout(() => setSuccess(null), 8000);
+      setTimeout(() => setTestSuccess(null), 8000);
     } catch {
-      setError("Failed to send test email");
+      setTestError("Failed to send test email");
       setTesting(false);
     }
   }
@@ -559,6 +561,34 @@ export default function SettingsPage() {
               >
                 Save your Kindle email first to enable testing
               </p>
+            )}
+            {testError && (
+              <div
+                className="mt-3 flex items-start gap-2 rounded-lg px-3 py-2.5"
+                style={{ background: "var(--color-danger-pale)", border: "1px solid var(--color-danger-border)" }}
+              >
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="mt-0.5 shrink-0">
+                  <circle cx="8" cy="8" r="7" style={{ stroke: "var(--color-danger)" }} strokeWidth="1.5" opacity="0.7"/>
+                  <path d="M8 5v3.5M8 10.5v.5" style={{ stroke: "var(--color-danger)" }} strokeWidth="1.5" strokeLinecap="round"/>
+                </svg>
+                <span className="text-sm" style={{ color: "var(--color-danger)", fontFamily: "var(--font-body)" }}>
+                  {testError}
+                </span>
+              </div>
+            )}
+            {testSuccess && (
+              <div
+                className="mt-3 flex items-center gap-2 rounded-lg px-3 py-2.5"
+                style={{ background: "var(--color-success-pale)", border: "1px solid var(--color-success-border)" }}
+              >
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="shrink-0">
+                  <circle cx="8" cy="8" r="7" style={{ stroke: "var(--color-accent)" }} strokeWidth="1.5"/>
+                  <path d="M5.5 8l2 2 3-4" style={{ stroke: "var(--color-accent)" }} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                <span className="text-sm" style={{ color: "var(--color-accent)", fontFamily: "var(--font-body)" }}>
+                  {testSuccess}
+                </span>
+              </div>
             )}
           </div>
         </div>
