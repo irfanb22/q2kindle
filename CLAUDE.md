@@ -409,9 +409,9 @@ SUPABASE_SERVICE_ROLE_KEY=<service role key from Supabase dashboard>
 - ✅ **EPUB cover page ordering** — cover chapter uses `beforeToc: true` + `excludeFromToc: true` so it appears before the auto-generated TOC in reading order.
 - ✅ **Hourly delivery time picker** — replaced free-form `<input type="time">` with `<select>` of hourly slots (12 AM–11 PM), since pg_cron runs hourly. Normalizes existing minute-based values on load.
 - ✅ **Custom domain** — `q2kindle.com` configured via Squarespace DNS + Netlify + Supabase auth URL updates
-- ⬜ **Dynamic cover image for Kindle library** — Kindle's library grid needs an actual image file (not just an HTML chapter) registered in EPUB metadata via `<meta name="cover"/>`. `epub-gen-memory` supports a `cover` option (URL or File) that handles this. Current HTML cover page renders when reading but doesn't appear in the Kindle library view. Need to dynamically generate a cover image (using @vercel/og, sharp+canvas, or SVG-to-PNG) matching the current cover design (brand, issue number, date, article count) and pass it to `generateEpub()`. Instapaper does this — their cover shows in the library.
-- ⬜ Mobile responsive design — breakpoints for phone/tablet, responsive Kindle mockup
-- ⬜ Loading states and error handling improvements across all pages
+- ✅ **Dynamic cover image for Kindle library** — `cover-image.ts` generates a 1600×2400 PNG via satori + @resvg/resvg-js (SVG-to-PNG). Shows Q2KINDLE branding, date, volume/issue, article count, read time. Passed to epub-gen-memory's `cover` option. Google Fonts loaded dynamically with caching. Fallback: if cover generation fails, EPUB sends without cover instead of failing entirely.
+- ✅ **Mobile responsive design** — bottom tab bar navigation on mobile (Queue/History/Settings with icons), responsive layout breakpoints, mobile-friendly input and card sizing.
+- ✅ **Error handling hardening** — article status update errors after successful email send are now captured and logged to send_history (prevents silent duplicate-send bug). Cover image generation wrapped in try/catch with graceful fallback.
 - ⬜ PWA manifest, service worker, app icons
 - ⬜ **Favicon / web icon** — part of branding work, designed alongside logo and app identity
 - ⬜ **Branding** — finalize logo, color palette, favicon, update cover page branding to match
@@ -422,7 +422,7 @@ SUPABASE_SERVICE_ROLE_KEY=<service role key from Supabase dashboard>
 - ⬜ **Test email feedback position** — success/failure message appears at bottom of settings page, should be near the test send button so users can see the result without scrolling
 - ✅ **Visual refresh merge** — Light gray (#f4f4f4) + forest green (#2d5f2d) palette with Newsreader + Source Serif 4 fonts. Ported file-by-file to a clean branch (`q2kindle/visual-refresh-clean`) from current main, removing all styled-jsx. Merged via PR and deployed to production 2026-03-10.
 - ⬜ **UI refinements and new design** — Follow-up polish pass on the visual refresh. Exact scope TBD.
-- ⬜ **OTP code entry form on login page** — When a user clicks the magic link in a different browser than where they initiated login, Supabase redirects fail. Need a fallback 6-digit OTP code input form on the login page so users can manually enter the code they receive. Supabase supports both link-click and OTP flows from the same `signInWithOtp()` call — just needs a second step UI (`supabase.auth.verifyOtp({ email, token, type: 'email' })`).
+- ✅ **OTP code entry on signup page** — Signup page has full OTP implementation: 6-digit input, auto-verify on entry, `verifyOtp()` call, error handling for expired/invalid codes. Login page uses `signInWithOtp()` which sends both magic link and OTP code — users can copy the code from email to authenticate.
 
 ## V2 Pages (planned)
 
