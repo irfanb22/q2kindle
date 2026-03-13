@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Newsreader, Source_Serif_4 } from "next/font/google";
+import { Newsreader, Inter } from "next/font/google";
 import "./globals.css";
 
 const newsreader = Newsreader({
@@ -10,10 +10,9 @@ const newsreader = Newsreader({
   display: "swap",
 });
 
-const sourceSerif = Source_Serif_4({
+const inter = Inter({
   subsets: ["latin"],
   weight: ["300", "400", "500", "600"],
-  style: ["normal", "italic"],
   variable: "--font-body",
   display: "swap",
 });
@@ -29,7 +28,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${newsreader.variable} ${sourceSerif.variable}`}>
+    <html lang="en" className={`${newsreader.variable} ${inter.variable}`}>
       <body className="antialiased min-h-screen">{children}</body>
     </html>
   );
