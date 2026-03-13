@@ -235,10 +235,14 @@ export async function GET(request: Request) {
 
       // Success — update articles and log
       const nowIso = new Date().toISOString();
-      await supabase
+      const { error: updateError } = await supabase
         .from("articles")
         .update({ status: "sent", sent_at: nowIso })
         .in("id", sendableArticles.map((a: { id: string }) => a.id));
+
+      if (updateError) {
+        console.error(`User ${settings.user_id}: Failed to update article statuses after successful send: ${updateError.message}`);
+      }
 
       await supabase.from("send_history").insert({
         user_id: settings.user_id,
@@ -246,10 +250,11 @@ export async function GET(request: Request) {
         issue_number: issueNumber,
         status: "success",
         articles_data: sendableArticles.map((a: { title?: string; url: string }) => ({ title: a.title || null, url: a.url })),
+        ...(updateError ? { error_message: `Sent successfully but failed to update article statuses: ${updateError.message}` } : {}),
       });
 
-      console.log(`User ${settings.user_id}: ✅ Scheduled send successful — ${sendableArticles.length} articles (Issue #${issueNumber})`);
-      results.push({ userId: settings.user_id, status: "success", message: `${sendableArticles.length} articles sent` });
+      console.log(`User ${settings.user_id}: ✅ Scheduled send successful — ${sendableArticles.length} articles (Issue #${issueNumber})${updateError ? " (warning: article status update failed)" : ""}`);
+      results.push({ userId: settings.user_id, status: "success", message: `${sendableArticles.length} articles sent${updateError ? " (status update failed)" : ""}` });
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Unknown error";
       console.error(`User ${settings.user_id}: Unexpected error: ${msg}`);
