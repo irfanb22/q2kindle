@@ -247,6 +247,7 @@ All files live under `web/`:
 | `web/supabase/migrations/005_add_articles_data_to_send_history.sql` | Adds `articles_data` JSONB column to send_history for per-send article snapshots |
 | `web/supabase/migrations/006_remove_smtp_credentials.sql` | Drops `sender_email` and `smtp_password` columns from settings (moved to app-owned SES) |
 | `web/supabase/migrations/007_remove_epub_font.sql` | Drops `epub_font` column from settings (Kindle ignores CSS font-family) |
+| `web/supabase/migrations/008_add_image_to_articles.sql` | Adds `image` text column to articles for og:image / featured image URL |
 | `web/src/app/api/cron/send/route.ts` | Cron API route — scheduled send logic, called hourly by Supabase pg_cron |
 
 ## V2 Design system
@@ -291,7 +292,7 @@ SUPABASE_SERVICE_ROLE_KEY=<service role key from Supabase dashboard>
 | **Phase 5** | Auto-send, send history, settings polish, test email | ✅ Complete |
 | **Phase 6** | EPUB customization — cover page, fonts, image toggle, metadata controls | ✅ Complete |
 | **Phase 6.5** | Custom domain — q2kindle.com via Squarespace DNS + Netlify + Supabase | ✅ Complete |
-| **Phase 7** | Polish — mobile responsive, loading states, error handling, PWA, branding | ⬜ Not started |
+| **Phase 7** | Polish — mobile responsive, loading states, error handling, PWA, branding | 🟡 In progress |
 
 ### Phase 1 progress
 
@@ -411,7 +412,7 @@ SUPABASE_SERVICE_ROLE_KEY=<service role key from Supabase dashboard>
 - ✅ **Hourly delivery time picker** — replaced free-form `<input type="time">` with `<select>` of hourly slots (12 AM–11 PM), since pg_cron runs hourly. Normalizes existing minute-based values on load.
 - ✅ **Custom domain** — `q2kindle.com` configured via Squarespace DNS + Netlify + Supabase auth URL updates
 - ✅ **Dynamic cover image for Kindle library** — satori (React-to-SVG) + @resvg/resvg-js (SVG-to-PNG) generates a 1600×2400 cover image at send time. Shows "Q2KINDLE" branding, date, volume/issue, article count, and read time. Passed as `File` to `epub-gen-memory`'s `cover` option. Replaces the old HTML-only cover chapter. `web/src/lib/cover-image.ts`.
-- ⬜ Mobile responsive design — breakpoints for phone/tablet, responsive Kindle mockup
+- ✅ **Mobile responsive design** — bottom tab bar on mobile, responsive queue cards with description/domain/read time, responsive layouts across dashboard/history/settings/article preview, landing page 480px breakpoints, fluid Kindle mockup
 - ⬜ Loading states and error handling improvements across all pages
 - ⬜ PWA manifest, service worker, app icons
 - ⬜ **Favicon / web icon** — part of branding work, designed alongside logo and app identity
@@ -423,7 +424,7 @@ SUPABASE_SERVICE_ROLE_KEY=<service role key from Supabase dashboard>
 - ⬜ **Test email feedback position** — success/failure message appears at bottom of settings page, should be near the test send button so users can see the result without scrolling
 - ✅ **Visual refresh merge** — Light gray (#f4f4f4) + forest green (#2d5f2d) palette with Newsreader + Source Serif 4 fonts. Ported file-by-file to a clean branch (`q2kindle/visual-refresh-clean`) from current main, removing all styled-jsx. Merged via PR and deployed to production 2026-03-10.
 - ⬜ **UI refinements and new design** — Follow-up polish pass on the visual refresh. Exact scope TBD.
-- ⬜ **OTP code entry form on login page** — When a user clicks the magic link in a different browser than where they initiated login, Supabase redirects fail. Need a fallback 6-digit OTP code input form on the login page so users can manually enter the code they receive. Supabase supports both link-click and OTP flows from the same `signInWithOtp()` call — just needs a second step UI (`supabase.auth.verifyOtp({ email, token, type: 'email' })`).
+- ✅ **OTP code entry form on login page** — After sending magic link, a 6-digit code input appears as fallback for cross-browser scenarios. Uses `supabase.auth.verifyOtp({ email, token, type: 'email' })`. Numeric-only input with "Back" and "Resend" options.
 
 ## V2 Pages (planned)
 
