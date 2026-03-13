@@ -18,23 +18,27 @@ function NavIcon({ icon, active }: { icon: string; active: boolean }) {
     case "queue":
       return (
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-          <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" stroke={color} strokeWidth={weight} strokeLinecap="round"/>
-          <rect x="9" y="3" width="6" height="4" rx="1" stroke={color} strokeWidth={weight}/>
-          <path d="M9 12h6M9 16h4" stroke={color} strokeWidth={weight} strokeLinecap="round"/>
+          <circle cx="4" cy="6" r="1.5" fill={color}/>
+          <line x1="9" y1="6" x2="21" y2="6" stroke={color} strokeWidth={weight} strokeLinecap="round"/>
+          <circle cx="4" cy="12" r="1.5" fill={color}/>
+          <line x1="9" y1="12" x2="21" y2="12" stroke={color} strokeWidth={weight} strokeLinecap="round"/>
+          <circle cx="4" cy="18" r="1.5" fill={color}/>
+          <line x1="9" y1="18" x2="21" y2="18" stroke={color} strokeWidth={weight} strokeLinecap="round"/>
         </svg>
       );
     case "history":
       return (
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-          <circle cx="12" cy="12" r="9" stroke={color} strokeWidth={weight}/>
-          <path d="M12 7v5l3 3" stroke={color} strokeWidth={weight} strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M1 4v6h6" stroke={color} strokeWidth={weight} strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M3.51 15a9 9 0 102.13-9.36L1 10" stroke={color} strokeWidth={weight} strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M12 7v5l4 2" stroke={color} strokeWidth={weight} strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
       );
     case "settings":
       return (
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
           <circle cx="12" cy="12" r="3" stroke={color} strokeWidth={weight}/>
-          <path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41m11.32-11.32l1.41-1.41" stroke={color} strokeWidth={weight} strokeLinecap="round"/>
+          <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.32 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" stroke={color} strokeWidth={weight} strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
       );
     default:
@@ -66,7 +70,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Top navigation bar */}
       <header className="border-b" style={{
         borderColor: 'var(--color-border-light)',
-        background: 'rgba(244,244,244,0.85)',
+        background: 'rgba(252,250,248,0.85)',
         backdropFilter: 'blur(20px) saturate(1.3)',
         WebkitBackdropFilter: 'blur(20px) saturate(1.3)',
       }}>
@@ -156,7 +160,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         className="fixed bottom-0 left-0 right-0 sm:hidden border-t flex items-center justify-around"
         style={{
           borderColor: 'var(--color-border-light)',
-          background: 'rgba(244,244,244,0.92)',
+          background: 'rgba(252,250,248,0.92)',
           backdropFilter: 'blur(20px) saturate(1.3)',
           WebkitBackdropFilter: 'blur(20px) saturate(1.3)',
           paddingBottom: 'env(safe-area-inset-bottom, 0px)',

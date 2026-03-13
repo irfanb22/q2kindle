@@ -651,9 +651,9 @@ export default function SettingsPage() {
                       className="flex-1 rounded-lg py-2 text-xs font-medium transition-all duration-200 cursor-pointer"
                       style={{
                         fontFamily: "var(--font-body)",
-                        background: isSelected ? "rgba(45,95,45,0.12)" : "var(--color-surface-inset)",
-                        border: isSelected ? "1px solid rgba(45,95,45,0.3)" : "1px solid var(--color-border)",
-                        color: isSelected ? "var(--color-accent)" : "var(--color-text-muted)",
+                        background: isSelected ? "var(--color-accent)" : "var(--color-surface-inset)",
+                        border: isSelected ? "1px solid var(--color-accent)" : "1px solid var(--color-border)",
+                        color: isSelected ? "var(--color-accent-text)" : "var(--color-text-muted)",
                       }}
                       onMouseEnter={(e) => {
                         if (!isSelected) {
@@ -837,14 +837,14 @@ export default function SettingsPage() {
                 onClick={() => setEpubIncludeImages(!epubIncludeImages)}
                 className="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors duration-200"
                 style={{
-                  background: epubIncludeImages ? "rgba(45,95,45,0.3)" : "var(--color-border)",
-                  border: epubIncludeImages ? "1px solid rgba(45,95,45,0.5)" : "1px solid var(--color-border-hover)",
+                  background: epubIncludeImages ? "var(--color-accent)" : "var(--color-border)",
+                  border: epubIncludeImages ? "1px solid var(--color-accent)" : "1px solid var(--color-border-hover)",
                 }}
               >
                 <span
                   className="inline-block h-5 w-5 rounded-full transition-transform duration-200"
                   style={{
-                    background: epubIncludeImages ? "var(--color-accent)" : "var(--color-text-dim)",
+                    background: epubIncludeImages ? "#fff" : "var(--color-text-dim)",
                     transform: epubIncludeImages ? "translateX(20px)" : "translateX(0px)",
                     marginTop: "0.5px",
                   }}
@@ -873,9 +873,9 @@ export default function SettingsPage() {
                     className="flex-1 rounded-lg py-2 text-xs font-medium transition-all duration-200 cursor-pointer"
                     style={{
                       fontFamily: "var(--font-body)",
-                      background: item.value ? "rgba(45,95,45,0.12)" : "var(--color-surface-inset)",
-                      border: item.value ? "1px solid rgba(45,95,45,0.3)" : "1px solid var(--color-border)",
-                      color: item.value ? "var(--color-accent)" : "var(--color-text-muted)",
+                      background: item.value ? "var(--color-accent)" : "var(--color-surface-inset)",
+                      border: item.value ? "1px solid var(--color-accent)" : "1px solid var(--color-border)",
+                      color: item.value ? "var(--color-accent-text)" : "var(--color-text-muted)",
                     }}
                     onMouseEnter={(e) => {
                       if (!item.value) {
