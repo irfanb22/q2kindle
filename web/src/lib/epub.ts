@@ -117,23 +117,32 @@ export async function generateKindleEpub(options: {
   const title = `q2kindle - ${dateStr}`;
 
   // Generate cover image for Kindle library thumbnail
-  const coverImageBuffer = await generateCoverImage({
-    issueNumber,
-    date: dateStr,
-    articleCount: articles.length,
-    totalReadTime,
-  });
-  const coverFile = new File(
-    [new Uint8Array(coverImageBuffer)],
-    "cover.png",
-    { type: "image/png" }
-  );
+  // Falls back to no cover if generation fails (e.g. Google Fonts down)
+  let coverFile: File | undefined;
+  try {
+    const coverImageBuffer = await generateCoverImage({
+      issueNumber,
+      date: dateStr,
+      articleCount: articles.length,
+      totalReadTime,
+    });
+    coverFile = new File(
+      [new Uint8Array(coverImageBuffer)],
+      "cover.png",
+      { type: "image/png" }
+    );
+  } catch (coverError) {
+    console.error(
+      "Cover image generation failed, proceeding without cover:",
+      coverError instanceof Error ? coverError.message : coverError
+    );
+  }
 
   const rawResult = await generateEpub(
     {
       title,
       author: "q2kindle",
-      cover: coverFile,
+      ...(coverFile ? { cover: coverFile } : {}),
       css: buildCss(),
       ignoreFailedDownloads: true,
       fetchTimeout: 10000,

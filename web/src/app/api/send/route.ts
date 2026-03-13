@@ -187,7 +187,7 @@ export async function POST() {
     // Success — update articles and create history record
     const now = new Date().toISOString();
 
-    await supabase
+    const { error: updateError } = await supabase
       .from("articles")
       .update({ status: "sent", sent_at: now })
       .in(
@@ -195,12 +195,17 @@ export async function POST() {
         sendableArticles.map((a) => a.id)
       );
 
+    if (updateError) {
+      console.error("Failed to update article statuses after successful send:", updateError.message);
+    }
+
     await supabase.from("send_history").insert({
       user_id: user.id,
       article_count: articleCount,
       issue_number: issueNumber,
       status: "success",
       articles_data: sendableArticles.map((a) => ({ title: a.title || null, url: a.url })),
+      ...(updateError ? { error_message: `Sent successfully but failed to update article statuses: ${updateError.message}` } : {}),
     });
 
     return NextResponse.json({
@@ -209,6 +214,7 @@ export async function POST() {
       skippedCount,
       dailySendsUsed: dailyCount + 1,
       dailySendLimit: DAILY_SEND_LIMIT,
+      ...(updateError ? { warning: "Articles were sent but may still appear in your queue. Refresh to check." } : {}),
     });
   } catch (err) {
     const message =
