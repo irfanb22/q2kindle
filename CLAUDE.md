@@ -292,7 +292,7 @@ SUPABASE_SERVICE_ROLE_KEY=<service role key from Supabase dashboard>
 | **Phase 5** | Auto-send, send history, settings polish, test email | ✅ Complete |
 | **Phase 6** | EPUB customization — cover page, fonts, image toggle, metadata controls | ✅ Complete |
 | **Phase 6.5** | Custom domain — q2kindle.com via Squarespace DNS + Netlify + Supabase | ✅ Complete |
-| **Phase 7** | Polish — mobile responsive, loading states, error handling, PWA, branding | 🟡 In progress |
+| **Phase 7** | Polish — UI refinements, landing page, onboarding, EPUB cover tweaks, PWA, branding | 🟡 In progress |
 
 ### Phase 1 progress
 
@@ -414,6 +414,11 @@ SUPABASE_SERVICE_ROLE_KEY=<service role key from Supabase dashboard>
 - ✅ **Dynamic cover image for Kindle library** — satori (React-to-SVG) + @resvg/resvg-js (SVG-to-PNG) generates a 1600×2400 cover image at send time. Shows "Q2KINDLE" branding, date, volume/issue, article count, and read time. Passed as `File` to `epub-gen-memory`'s `cover` option. Google Fonts loaded dynamically with caching. Fallback: if cover generation fails, EPUB sends without cover instead of failing entirely. `web/src/lib/cover-image.ts`.
 - ✅ **Mobile responsive design** — bottom tab bar on mobile, responsive queue cards with description/domain/read time, responsive layouts across dashboard/history/settings/article preview, landing page 480px breakpoints, fluid Kindle mockup
 - ✅ **Error handling hardening** — article status update errors after successful email send are now captured and logged to send_history (prevents silent duplicate-send bug). Cover image generation wrapped in try/catch with graceful fallback.
+- ⬜ **Landing page copy refinement** — tweak messaging and copy on the login/landing page before public launch
+- ⬜ **First-time user onboarding guide** — guided setup flow for new users after registration: direct them to add Kindle email, approve sender address, and orient them in the app
+- ⬜ **UI refinements (desktop)** — follow-up polish pass on the visual refresh. Specific scope TBD.
+- ⬜ **UI refinements (mobile)** — mobile-specific layout and interaction polish. Specific scope TBD.
+- ⬜ **EPUB cover image tweaks** — increase font sizes on the generated cover image (currently too small on Kindle library grid)
 - ⬜ PWA manifest, service worker, app icons
 - ⬜ **Favicon / web icon** — part of branding work, designed alongside logo and app identity
 - ⬜ **Branding** — finalize logo, color palette, favicon, update cover page branding to match
@@ -423,8 +428,15 @@ SUPABASE_SERVICE_ROLE_KEY=<service role key from Supabase dashboard>
 - ✅ **Privacy policy page** — `/privacy` route with 7 content sections (dark editorial design, server component). Added to middleware public routes. Link in login page footer.
 - ✅ **Test email feedback position** — test email success/failure messages now appear directly below the test button instead of near the Save Settings button
 - ✅ **Visual refresh merge** — Light gray (#f4f4f4) + forest green (#2d5f2d) palette with Newsreader + Source Serif 4 fonts. Ported file-by-file to a clean branch (`q2kindle/visual-refresh-clean`) from current main, removing all styled-jsx. Merged via PR and deployed to production 2026-03-10.
-- ⬜ **UI refinements and new design** — Follow-up polish pass on the visual refresh. Exact scope TBD.
 - ✅ **OTP code entry form on login page** — After sending magic link, a 6-digit code input appears as fallback for cross-browser scenarios. Uses `supabase.auth.verifyOtp({ email, token, type: 'email' })`. Numeric-only input with "Back" and "Resend" options.
+
+## V2 Roadmap (post-launch)
+
+Phase 7 completes web app v1. After public launch (Reddit, online media), v2 will add:
+
+- **RSS reader** — subscribe to feeds, browse new articles, and manually add them to the Kindle queue (no auto-queuing)
+- **Chrome extension** — save-to-queue from any browser tab
+- **iOS app** — native app with share sheet integration (share articles from Safari/apps directly to queue)
 
 ## V2 Pages (planned)
 
