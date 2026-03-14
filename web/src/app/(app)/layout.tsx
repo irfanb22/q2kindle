@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { usePostHog } from "posthog-js/react";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Queue", icon: "queue" },
@@ -50,17 +51,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const pathname = usePathname();
   const router = useRouter();
   const [userEmail, setUserEmail] = useState<string>("");
+  const posthog = usePostHog();
 
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user?.email) setUserEmail(user.email);
+      if (user && posthog) {
+        posthog.identify(user.id, { email: user.email });
+      }
     });
-  }, []);
+  }, [posthog]);
 
   async function handleSignOut() {
     const supabase = createClient();
     await supabase.auth.signOut();
+    posthog?.reset();
     router.push("/");
   }
 
