@@ -419,15 +419,16 @@ SUPABASE_SERVICE_ROLE_KEY=<service role key from Supabase dashboard>
 - ✅ **UI refinements (desktop)** — visual polish pass: Inter font, warm cream background, new icons, solid green settings
 - ✅ **UI refinements (mobile)** — mobile-specific layout and interaction polish
 - ✅ **EPUB cover image tweaks** — increased font sizes for Kindle library thumbnail legibility: title 200→230px, date 70→140px, vol/issue 55→110px, stats 48→90px. Added horizontal rule separator, more padding, centered layout.
-- ⬜ PWA manifest, service worker, app icons
-- ⬜ **Favicon / web icon** — part of branding work, designed alongside logo and app identity
-- ⬜ **Branding** — finalize logo, color palette, favicon, update cover page branding to match
+- ⬜ PWA manifest + app icons (skipping service worker — app is server-dependent, no offline value)
+- ✅ **Favicon / web icon** — forest green (#2d5f2d) rounded square with chunky Kindle device outline and three fading article queue bars. Readable at 16px tab size.
+- ⬜ **Branding** — finalize logo, color palette, update cover page branding to match
+- ✅ **Friendlier error messages** — extraction failure message changed from "Content could not be extracted" to "We hate when this happens, but this article failed to extract"
 - ✅ **Resend custom domain** — `q2kindle.com` verified in Resend with DKIM + SPF DNS records. Supabase SMTP sender updated from `onboarding@resend.dev` to `team@q2kindle.com`. Fixes new user sign-up (shared Resend domain only sends to verified emails).
 - ✅ **App-owned email for Kindle delivery** — Replaced user-provided Gmail SMTP credentials with app-owned sending. Users only provide Kindle email and add `kindle@q2kindle.com` to Amazon approved senders. Shared `email.ts` module centralizes sending logic. Initially used Amazon SES (denied production access twice), switched to Brevo SMTP (300 emails/day free, 4MB attachment limit). Resend stays for auth emails via Supabase SMTP.
 - ✅ **Daily send limit (10/day per user)** — Protects SES costs and prevents abuse. Each "send" = one email (all queued articles bundled into one EPUB). Both manual and scheduled/cron sends count. Test emails do NOT count. No database migration needed — counts successful sends from `send_history` table. Shared `send-limits.ts` module with `DAILY_SEND_LIMIT` constant, timezone-aware `getDailySendCount()`. Manual send returns HTTP 429 at limit; cron skips silently. Settings page shows usage card with progress bar (green/red). Dashboard shows usage text below send button, disables button at limit.
 - ✅ **Privacy policy page** — `/privacy` route with 7 content sections (dark editorial design, server component). Added to middleware public routes. Link in login page footer.
 - ✅ **Test email feedback position** — test email success/failure messages now appear directly below the test button instead of near the Save Settings button
-- ✅ **Visual refresh merge** — Light gray (#f4f4f4) + forest green (#2d5f2d) palette with Newsreader + Source Serif 4 fonts. Ported file-by-file to a clean branch (`q2kindle/visual-refresh-clean`) from current main, removing all styled-jsx. Merged via PR and deployed to production 2026-03-10.
+- ✅ **Visual refresh merge** — Light gray (#f4f4f4) + forest green (#2d5f2d) palette with Newsreader (headings) + Inter (body) fonts. Ported file-by-file to a clean branch (`q2kindle/visual-refresh-clean`) from current main, removing all styled-jsx. Merged via PR and deployed to production 2026-03-10.
 - ✅ **OTP code entry form on login page** — After sending magic link, a 6-digit code input appears as fallback for cross-browser scenarios. Uses `supabase.auth.verifyOtp({ email, token, type: 'email' })`. Numeric-only input with "Back" and "Resend" options.
 
 ## V2 Roadmap (post-launch)
