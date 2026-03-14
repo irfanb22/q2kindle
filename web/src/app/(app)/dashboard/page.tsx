@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { Article } from "@/lib/types";
+import WelcomeModal from "./welcome-modal";
 
 export default function DashboardPage() {
   const [url, setUrl] = useState("");
@@ -17,6 +18,7 @@ export default function DashboardPage() {
   const [dailySendsUsed, setDailySendsUsed] = useState<number | null>(null);
   const [dailySendLimit, setDailySendLimit] = useState(10);
   const [atSendLimit, setAtSendLimit] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(false);
 
   const router = useRouter();
   const supabaseRef = useRef(createClient());
@@ -46,6 +48,10 @@ export default function DashboardPage() {
           setDailySendsUsed(data.dailySendsUsed);
           setDailySendLimit(data.dailySendLimit || 10);
           setAtSendLimit(data.dailySendsUsed >= (data.dailySendLimit || 10));
+        }
+        // Show welcome modal for new users (no settings row + no localStorage flag)
+        if (!data.settings && !localStorage.getItem("q2k_onboarding_done")) {
+          setShowWelcome(true);
         }
       } catch {
         // Non-critical — don't block the dashboard
@@ -212,10 +218,17 @@ export default function DashboardPage() {
     return `${days}d ago`;
   }
 
+  function handleCloseWelcome() {
+    localStorage.setItem("q2k_onboarding_done", "1");
+    setShowWelcome(false);
+  }
+
   const queueCount = articles.length;
 
   return (
     <div style={{ animation: 'fadeUp 0.6s ease both' }}>
+
+      {showWelcome && <WelcomeModal onClose={handleCloseWelcome} />}
 
       {/* Page header */}
       <div className="mb-8">
