@@ -416,9 +416,9 @@ SUPABASE_SERVICE_ROLE_KEY=<service role key from Supabase dashboard>
 - ✅ **Error handling hardening** — article status update errors after successful email send are now captured and logged to send_history (prevents silent duplicate-send bug). Cover image generation wrapped in try/catch with graceful fallback.
 - ⬜ **Landing page copy refinement** — tweak messaging and copy on the login/landing page before public launch
 - ⬜ **First-time user onboarding guide** — guided setup flow for new users after registration: direct them to add Kindle email, approve sender address, and orient them in the app
-- ⬜ **UI refinements (desktop)** — follow-up polish pass on the visual refresh. Specific scope TBD.
-- ⬜ **UI refinements (mobile)** — mobile-specific layout and interaction polish. Specific scope TBD.
-- ⬜ **EPUB cover image tweaks** — increase font sizes on the generated cover image (currently too small on Kindle library grid)
+- ✅ **UI refinements (desktop)** — visual polish pass: Inter font, warm cream background, new icons, solid green settings
+- ✅ **UI refinements (mobile)** — mobile-specific layout and interaction polish
+- ✅ **EPUB cover image tweaks** — increased font sizes for Kindle library thumbnail legibility: title 200→230px, date 70→140px, vol/issue 55→110px, stats 48→90px. Added horizontal rule separator, more padding, centered layout.
 - ⬜ PWA manifest, service worker, app icons
 - ⬜ **Favicon / web icon** — part of branding work, designed alongside logo and app identity
 - ⬜ **Branding** — finalize logo, color palette, favicon, update cover page branding to match
@@ -561,3 +561,4 @@ Phase 7 completes web app v1. After public launch (Reddit, online media), v2 wil
 | 2026-02-28 | Netlify site recreation (fix stale server function) | Rapid force-pushes to main corrupted Netlify's server function — it served stale HTML referencing non-existent chunk hashes, causing blank white pages. `@netlify/plugin-nextjs` serves most assets through a server function (only ~2 files go to CDN). Deleting the site and re-importing from GitHub fixed it. Env vars, custom domain, and Supabase redirect URLs had to be reconfigured. Prevention: avoid rapid force-pushes to main. |
 | 2026-02-28 | Settings page fix (remove stale style jsx) | After removing the EPUB font picker, two `<style jsx>` blocks with `@keyframes fadeUp` were left orphaned in settings/page.tsx. These caused client-side errors. Removed the blocks and moved `fadeUp` to globals.css. |
 | 2026-03-01 | Never use styled-jsx — use globals.css or Tailwind only | `@netlify/plugin-nextjs` v5 has a packaging bug that fails to bundle styled-jsx runtime chunks, causing ChunkLoadError on Netlify. Removed all `<style jsx>` from codebase. CSS goes in globals.css or Tailwind classes. |
+| 2026-03-13 | EPUB cover font sizes increased ~2-3x | Original sizes (200/70/55/48px) were unreadable at Kindle library thumbnail size (~150-200px wide). New sizes (230/140/110/90px) with horizontal rule separator and centered layout are legible at thumbnail scale. |
