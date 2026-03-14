@@ -70,9 +70,10 @@ export async function generateCoverImage(options: {
 
   const WIDTH = 1600;
   const HEIGHT = 2400;
-  const MARGIN = 120;
+  const PADDING_X = 140;
+  const PADDING_Y = 200;
 
-  // Bold typographic cover — black on white, e-ink optimized
+  // Bold typographic cover — large text for Kindle library thumbnail legibility
   const element = React.createElement(
     "div",
     {
@@ -84,61 +85,86 @@ export async function generateCoverImage(options: {
         width: "100%",
         height: "100%",
         backgroundColor: "#F2F2F2",
-        padding: `${MARGIN}px`,
+        padding: `${PADDING_Y}px ${PADDING_X}px`,
       },
     },
-    // Title — Q2KINDLE (dominant)
+    // Top section — branding + date
     React.createElement(
       "div",
       {
         style: {
-          fontSize: "200px",
-          fontWeight: 700,
-          color: "#111111",
-          letterSpacing: "0.12em",
-          textTransform: "uppercase" as const,
-          marginBottom: "80px",
+          display: "flex",
+          flexDirection: "column" as const,
+          alignItems: "center",
+          width: "100%",
         },
       },
-      "Q2KINDLE"
-    ),
-    // Date
-    React.createElement(
-      "div",
-      {
+      // Title — Q2KINDLE (single line, fills width)
+      React.createElement(
+        "div",
+        {
+          style: {
+            fontSize: "230px",
+            fontWeight: 700,
+            color: "#111111",
+            letterSpacing: "0.06em",
+            textTransform: "uppercase" as const,
+            lineHeight: 1,
+          },
+        },
+        "Q2KINDLE"
+      ),
+      // Horizontal rule
+      React.createElement("div", {
         style: {
-          fontSize: "70px",
-          fontWeight: 400,
-          color: "#111111",
-          marginBottom: "40px",
+          width: "100%",
+          height: "8px",
+          backgroundColor: "#111111",
+          marginTop: "80px",
+          marginBottom: "60px",
         },
-      },
-      formattedDate
-    ),
-    // Volume / Issue
-    React.createElement(
-      "div",
-      {
-        style: {
-          fontSize: "55px",
-          fontWeight: 400,
-          color: "#111111",
-          marginBottom: "40px",
+      }),
+      // Date — large and prominent
+      React.createElement(
+        "div",
+        {
+          style: {
+            fontSize: "140px",
+            fontWeight: 700,
+            color: "#111111",
+            lineHeight: 1.2,
+            marginBottom: "120px",
+          },
         },
-      },
-      volIssueLine
-    ),
-    // Stats
-    React.createElement(
-      "div",
-      {
-        style: {
-          fontSize: "48px",
-          fontWeight: 400,
-          color: "#111111",
+        formattedDate
+      ),
+      // Volume / Issue
+      React.createElement(
+        "div",
+        {
+          style: {
+            fontSize: "110px",
+            fontWeight: 700,
+            color: "#111111",
+            marginBottom: "40px",
+            letterSpacing: "0.04em",
+            textTransform: "uppercase" as const,
+          },
         },
-      },
-      statsLine
+        volIssueLine
+      ),
+      // Stats
+      React.createElement(
+        "div",
+        {
+          style: {
+            fontSize: "90px",
+            fontWeight: 400,
+            color: "#444444",
+          },
+        },
+        statsLine
+      )
     )
   );
 
