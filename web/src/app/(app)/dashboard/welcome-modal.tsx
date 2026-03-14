@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { createPortal } from "react-dom";
 
 interface WelcomeModalProps {
   onClose: () => void;
@@ -111,10 +112,10 @@ export default function WelcomeModal({ onClose }: WelcomeModalProps) {
     </div>
   );
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
-      style={{ background: "transparent" }}
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center pb-[calc(56px+env(safe-area-inset-bottom,0px))] sm:pb-0"
+      style={{ background: "rgba(0, 0, 0, 0.4)" }}
     >
       <div
         className="w-full sm:max-w-md sm:mx-4 rounded-t-2xl sm:rounded-2xl overflow-y-auto"
@@ -168,7 +169,7 @@ export default function WelcomeModal({ onClose }: WelcomeModalProps) {
                   lineHeight: "1.7",
                 }}
               >
-                I built Q2Kindle to make it easier to send articles to your Kindle.
+                I built <strong style={{ color: "var(--color-text)" }}>q2Kindle</strong> to make it easier to send articles to your Kindle.
               </p>
               <p
                 className="text-sm leading-relaxed mb-3"
@@ -178,8 +179,8 @@ export default function WelcomeModal({ onClose }: WelcomeModalProps) {
                   lineHeight: "1.7",
                 }}
               >
-                After a quick one-minute setup, you can queue articles and we&apos;ll
-                automatically bundle them into an ebook and deliver it to your Kindle
+                After a quick <strong style={{ color: "var(--color-text)" }}>one-minute setup</strong>, you can queue articles and we&apos;ll
+                bundle them into an ebook and deliver it to your Kindle
                 on your schedule.
               </p>
               <p
@@ -190,7 +191,7 @@ export default function WelcomeModal({ onClose }: WelcomeModalProps) {
                   lineHeight: "1.7",
                 }}
               >
-                I hope it helps create a quieter, distraction-free place to read the internet.
+                I hope it gives you a quieter, distraction-free way to read the internet.
               </p>
               <p
                 className="text-sm mb-8"
@@ -539,6 +540,7 @@ export default function WelcomeModal({ onClose }: WelcomeModalProps) {
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
