@@ -112,7 +112,7 @@ export default function KindleMockup({
                   fontWeight: 700,
                 }}
               >
-                Content could not be extracted
+                We hate when this happens, but this article failed to extract
               </p>
               <a
                 href={url}

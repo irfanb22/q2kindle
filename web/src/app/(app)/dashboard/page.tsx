@@ -448,7 +448,7 @@ export default function DashboardPage() {
                             <path d="M8 1.5L1 14h14L8 1.5z" stroke="var(--color-warning)" strokeWidth="1.2" strokeLinejoin="round"/>
                             <path d="M8 6.5v3M8 11.5v.5" stroke="var(--color-warning)" strokeWidth="1.2" strokeLinecap="round"/>
                           </svg>
-                          Content could not be extracted
+                          We hate when this happens, but this article failed to extract
                         </p>
                       )}
                     </div>
