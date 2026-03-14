@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { sendToKindle } from "@/lib/email";
+import { generateCoverImage } from "@/lib/cover-image";
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const epubModule = require("epub-gen-memory");
 const generateEpub = epubModule.default ?? epubModule;
@@ -51,18 +52,38 @@ export async function POST() {
       <p style="color: #666; margin-top: 2em; font-size: 0.9em;">You can delete this document from your Kindle library.</p>
     `;
 
+    // Generate cover image
+    let coverImage: Buffer | undefined;
+    try {
+      coverImage = await generateCoverImage({
+        issueNumber: null,
+        date: dateStr,
+        articleCount: 1,
+        totalReadTime: 1,
+        label: "Test Delivery",
+      });
+    } catch {
+      // Proceed without cover if generation fails
+    }
+
     let epubBuffer: Buffer;
     try {
-      const rawResult = await generateEpub(
-        {
-          title: `q2kindle - Test (${dateStr})`,
-          author: "q2kindle",
-          css: `body { line-height: 1.7; margin: 1em; color: #1a1a1a; }
+      const epubOptions: Record<string, unknown> = {
+        title: `q2kindle - Test (${dateStr})`,
+        author: "q2kindle",
+        css: `body { line-height: 1.7; margin: 1em; color: #1a1a1a; }
 h2 { font-size: 1.2em; margin: 0 0 0.8em; }
 p { margin: 0 0 0.75em; text-indent: 0; }`,
-          ignoreFailedDownloads: true,
-          verbose: false,
-        },
+        ignoreFailedDownloads: true,
+        verbose: false,
+      };
+
+      if (coverImage) {
+        epubOptions.cover = new File([new Uint8Array(coverImage)], "cover.png", { type: "image/png" });
+      }
+
+      const rawResult = await generateEpub(
+        epubOptions,
         [
           {
             title: "Test Delivery",

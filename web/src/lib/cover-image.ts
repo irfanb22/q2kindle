@@ -43,8 +43,9 @@ export async function generateCoverImage(options: {
   date: string;
   articleCount: number;
   totalReadTime: number;
+  label?: string; // Optional label (e.g. "Test Delivery") replaces volume/issue + stats
 }): Promise<Buffer> {
-  const { issueNumber, date, articleCount, totalReadTime } = options;
+  const { issueNumber, date, articleCount, totalReadTime, label } = options;
 
   const d = new Date(date);
   const year = d.getFullYear();
@@ -138,33 +139,53 @@ export async function generateCoverImage(options: {
         },
         formattedDate
       ),
-      // Volume / Issue
-      React.createElement(
-        "div",
-        {
-          style: {
-            fontSize: "110px",
-            fontWeight: 700,
-            color: "#111111",
-            marginBottom: "40px",
-            letterSpacing: "0.04em",
-            textTransform: "uppercase" as const,
-          },
-        },
-        volIssueLine
-      ),
-      // Stats
-      React.createElement(
-        "div",
-        {
-          style: {
-            fontSize: "90px",
-            fontWeight: 400,
-            color: "#444444",
-          },
-        },
-        statsLine
-      )
+      // Volume / Issue + Stats (or label override)
+      ...(label
+        ? [
+            React.createElement(
+              "div",
+              {
+                key: "label",
+                style: {
+                  fontSize: "110px",
+                  fontWeight: 700,
+                  color: "#888888",
+                  letterSpacing: "0.06em",
+                  textTransform: "uppercase" as const,
+                },
+              },
+              label
+            ),
+          ]
+        : [
+            React.createElement(
+              "div",
+              {
+                key: "vol",
+                style: {
+                  fontSize: "110px",
+                  fontWeight: 700,
+                  color: "#111111",
+                  marginBottom: "40px",
+                  letterSpacing: "0.04em",
+                  textTransform: "uppercase" as const,
+                },
+              },
+              volIssueLine
+            ),
+            React.createElement(
+              "div",
+              {
+                key: "stats",
+                style: {
+                  fontSize: "90px",
+                  fontWeight: 400,
+                  color: "#444444",
+                },
+              },
+              statsLine
+            ),
+          ])
     )
   );
 
