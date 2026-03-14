@@ -226,7 +226,8 @@ All files live under `web/`:
 | `web/src/lib/supabase/server.ts` | Server-side Supabase client (uses `createServerClient` with cookie handling) |
 | `web/src/lib/supabase/middleware.ts` | Session refresh logic used by the middleware |
 | `web/src/app/(app)/layout.tsx` | Authenticated layout — top nav bar (Queue/History/Settings), sign out, user email |
-| `web/src/app/(app)/dashboard/page.tsx` | Dashboard — URL input, article queue list, send-to-Kindle with loading/success states |
+| `web/src/app/(app)/dashboard/page.tsx` | Dashboard — URL input, article queue list, send-to-Kindle with loading/success states, welcome modal trigger |
+| `web/src/app/(app)/dashboard/welcome-modal.tsx` | Onboarding wizard — 4-step modal: welcome, Kindle email, approve sender, test email |
 | `web/src/app/(app)/history/page.tsx` | Send history — last 10 sends with status, article count, timestamps |
 | `web/src/app/(app)/settings/page.tsx` | Settings page — Kindle email, approved sender instructions, auto-send schedule, EPUB prefs, test email button |
 | `web/src/app/(app)/article/[id]/page.tsx` | Article preview page — fetches article, sanitizes HTML with DOMPurify, renders Kindle mockup |
@@ -415,7 +416,7 @@ SUPABASE_SERVICE_ROLE_KEY=<service role key from Supabase dashboard>
 - ✅ **Mobile responsive design** — bottom tab bar on mobile, responsive queue cards with description/domain/read time, responsive layouts across dashboard/history/settings/article preview, landing page 480px breakpoints, fluid Kindle mockup
 - ✅ **Error handling hardening** — article status update errors after successful email send are now captured and logged to send_history (prevents silent duplicate-send bug). Cover image generation wrapped in try/catch with graceful fallback.
 - ⬜ **Landing page copy refinement** — tweak messaging and copy on the login/landing page before public launch
-- ⬜ **First-time user onboarding guide** — guided setup flow for new users after registration: direct them to add Kindle email, approve sender address, and orient them in the app
+- ✅ **First-time user onboarding wizard** — 4-step modal on dashboard for new users: welcome message, Kindle email setup (saves via `/api/settings`), approved sender instructions with copy button, and test email verification. Detected via missing settings row + `q2k_onboarding_done` localStorage flag. No database migration needed. `web/src/app/(app)/dashboard/welcome-modal.tsx`.
 - ✅ **UI refinements (desktop)** — visual polish pass: Inter font, warm cream background, new icons, solid green settings
 - ✅ **UI refinements (mobile)** — mobile-specific layout and interaction polish
 - ✅ **EPUB cover image tweaks** — increased font sizes for Kindle library thumbnail legibility: title 200→230px, date 70→140px, vol/issue 55→110px, stats 48→90px. Added horizontal rule separator, more padding, centered layout.
@@ -562,3 +563,4 @@ Phase 7 completes web app v1. After public launch (Reddit, online media), v2 wil
 | 2026-02-28 | Settings page fix (remove stale style jsx) | After removing the EPUB font picker, two `<style jsx>` blocks with `@keyframes fadeUp` were left orphaned in settings/page.tsx. These caused client-side errors. Removed the blocks and moved `fadeUp` to globals.css. |
 | 2026-03-01 | Never use styled-jsx — use globals.css or Tailwind only | `@netlify/plugin-nextjs` v5 has a packaging bug that fails to bundle styled-jsx runtime chunks, causing ChunkLoadError on Netlify. Removed all `<style jsx>` from codebase. CSS goes in globals.css or Tailwind classes. |
 | 2026-03-13 | EPUB cover font sizes increased ~2-3x | Original sizes (200/70/55/48px) were unreadable at Kindle library thumbnail size (~150-200px wide). New sizes (230/140/110/90px) with horizontal rule separator and centered layout are legible at thumbnail scale. |
+| 2026-03-14 | Onboarding as modal wizard on dashboard (not settings page) | Self-contained 4-step modal keeps users on the dashboard. Reuses existing `/api/settings` and `/api/send/test` endpoints — no new API routes or DB migrations. Detection via missing settings row + localStorage flag handles edge cases (returning users, multi-device). Transparent overlay avoids partial-page dimming issue caused by app layout stacking context. |
