@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Newsreader, Inter } from "next/font/google";
+import { PostHogProvider } from "@/lib/posthog";
+import { PostHogPageView } from "@/lib/posthog-pageview";
 import "./globals.css";
 
 const newsreader = Newsreader({
@@ -29,7 +31,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${newsreader.variable} ${inter.variable}`}>
-      <body className="antialiased min-h-screen">{children}</body>
+      <body className="antialiased min-h-screen">
+        <PostHogProvider>
+          <PostHogPageView />
+          {children}
+        </PostHogProvider>
+      </body>
     </html>
   );
 }
