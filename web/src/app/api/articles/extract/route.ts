@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createApiClient } from "@/lib/supabase/api";
 import { extract } from "@extractus/article-extractor";
 
 function calculateReadTime(htmlContent: string): number {
@@ -32,8 +32,8 @@ export async function POST(request: Request) {
       );
     }
 
-    // Authenticate the user
-    const supabase = await createClient();
+    // Authenticate the user (supports both cookie auth and Bearer token)
+    const supabase = await createApiClient(request);
     const {
       data: { user },
     } = await supabase.auth.getUser();

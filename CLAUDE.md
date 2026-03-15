@@ -224,6 +224,7 @@ All files live under `web/`:
 | `web/src/middleware.ts` | Route protection — redirects unauthenticated users to login, authenticated users from `/` to `/dashboard` |
 | `web/src/lib/supabase/client.ts` | Browser-side Supabase client (uses `createBrowserClient` from `@supabase/ssr`) |
 | `web/src/lib/supabase/server.ts` | Server-side Supabase client (uses `createServerClient` with cookie handling) |
+| `web/src/lib/supabase/api.ts` | API route Supabase client — supports both cookie auth (web app) and Bearer token auth (Chrome extension) |
 | `web/src/lib/supabase/middleware.ts` | Session refresh logic used by the middleware |
 | `web/src/app/(app)/layout.tsx` | Authenticated layout — top nav bar (Queue/History/Settings), sign out, user email |
 | `web/src/app/(app)/dashboard/page.tsx` | Dashboard — URL input, article queue list, send-to-Kindle with loading/success states, welcome modal trigger |
@@ -431,12 +432,48 @@ SUPABASE_SERVICE_ROLE_KEY=<service role key from Supabase dashboard>
 - ✅ **Visual refresh merge** — Light gray (#f4f4f4) + forest green (#2d5f2d) palette with Newsreader (headings) + Inter (body) fonts. Ported file-by-file to a clean branch (`q2kindle/visual-refresh-clean`) from current main, removing all styled-jsx. Merged via PR and deployed to production 2026-03-10.
 - ✅ **OTP code entry form on login page** — After sending magic link, a 6-digit code input appears as fallback for cross-browser scenarios. Uses `supabase.auth.verifyOtp({ email, token, type: 'email' })`. Numeric-only input with "Back" and "Resend" options.
 
+## Chrome Extension (Internal / In Development)
+
+A simple Chrome extension that lets you save the current browser tab's URL to your q2kindle queue with one click. Built for internal use — the creator is actively using it, but it has **not been published** to the Chrome Web Store yet. Publishing requires a one-time $5 developer account fee and Google review (1-3 business days).
+
+### How it works
+
+1. User clicks the extension icon in the Chrome toolbar
+2. First time: sign in with email (same magic link OTP flow as the web app)
+3. After sign in: popup shows the current page's title and URL, with a "Save to Queue" button
+4. Clicking save calls the existing `/api/articles/extract` endpoint with a Bearer token (instead of cookies)
+5. Article is added to the queue and extracted server-side, same as pasting a URL on the dashboard
+
+### Extension files
+
+All files live under `extension/` at the repo root (not inside `web/`):
+
+| File | Purpose |
+|------|---------|
+| `extension/manifest.json` | Manifest V3 — permissions for `activeTab` + `storage`, host access to q2kindle.com and Supabase |
+| `extension/popup.html` | Popup UI — matches app design (Newsreader + Inter fonts, forest green palette) |
+| `extension/popup.js` | Auth via Supabase REST API, token management with auto-refresh, save-to-queue |
+| `extension/icons/icon-{16,48,128}.png` | PNG icons generated from the app's favicon SVG |
+
+### How to load (local development)
+
+1. Open `chrome://extensions` in Chrome
+2. Enable **Developer mode** (toggle in top right)
+3. Click **Load unpacked** → select the `extension/` folder
+4. Extension appears in the toolbar — click it to use
+
+No build step, no npm, no bundler. Plain HTML/JS that Chrome reads directly.
+
+### Backend support
+
+The extract API route (`web/src/app/api/articles/extract/route.ts`) uses `createApiClient(request)` from `web/src/lib/supabase/api.ts`, which checks for a Bearer token in the `Authorization` header before falling back to cookie-based auth. This means the same endpoint serves both the web app and the Chrome extension. Web app users are completely unaffected — the Bearer token path only activates when the extension explicitly sends one.
+
 ## V2 Roadmap (post-launch)
 
 Phase 7 completes web app v1. After public launch (Reddit, online media), v2 will add:
 
 - **RSS reader** — subscribe to feeds, browse new articles, and manually add them to the Kindle queue (no auto-queuing)
-- **Chrome extension** — save-to-queue from any browser tab
+- **Chrome extension** — publish to Chrome Web Store ($5 developer account fee, Google review process)
 - **iOS app** — native app with share sheet integration (share articles from Safari/apps directly to queue)
 
 ## V2 Pages (planned)
@@ -563,4 +600,6 @@ Phase 7 completes web app v1. After public launch (Reddit, online media), v2 wil
 | 2026-02-28 | Settings page fix (remove stale style jsx) | After removing the EPUB font picker, two `<style jsx>` blocks with `@keyframes fadeUp` were left orphaned in settings/page.tsx. These caused client-side errors. Removed the blocks and moved `fadeUp` to globals.css. |
 | 2026-03-01 | Never use styled-jsx — use globals.css or Tailwind only | `@netlify/plugin-nextjs` v5 has a packaging bug that fails to bundle styled-jsx runtime chunks, causing ChunkLoadError on Netlify. Removed all `<style jsx>` from codebase. CSS goes in globals.css or Tailwind classes. |
 | 2026-03-13 | EPUB cover font sizes increased ~2-3x | Original sizes (200/70/55/48px) were unreadable at Kindle library thumbnail size (~150-200px wide). New sizes (230/140/110/90px) with horizontal rule separator and centered layout are legible at thumbnail scale. |
+| 2026-03-14 | Chrome extension — internal use only, not published | Built Manifest V3 popup extension for saving current tab URL to queue. Uses Supabase REST API directly for OTP auth, calls existing extract endpoint with Bearer token. No build step needed — plain HTML/JS. Will publish to Chrome Web Store later ($5 fee + Google review). |
+| 2026-03-14 | `createApiClient()` for dual auth (cookie + Bearer) | New `api.ts` helper checks for Authorization header first (Chrome extension), falls back to cookie-based auth (web app). Extract route uses this instead of `createClient()`. Zero impact on existing web app users — Bearer path only activates when explicitly sent. |
 | 2026-03-14 | Onboarding as modal wizard on dashboard (not settings page) | Self-contained 4-step modal keeps users on the dashboard. Reuses existing `/api/settings` and `/api/send/test` endpoints — no new API routes or DB migrations. Detection via missing settings row + localStorage flag handles edge cases (returning users, multi-device). Transparent overlay avoids partial-page dimming issue caused by app layout stacking context. |
