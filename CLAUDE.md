@@ -251,6 +251,7 @@ All files live under `web/`:
 | `web/supabase/migrations/007_remove_epub_font.sql` | Drops `epub_font` column from settings (Kindle ignores CSS font-family) |
 | `web/supabase/migrations/008_add_image_to_articles.sql` | Adds `image` text column to articles for og:image / featured image URL |
 | `web/src/app/api/cron/send/route.ts` | Cron API route — scheduled send logic, called hourly by Supabase pg_cron |
+| `web/src/app/terms/page.tsx` | Terms of Service — plain-English terms, accessible without login |
 
 ## V2 Design system
 
@@ -416,7 +417,7 @@ SUPABASE_SERVICE_ROLE_KEY=<service role key from Supabase dashboard>
 - ✅ **Dynamic cover image for Kindle library** — satori (React-to-SVG) + @resvg/resvg-js (SVG-to-PNG) generates a 1600×2400 cover image at send time. Shows "Q2KINDLE" branding, date, volume/issue, article count, and read time. Passed as `File` to `epub-gen-memory`'s `cover` option. Google Fonts loaded dynamically with caching. Fallback: if cover generation fails, EPUB sends without cover instead of failing entirely. `web/src/lib/cover-image.ts`.
 - ✅ **Mobile responsive design** — bottom tab bar on mobile, responsive queue cards with description/domain/read time, responsive layouts across dashboard/history/settings/article preview, landing page 480px breakpoints, fluid Kindle mockup
 - ✅ **Error handling hardening** — article status update errors after successful email send are now captured and logged to send_history (prevents silent duplicate-send bug). Cover image generation wrapped in try/catch with graceful fallback.
-- ⬜ **Landing page copy refinement** — tweak messaging and copy on the login/landing page before public launch
+- ✅ **Landing page copy refinement** — updated hero subtitle, features section intro, schedule feature copy, changed "Free forever" to "Free to use", "30-second" to "60-second setup", added Privacy/Terms links to footer
 - ✅ **First-time user onboarding wizard** — 4-step modal on dashboard for new users: welcome message, Kindle email setup (saves via `/api/settings`), approved sender instructions with copy button, and test email verification. Detected via missing settings row + `q2k_onboarding_done` localStorage flag. No database migration needed. `web/src/app/(app)/dashboard/welcome-modal.tsx`.
 - ✅ **UI refinements (desktop)** — visual polish pass: Inter font, warm cream background, new icons, solid green settings
 - ✅ **UI refinements (mobile)** — mobile-specific layout and interaction polish
@@ -431,6 +432,8 @@ SUPABASE_SERVICE_ROLE_KEY=<service role key from Supabase dashboard>
 - ✅ **Test email feedback position** — test email success/failure messages now appear directly below the test button instead of near the Save Settings button
 - ✅ **Visual refresh merge** — Light gray (#f4f4f4) + forest green (#2d5f2d) palette with Newsreader (headings) + Inter (body) fonts. Ported file-by-file to a clean branch (`q2kindle/visual-refresh-clean`) from current main, removing all styled-jsx. Merged via PR and deployed to production 2026-03-10.
 - ✅ **OTP code entry form on login page** — After sending magic link, a 6-digit code input appears as fallback for cross-browser scenarios. Uses `supabase.auth.verifyOtp({ email, token, type: 'email' })`. Numeric-only input with "Back" and "Resend" options.
+- ✅ **Terms of Service page** — `/terms` route with plain-English terms (friendly tone, no legalese). Covers account, acceptable use, content/copyright, service as-is, daily limits, termination. Matches privacy page design. Added to middleware public routes.
+- ✅ **Privacy & Terms contact updated** — replaced email addresses (`privacy@q2kindle.com`, `team@q2kindle.com`) with GitHub issues link. No real inbox was set up for those addresses.
 
 ## Chrome Extension (Internal / In Development)
 
