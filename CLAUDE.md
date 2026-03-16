@@ -219,8 +219,9 @@ All files live under `web/`:
 | `web/.env.local` | Supabase URL and anon key (gitignored) |
 | `web/src/app/globals.css` | Global styles — CSS variables for dark theme, Tailwind import |
 | `web/src/app/layout.tsx` | Root layout — html/body wrapper, metadata |
-| `web/src/app/page.tsx` | Login page — magic link auth via Supabase, editorial dark UI |
-| `web/src/app/auth/callback/route.ts` | Auth callback — exchanges Supabase code for session, redirects to dashboard |
+| `web/src/app/page.tsx` | Landing page — marketing copy, feature showcase, CTAs linking to `/login` |
+| `web/src/app/login/page.tsx` | Login page — magic link + OTP auth via Supabase, failed-link error handling, resend with cooldown, spam hint |
+| `web/src/app/auth/callback/route.ts` | Auth callback — exchanges Supabase code for session, redirects to dashboard. On failure, redirects to `/login?error=link_failed` |
 | `web/src/middleware.ts` | Route protection — redirects unauthenticated users to login, authenticated users from `/` to `/dashboard` |
 | `web/src/lib/supabase/client.ts` | Browser-side Supabase client (uses `createBrowserClient` from `@supabase/ssr`) |
 | `web/src/lib/supabase/server.ts` | Server-side Supabase client (uses `createServerClient` with cookie handling) |
@@ -432,6 +433,8 @@ SUPABASE_SERVICE_ROLE_KEY=<service role key from Supabase dashboard>
 - ✅ **Test email feedback position** — test email success/failure messages now appear directly below the test button instead of near the Save Settings button
 - ✅ **Visual refresh merge** — Light gray (#f4f4f4) + forest green (#2d5f2d) palette with Newsreader (headings) + Inter (body) fonts. Ported file-by-file to a clean branch (`q2kindle/visual-refresh-clean`) from current main, removing all styled-jsx. Merged via PR and deployed to production 2026-03-10.
 - ✅ **OTP code entry form on login page** — After sending magic link, a 6-digit code input appears as fallback for cross-browser scenarios. Uses `supabase.auth.verifyOtp({ email, token, type: 'email' })`. Numeric-only input with "Back" and "Resend" options.
+- ✅ **Login page UX hardening** — Three improvements: (1) Failed magic link error — `/login?error=link_failed` now shows amber warning banner ("link expired or already used") instead of silently showing a blank form. Magic links are single-use (PKCE code consumed on first click, even in wrong browser). (2) Resend with cooldown — "check spam folder, or resend email" text below OTP form with 30-second countdown timer matching Supabase's rate limit. (3) App favicon as login icon — replaced generic book SVG with the actual app favicon (forest green Kindle device icon).
+- ✅ **Auth email delivery** — Magic link emails delivered via Resend custom SMTP (`team@q2kindle.com`). Emails include both a clickable "Sign in to q2kindle" button and a 6-digit OTP code. Link expires in 10 minutes (configured in Supabase). Emails arrive in 1-2 seconds.
 - ✅ **Terms of Service page** — `/terms` route with plain-English terms (friendly tone, no legalese). Covers account, acceptable use, content/copyright, service as-is, daily limits, termination. Matches privacy page design. Added to middleware public routes.
 - ✅ **Privacy & Terms contact updated** — replaced email addresses (`privacy@q2kindle.com`, `team@q2kindle.com`) with GitHub issues link. No real inbox was set up for those addresses.
 
@@ -479,15 +482,18 @@ Phase 7 completes web app v1. After public launch (Reddit, online media), v2 wil
 - **Chrome extension** — publish to Chrome Web Store ($5 developer account fee, Google review process)
 - **iOS app** — native app with share sheet integration (share articles from Safari/apps directly to queue)
 
-## V2 Pages (planned)
+## V2 Pages
 
 | Route | Purpose |
 |-------|---------|
-| `/` | Login — magic link email input |
+| `/` | Landing page — marketing copy, feature showcase, CTAs to `/login` |
+| `/login` | Login — magic link + OTP auth, failed-link error handling, resend with cooldown |
 | `/dashboard` | Main app — URL input, article queue, send button |
 | `/article/:id` | Article reader/preview — read extracted content before sending |
 | `/history` | Last 10 sends with status |
-| `/settings` | Kindle email, SMTP config, auto-send preferences |
+| `/settings` | Kindle email, auto-send preferences, EPUB formatting |
+| `/privacy` | Privacy policy (public, no auth required) |
+| `/terms` | Terms of service (public, no auth required) |
 
 ## V2 Deployment
 
@@ -606,3 +612,6 @@ Phase 7 completes web app v1. After public launch (Reddit, online media), v2 wil
 | 2026-03-14 | Chrome extension — internal use only, not published | Built Manifest V3 popup extension for saving current tab URL to queue. Uses Supabase REST API directly for OTP auth, calls existing extract endpoint with Bearer token. No build step needed — plain HTML/JS. Will publish to Chrome Web Store later ($5 fee + Google review). |
 | 2026-03-14 | `createApiClient()` for dual auth (cookie + Bearer) | New `api.ts` helper checks for Authorization header first (Chrome extension), falls back to cookie-based auth (web app). Extract route uses this instead of `createClient()`. Zero impact on existing web app users — Bearer path only activates when explicitly sent. |
 | 2026-03-14 | Onboarding as modal wizard on dashboard (not settings page) | Self-contained 4-step modal keeps users on the dashboard. Reuses existing `/api/settings` and `/api/send/test` endpoints — no new API routes or DB migrations. Detection via missing settings row + localStorage flag handles edge cases (returning users, multi-device). Transparent overlay avoids partial-page dimming issue caused by app layout stacking context. |
+| 2026-03-15 | Generic "expired or already used" error for failed magic links | Auth callback can't distinguish between expired links, cross-browser clicks, and double-clicks — all fail `exchangeCodeForSession` the same way. PKCE codes are single-use: once clicked anywhere (even wrong browser), the code is consumed and the original link is also dead. Message covers all cases without overexplaining. |
+| 2026-03-15 | 30-second resend cooldown (matches Supabase rate limit) | Supabase rate-limits OTP sends to ~60s between requests. 30s cooldown on the UI side prevents users from hitting the rate limit error while still feeling responsive. Cooldown starts on initial send and on each resend. |
+| 2026-03-15 | Login icon uses app favicon (not generic book SVG) | Consistency — the login page now shows the same forest green Kindle device icon used as the browser tab favicon. Rendered as inline SVG at 56px with border-radius and shadow, no wrapper div. |
