@@ -41,7 +41,8 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname === "/signup" ||
     request.nextUrl.pathname.startsWith("/auth/") ||
     request.nextUrl.pathname.startsWith("/api/") ||
-    request.nextUrl.pathname === "/privacy";
+    request.nextUrl.pathname === "/privacy" ||
+    request.nextUrl.pathname === "/terms";
 
   if (!user && !isPublicRoute) {
     const url = request.nextUrl.clone();

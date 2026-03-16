@@ -39,13 +39,13 @@ export default function LandingPage() {
           <p className="hero-label">A reading companion for your <span className="hero-label-kindle">Kindle</span></p>
           <h1>Articles deserve<br />a quieter place<br />to be <em>read.</em></h1>
           <p className="hero-sub">
-            Queue the articles you find. We compile them into a beautiful ebook and deliver it straight to your <strong style={{fontWeight: 600, color: 'var(--color-text)'}}>Kindle</strong>.
+            Add articles to your queue. We compile them into a beautiful ebook, delivered straight to your <strong style={{fontWeight: 600, color: 'var(--color-text)'}}>Kindle</strong>.
           </p>
           <div className="hero-actions">
             <Link href="/login" className="btn-primary">Send your first article</Link>
             <a href="#features" className="btn-text">See how it works</a>
           </div>
-          <p className="hero-proof">Free forever<span>&middot;</span>Any Kindle device<span>&middot;</span>30-second setup</p>
+          <p className="hero-proof">Free to use<span>&middot;</span>Any Kindle device<span>&middot;</span>60-second setup</p>
         </div>
       </section>
 
@@ -58,7 +58,7 @@ export default function LandingPage() {
             <div className="divider-line" />
           </div>
           <h2 className="section-heading">Three steps to distraction-free reading</h2>
-          <p className="section-sub">No apps to install, no accounts to sync. Just your articles, beautifully set on your Kindle.</p>
+          <p className="section-sub">A seamless bridge from the noisy web to your quiet Kindle. Set your schedule and let us handle the rest.</p>
         </div>
 
         {/* Feature 1 */}
@@ -134,8 +134,8 @@ export default function LandingPage() {
         <div className="feature-row">
           <div data-reveal>
             <div className="feature-num">03</div>
-            <h3 className="feature-title">Set your next<br />reading session.</h3>
-            <p className="feature-desc">Pick your days and time. We bundle your queue into a fresh ebook and deliver it to your Kindle — nothing to press, nothing to remember.</p>
+            <h3 className="feature-title">Your schedule,<br />your way</h3>
+            <p className="feature-desc">Pick your days and times. Whether it&apos;s for your morning coffee or winding down at night, we bundle your queue and deliver it automatically. Nothing to press, nothing to remember.</p>
           </div>
           <div data-reveal="d1">
             <div className="v-card">
@@ -172,13 +172,18 @@ export default function LandingPage() {
           <h2>Stop saving.<br />Start <em>reading.</em></h2>
           <p className="bottom-sub">Your articles deserve better than a browser tab.</p>
           <Link href="/login" className="btn-primary">Send your first article</Link>
-          <p className="bottom-fine">Free forever &middot; Any Kindle device &middot; 30-second setup</p>
+          <p className="bottom-fine">Free to use &middot; Any Kindle device &middot; 60-second setup</p>
         </div>
       </section>
 
       {/* FOOTER */}
       <footer className="landing-footer">
         <p>q2kindle &mdash; Queue articles. Get a beautiful ebook. Read distraction-free.</p>
+        <div className="footer-links">
+          <Link href="/privacy">Privacy</Link>
+          <span>&middot;</span>
+          <Link href="/terms">Terms</Link>
+        </div>
       </footer>
     </>
   );

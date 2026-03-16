@@ -252,6 +252,7 @@ All files live under `web/`:
 | `web/supabase/migrations/007_remove_epub_font.sql` | Drops `epub_font` column from settings (Kindle ignores CSS font-family) |
 | `web/supabase/migrations/008_add_image_to_articles.sql` | Adds `image` text column to articles for og:image / featured image URL |
 | `web/src/app/api/cron/send/route.ts` | Cron API route — scheduled send logic, called hourly by Supabase pg_cron |
+| `web/src/app/terms/page.tsx` | Terms of Service — plain-English terms, accessible without login |
 
 ## V2 Design system
 
@@ -417,7 +418,7 @@ SUPABASE_SERVICE_ROLE_KEY=<service role key from Supabase dashboard>
 - ✅ **Dynamic cover image for Kindle library** — satori (React-to-SVG) + @resvg/resvg-js (SVG-to-PNG) generates a 1600×2400 cover image at send time. Shows "Q2KINDLE" branding, date, volume/issue, article count, and read time. Passed as `File` to `epub-gen-memory`'s `cover` option. Google Fonts loaded dynamically with caching. Fallback: if cover generation fails, EPUB sends without cover instead of failing entirely. `web/src/lib/cover-image.ts`.
 - ✅ **Mobile responsive design** — bottom tab bar on mobile, responsive queue cards with description/domain/read time, responsive layouts across dashboard/history/settings/article preview, landing page 480px breakpoints, fluid Kindle mockup
 - ✅ **Error handling hardening** — article status update errors after successful email send are now captured and logged to send_history (prevents silent duplicate-send bug). Cover image generation wrapped in try/catch with graceful fallback.
-- ✅ **Landing page copy refinement** — updated messaging: "60-second setup" (was 30), "Free to use" (was "Free forever"), added Terms of Service page at `/terms`
+- ✅ **Landing page copy refinement** — updated hero subtitle, features section intro, schedule feature copy, changed "Free forever" to "Free to use", "30-second" to "60-second setup", added Privacy/Terms links to footer
 - ✅ **First-time user onboarding wizard** — 4-step modal on dashboard for new users: welcome message, Kindle email setup (saves via `/api/settings`), approved sender instructions with copy button, and test email verification. Detected via missing settings row + `q2k_onboarding_done` localStorage flag. No database migration needed. `web/src/app/(app)/dashboard/welcome-modal.tsx`.
 - ✅ **UI refinements (desktop)** — visual polish pass: Inter font, warm cream background, new icons, solid green settings
 - ✅ **UI refinements (mobile)** — mobile-specific layout and interaction polish
@@ -434,6 +435,8 @@ SUPABASE_SERVICE_ROLE_KEY=<service role key from Supabase dashboard>
 - ✅ **OTP code entry form on login page** — After sending magic link, a 6-digit code input appears as fallback for cross-browser scenarios. Uses `supabase.auth.verifyOtp({ email, token, type: 'email' })`. Numeric-only input with "Back" and "Resend" options.
 - ✅ **Login page UX hardening** — Three improvements: (1) Failed magic link error — `/login?error=link_failed` now shows amber warning banner ("link expired or already used") instead of silently showing a blank form. Magic links are single-use (PKCE code consumed on first click, even in wrong browser). (2) Resend with cooldown — "check spam folder, or resend email" text below OTP form with 30-second countdown timer matching Supabase's rate limit. (3) App favicon as login icon — replaced generic book SVG with the actual app favicon (forest green Kindle device icon).
 - ✅ **Auth email delivery** — Magic link emails delivered via Resend custom SMTP (`team@q2kindle.com`). Emails include both a clickable "Sign in to q2kindle" button and a 6-digit OTP code. Link expires in 10 minutes (configured in Supabase). Emails arrive in 1-2 seconds.
+- ✅ **Terms of Service page** — `/terms` route with plain-English terms (friendly tone, no legalese). Covers account, acceptable use, content/copyright, service as-is, daily limits, termination. Matches privacy page design. Added to middleware public routes.
+- ✅ **Privacy & Terms contact updated** — replaced email addresses (`privacy@q2kindle.com`, `team@q2kindle.com`) with GitHub issues link. No real inbox was set up for those addresses.
 
 ## Chrome Extension (Internal / In Development)
 
