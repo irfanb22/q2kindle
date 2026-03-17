@@ -294,7 +294,7 @@ SUPABASE_SERVICE_ROLE_KEY=<service role key from Supabase dashboard>
 | **Phase 5** | Auto-send, send history, settings polish, test email | ✅ Complete |
 | **Phase 6** | EPUB customization — cover page, fonts, image toggle, metadata controls | ✅ Complete |
 | **Phase 6.5** | Custom domain — q2kindle.com via Squarespace DNS + Netlify + Supabase | ✅ Complete |
-| **Phase 7** | Polish — UI refinements, landing page, onboarding, EPUB cover tweaks, PWA, branding | 🟡 In progress |
+| **Phase 7** | Polish — UI refinements, landing page, onboarding, EPUB cover tweaks, PWA, branding | ✅ Complete |
 
 ### Phase 1 progress
 
@@ -416,7 +416,7 @@ SUPABASE_SERVICE_ROLE_KEY=<service role key from Supabase dashboard>
 - ✅ **Dynamic cover image for Kindle library** — satori (React-to-SVG) + @resvg/resvg-js (SVG-to-PNG) generates a 1600×2400 cover image at send time. Shows "Q2KINDLE" branding, date, volume/issue, article count, and read time. Passed as `File` to `epub-gen-memory`'s `cover` option. Google Fonts loaded dynamically with caching. Fallback: if cover generation fails, EPUB sends without cover instead of failing entirely. `web/src/lib/cover-image.ts`.
 - ✅ **Mobile responsive design** — bottom tab bar on mobile, responsive queue cards with description/domain/read time, responsive layouts across dashboard/history/settings/article preview, landing page 480px breakpoints, fluid Kindle mockup
 - ✅ **Error handling hardening** — article status update errors after successful email send are now captured and logged to send_history (prevents silent duplicate-send bug). Cover image generation wrapped in try/catch with graceful fallback.
-- ⬜ **Landing page copy refinement** — tweak messaging and copy on the login/landing page before public launch
+- ✅ **Landing page copy refinement** — differentiated login vs signup pages: "Welcome back." for returning users, "Sign up" for new users. Hidden heading/footer on OTP screen.
 - ✅ **First-time user onboarding wizard** — 4-step modal on dashboard for new users: welcome message, Kindle email setup (saves via `/api/settings`), approved sender instructions with copy button, and test email verification. Detected via missing settings row + `q2k_onboarding_done` localStorage flag. No database migration needed. `web/src/app/(app)/dashboard/welcome-modal.tsx`.
 - ✅ **UI refinements (desktop)** — visual polish pass: Inter font, warm cream background, new icons, solid green settings
 - ✅ **UI refinements (mobile)** — mobile-specific layout and interaction polish
@@ -431,6 +431,8 @@ SUPABASE_SERVICE_ROLE_KEY=<service role key from Supabase dashboard>
 - ✅ **Test email feedback position** — test email success/failure messages now appear directly below the test button instead of near the Save Settings button
 - ✅ **Visual refresh merge** — Light gray (#f4f4f4) + forest green (#2d5f2d) palette with Newsreader (headings) + Inter (body) fonts. Ported file-by-file to a clean branch (`q2kindle/visual-refresh-clean`) from current main, removing all styled-jsx. Merged via PR and deployed to production 2026-03-10.
 - ✅ **OTP code entry form on login page** — After sending magic link, a 6-digit code input appears as fallback for cross-browser scenarios. Uses `supabase.auth.verifyOtp({ email, token, type: 'email' })`. Numeric-only input with "Back" and "Resend" options.
+- ✅ **Kindle mockup WebKit fix** — Fixed article preview content overflowing bezel on iPad (WebKit). Replaced `height: 100%` with `flex: 1` + `minHeight: 0` on screen area. WebKit miscalculates child height with `aspect-ratio` + padding + `height: 100%`.
+- ✅ **Login/signup page differentiation** — Landing page "Get started" links to `/login?mode=signup`, "Log in" links to `/login`. Signup shows "Sign up" heading, login shows "Welcome back." with appropriate copy. Heading and footer hidden on OTP screen.
 
 ## Chrome Extension (Internal / In Development)
 
@@ -515,7 +517,7 @@ Phase 7 completes web app v1. After public launch (Reddit, online media), v2 wil
 - ✅ Magic link auth verified working end-to-end on `q2kindle.com`
 - ✅ **Send-to-Kindle verified working on Netlify** — Brevo SMTP delivery confirmed working in production (test email + manual send)
 - ✅ **Switched from Amazon SES to Brevo** — AWS denied SES production access twice. Brevo provides 300 emails/day free with SMTP access. Domain `q2kindle.com` verified in Brevo with DKIM. Sender: `kindle@q2kindle.com`.
-- ⬜ **Run migration 006** — drop `sender_email` and `smtp_password` columns from settings table. Run in Supabase SQL Editor.
+- ✅ **Run migration 006** — dropped `sender_email` and `smtp_password` columns from settings table via Supabase SQL Editor (2026-03-16).
 
 ### Deployment files
 
@@ -603,3 +605,5 @@ Phase 7 completes web app v1. After public launch (Reddit, online media), v2 wil
 | 2026-03-14 | Chrome extension — internal use only, not published | Built Manifest V3 popup extension for saving current tab URL to queue. Uses Supabase REST API directly for OTP auth, calls existing extract endpoint with Bearer token. No build step needed — plain HTML/JS. Will publish to Chrome Web Store later ($5 fee + Google review). |
 | 2026-03-14 | `createApiClient()` for dual auth (cookie + Bearer) | New `api.ts` helper checks for Authorization header first (Chrome extension), falls back to cookie-based auth (web app). Extract route uses this instead of `createClient()`. Zero impact on existing web app users — Bearer path only activates when explicitly sent. |
 | 2026-03-14 | Onboarding as modal wizard on dashboard (not settings page) | Self-contained 4-step modal keeps users on the dashboard. Reuses existing `/api/settings` and `/api/send/test` endpoints — no new API routes or DB migrations. Detection via missing settings row + localStorage flag handles edge cases (returning users, multi-device). Transparent overlay avoids partial-page dimming issue caused by app layout stacking context. |
+| 2026-03-16 | Flex layout for Kindle mockup (WebKit fix) | WebKit (iPad Chrome/Safari) miscalculates child `height: 100%` inside a parent with `aspect-ratio` + padding. Switched bezel to `display: flex` + `flex: 1` + `minHeight: 0` on the screen area. Works correctly across Blink and WebKit. |
+| 2026-03-16 | Login vs signup differentiation via query param | Same `/login` page, `?mode=signup` toggles copy. "Get started" and hero CTAs link to signup mode. Simpler than separate routes — same form, same Supabase `signInWithOtp` call, only the displayed text changes. |
