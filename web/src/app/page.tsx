@@ -28,7 +28,7 @@ export default function LandingPage() {
         <Link href="/" className="nav-logo">q2kindle</Link>
         <div className="nav-links">
           <Link href="/login" className="nav-link">Log in</Link>
-          <Link href="/login" className="nav-cta">Get started</Link>
+          <Link href="/login?mode=signup" className="nav-cta">Get started</Link>
         </div>
       </nav>
 
@@ -42,7 +42,7 @@ export default function LandingPage() {
             Queue the articles you find. We compile them into a beautiful ebook and deliver it straight to your <strong style={{fontWeight: 600, color: 'var(--color-text)'}}>Kindle</strong>.
           </p>
           <div className="hero-actions">
-            <Link href="/login" className="btn-primary">Send your first article</Link>
+            <Link href="/login?mode=signup" className="btn-primary">Send your first article</Link>
             <a href="#features" className="btn-text">See how it works</a>
           </div>
           <p className="hero-proof">Free forever<span>&middot;</span>Any Kindle device<span>&middot;</span>30-second setup</p>
