@@ -241,6 +241,7 @@ All files live under `web/`:
 | `web/src/lib/email.ts` | Shared email sending — `sendToKindle()` via Brevo SMTP + Nodemailer, `KINDLE_SENDER` constant |
 | `web/src/lib/epub.ts` | Shared EPUB generation — `generateKindleEpub()`, cover page, image stripping, CSS builder |
 | `web/src/lib/cover-image.ts` | Dynamic cover image — satori + @resvg/resvg-js, generates 1600×2400 PNG with branding, date, volume/issue, stats |
+| `web/public/og-image.png` | Open Graph link preview image — 1200×630 static PNG with cream bg, app icon, name, tagline |
 | `web/src/lib/send-limits.ts` | Daily send limit — `DAILY_SEND_LIMIT` constant, `getDailySendCount()`, `getStartOfDayUtc()` timezone helper |
 | `web/src/lib/types.ts` | Shared TypeScript types (Article, Settings, SendHistory, EpubPreferences) used across pages |
 | `web/supabase/migrations/001_create_tables.sql` | Database schema — articles, send_history, settings tables + RLS policies |
@@ -439,6 +440,7 @@ SUPABASE_SERVICE_ROLE_KEY=<service role key from Supabase dashboard>
 - ✅ **Auth email delivery** — Magic link emails delivered via Resend custom SMTP (`team@q2kindle.com`). Emails include both a clickable "Sign in to q2kindle" button and a 6-digit OTP code. Link expires in 10 minutes (configured in Supabase). Emails arrive in 1-2 seconds.
 - ✅ **Terms of Service page** — `/terms` route with plain-English terms (friendly tone, no legalese). Covers account, acceptable use, content/copyright, service as-is, daily limits, termination. Matches privacy page design. Added to middleware public routes.
 - ✅ **Privacy & Terms contact updated** — replaced email addresses (`privacy@q2kindle.com`, `team@q2kindle.com`) with GitHub issues link. No real inbox was set up for those addresses.
+- ✅ **Open Graph link preview** — static 1200×630 OG image (`web/public/og-image.png`) with cream background, app icon, "q2kindle" in Newsreader, and tagline. Open Graph + Twitter Card meta tags in `layout.tsx`. Rich preview appears when sharing `q2kindle.com` in iMessage, Slack, Twitter, etc.
 
 ## Chrome Extension (Internal / In Development)
 
@@ -619,3 +621,4 @@ Phase 7 completes web app v1. After public launch (Reddit, online media), v2 wil
 | 2026-03-15 | Login icon uses app favicon (not generic book SVG) | Consistency — the login page now shows the same forest green Kindle device icon used as the browser tab favicon. Rendered as inline SVG at 56px with border-radius and shadow, no wrapper div. |
 | 2026-03-16 | Flex layout for Kindle mockup (WebKit fix) | WebKit (iPad Chrome/Safari) miscalculates child `height: 100%` inside a parent with `aspect-ratio` + padding. Switched bezel to `display: flex` + `flex: 1` + `minHeight: 0` on the screen area. Works correctly across Blink and WebKit. |
 | 2026-03-16 | Login vs signup differentiation via query param | Same `/login` page, `?mode=signup` toggles copy. "Get started" and hero CTAs link to signup mode. Simpler than separate routes — same form, same Supabase `signInWithOtp` call, only the displayed text changes. |
+| 2026-03-16 | Static OG image (not dynamic satori) | Link preview image is a static 1200×630 PNG generated once from SVG via resvg. No need for dynamic generation — branding and tagline don't change per-page. Cream `#f4f4f4` background matches app palette. |

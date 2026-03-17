@@ -21,7 +21,28 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "q2kindle",
-  description: "Queue articles and send them to your Kindle as formatted ebooks",
+  description: "Queue articles. Get a beautiful ebook. Read distraction-free.",
+  metadataBase: new URL("https://q2kindle.com"),
+  openGraph: {
+    title: "q2kindle",
+    description: "Queue articles. Get a beautiful ebook. Read distraction-free.",
+    url: "https://q2kindle.com",
+    siteName: "q2kindle",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+      },
+    ],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "q2kindle",
+    description: "Queue articles. Get a beautiful ebook. Read distraction-free.",
+    images: ["/og-image.png"],
+  },
 };
 
 export default function RootLayout({
