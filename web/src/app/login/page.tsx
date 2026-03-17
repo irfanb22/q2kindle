@@ -14,6 +14,7 @@ function LoginForm() {
   const [resendCooldown, setResendCooldown] = useState(0);
   const [linkFailedMessage, setLinkFailedMessage] = useState<string | null>(null);
   const searchParams = useSearchParams();
+  const isSignup = searchParams.get("mode") === "signup";
 
   useEffect(() => {
     const errorParam = searchParams.get("error");
@@ -91,13 +92,24 @@ function LoginForm() {
             q2kindle
           </h1>
 
+          <h2 className="text-2xl tracking-tight mb-2"
+            style={{
+              fontFamily: 'var(--font-heading)',
+              color: 'var(--color-text)',
+              letterSpacing: '-0.01em',
+            }}>
+            {isSignup ? "Sign up" : "Welcome back."}
+          </h2>
+
           <p className="text-base leading-relaxed"
             style={{
               fontFamily: 'var(--font-body)',
               color: 'var(--color-text-muted)',
               fontWeight: 400,
             }}>
-            Send articles to your Kindle, from anywhere
+            {isSignup
+              ? "We'll email you a magic link so we can verify your email address."
+              : "Enter the email that you signed up with and we'll email you a magic link to log in."}
           </p>
         </div>
 
@@ -386,7 +398,9 @@ function LoginForm() {
             color: 'var(--color-text-dim)',
             animation: 'fadeUp 0.8s ease 0.3s both',
           }}>
-          No password needed — we&apos;ll email you a sign-in link
+          {isSignup
+            ? "No password needed — just verify your email to get started"
+            : "No password needed — we'll email you a sign-in link"}
         </p>
       </div>
     </div>

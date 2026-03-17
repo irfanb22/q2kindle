@@ -40,6 +40,8 @@ export default function KindleMockup({
             "0 0 0 1px rgba(255,255,255,0.08), 0 4px 24px rgba(0,0,0,0.12), 0 12px 48px rgba(0,0,0,0.06)",
           position: "relative",
           flexShrink: 0,
+          display: "flex",
+          flexDirection: "column" as const,
         }}
       >
         {/* Screen area */}
@@ -47,7 +49,8 @@ export default function KindleMockup({
           className="kindle-screen"
           style={{
             width: "100%",
-            height: "100%",
+            flex: 1,
+            minHeight: 0,
             background: "#f5f1e8",
             borderRadius: 4,
             overflowY: "auto",
