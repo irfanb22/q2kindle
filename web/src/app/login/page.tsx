@@ -11,14 +11,25 @@ function LoginForm() {
   const [error, setError] = useState<string | null>(null);
   const [otp, setOtp] = useState("");
   const [verifying, setVerifying] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [linkFailedMessage, setLinkFailedMessage] = useState<string | null>(null);
   const searchParams = useSearchParams();
   const isSignup = searchParams.get("mode") === "signup";
 
   useEffect(() => {
-    if (searchParams.get("error") === "auth") {
+    const errorParam = searchParams.get("error");
+    if (errorParam === "auth") {
       setError("Authentication failed. Please try again.");
+    } else if (errorParam === "link_failed") {
+      setLinkFailedMessage("That sign-in link has expired or was already used. Enter your email to get a new one.");
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setTimeout(() => setResendCooldown(resendCooldown - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [resendCooldown]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -41,6 +52,7 @@ function LoginForm() {
       setError(authError.message);
     } else {
       setSent(true);
+      setResendCooldown(30);
     }
   }
 
@@ -61,19 +73,15 @@ function LoginForm() {
         {/* Logo & Title */}
         <div className="text-center mb-12" style={{ animation: 'fadeUp 0.8s ease both' }}>
 
-          {/* Book icon */}
-          <div className="inline-flex items-center justify-center w-16 h-16 mb-8 rounded-2xl border"
-            style={{
-              borderColor: 'var(--color-border)',
-              background: 'var(--color-surface)',
-              boxShadow: '0 0 0 1px rgba(45,95,45,0.06), 0 8px 32px rgba(0,0,0,0.08)',
-            }}>
-            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M14 6C14 6 10.5 4 6 4C4.5 4 3.5 4.3 3 4.5V22.5C3.5 22.3 4.5 22 6 22C10.5 22 14 24 14 24" style={{ stroke: 'var(--color-accent)' }} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.9"/>
-              <path d="M14 6C14 6 17.5 4 22 4C23.5 4 24.5 4.3 25 4.5V22.5C24.5 22.3 23.5 22 22 22C17.5 22 14 24 14 24" style={{ stroke: 'var(--color-accent)' }} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.5"/>
-              <path d="M14 6V24" style={{ stroke: 'var(--color-accent)' }} strokeWidth="1" opacity="0.3"/>
-            </svg>
-          </div>
+          {/* App icon */}
+          <svg width="56" height="56" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" className="mb-8 mx-auto block"
+            style={{ borderRadius: '12px', boxShadow: '0 8px 32px rgba(0,0,0,0.12)' }}>
+            <rect width="32" height="32" rx="7" fill="#2d5f2d"/>
+            <rect x="8" y="4" width="16" height="24" rx="3" stroke="#f4f4f4" strokeWidth="2" fill="none"/>
+            <rect x="11" y="8" width="10" height="2.5" rx="1" fill="#f4f4f4"/>
+            <rect x="11" y="13" width="10" height="2.5" rx="1" fill="#f4f4f4" opacity="0.65"/>
+            <rect x="11" y="18" width="10" height="2.5" rx="1" fill="#f4f4f4" opacity="0.35"/>
+          </svg>
 
           <h1 className="text-4xl tracking-tight mb-3"
             style={{
@@ -120,6 +128,20 @@ function LoginForm() {
 
           {!sent ? (
             <form onSubmit={handleSubmit}>
+              {/* Cross-browser magic link error */}
+              {linkFailedMessage && (
+                <div className="mb-5 flex items-start gap-2.5 rounded-lg px-3.5 py-3"
+                  style={{ background: 'rgba(180,83,9,0.08)', border: '1px solid rgba(180,83,9,0.2)' }}>
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="mt-0.5 shrink-0">
+                    <circle cx="8" cy="8" r="7" stroke="#b45309" strokeWidth="1.5" opacity="0.7"/>
+                    <path d="M8 5v3.5M8 10.5v.5" stroke="#b45309" strokeWidth="1.5" strokeLinecap="round"/>
+                  </svg>
+                  <span className="text-sm leading-relaxed" style={{ color: 'var(--color-text)', fontFamily: 'var(--font-body)' }}>
+                    {linkFailedMessage}
+                  </span>
+                </div>
+              )}
+
               <label className="block text-xs uppercase tracking-widest mb-3"
                 style={{
                   fontFamily: 'var(--font-body)',
@@ -321,9 +343,41 @@ function LoginForm() {
                 </form>
               </div>
 
-              <div className="text-center mt-5">
+              {/* Spam hint + resend + different email */}
+              <div className="text-center mt-6 space-y-3">
+                <p className="text-xs leading-relaxed"
+                  style={{ fontFamily: 'var(--font-body)', color: 'var(--color-text-dim)' }}>
+                  Didn&apos;t receive an email? Check your spam folder, or{' '}
+                  <button
+                    onClick={async () => {
+                      if (resendCooldown > 0) return;
+                      setResendCooldown(30);
+                      const supabase = createClient();
+                      await supabase.auth.signInWithOtp({
+                        email: email.trim(),
+                        options: {
+                          emailRedirectTo: `${window.location.origin}/auth/callback`,
+                        },
+                      });
+                    }}
+                    disabled={resendCooldown > 0}
+                    className="transition-colors duration-200 cursor-pointer disabled:cursor-default"
+                    style={{
+                      fontFamily: 'var(--font-body)',
+                      color: resendCooldown > 0 ? 'var(--color-text-dim)' : 'var(--color-accent)',
+                      background: 'none',
+                      border: 'none',
+                      padding: 0,
+                      fontSize: 'inherit',
+                      textDecoration: resendCooldown > 0 ? 'none' : 'underline',
+                      textUnderlineOffset: '2px',
+                    }}
+                  >
+                    {resendCooldown > 0 ? `resend in ${resendCooldown}s` : 'resend email'}
+                  </button>
+                </p>
                 <button
-                  onClick={() => { setSent(false); setEmail(""); setOtp(""); setError(null); }}
+                  onClick={() => { setSent(false); setEmail(""); setOtp(""); setError(null); setLinkFailedMessage(null); }}
                   className="text-sm transition-colors duration-200 cursor-pointer"
                   style={{
                     fontFamily: 'var(--font-body)',
@@ -334,7 +388,7 @@ function LoginForm() {
                   onMouseEnter={(e) => e.currentTarget.style.color = 'var(--color-text)'}
                   onMouseLeave={(e) => e.currentTarget.style.color = 'var(--color-text-muted)'}
                 >
-                  Use a different email →
+                  Use a different email
                 </button>
               </div>
             </div>

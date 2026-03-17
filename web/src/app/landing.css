@@ -619,6 +619,27 @@ body { overflow-x: hidden; }
   font-weight: 400;
 }
 
+.footer-links {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--color-text-dim);
+}
+
+.footer-links a {
+  color: var(--color-text-dim);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.footer-links a:hover {
+  color: var(--color-text);
+}
+
 /* RESPONSIVE */
 @media (max-width: 900px) {
   .feature-row {
