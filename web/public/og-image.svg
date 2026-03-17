@@ -1,0 +1,19 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Cream background -->
+  <rect width="1200" height="630" fill="#f4f4f4"/>
+
+  <!-- App icon (scaled up, vertically centered as group) -->
+  <g transform="translate(560, 175) scale(2.5)">
+    <rect width="32" height="32" rx="7" fill="#2d5f2d"/>
+    <rect x="8" y="4" width="16" height="24" rx="3" stroke="#f4f4f4" stroke-width="2" fill="none"/>
+    <rect x="11" y="8" width="10" height="2.5" rx="1" fill="#f4f4f4"/>
+    <rect x="11" y="13" width="10" height="2.5" rx="1" fill="#f4f4f4" opacity="0.65"/>
+    <rect x="11" y="18" width="10" height="2.5" rx="1" fill="#f4f4f4" opacity="0.35"/>
+  </g>
+
+  <!-- "q2kindle" text -->
+  <text x="600" y="345" text-anchor="middle" font-family="'Newsreader', Georgia, serif" font-size="56" font-weight="400" fill="#1a1a1a">q2kindle</text>
+
+  <!-- Tagline -->
+  <text x="600" y="400" text-anchor="middle" font-family="'Inter', -apple-system, sans-serif" font-size="24" font-weight="400" fill="#666666">Queue articles. Get a beautiful ebook. Read distraction-free.</text>
+</svg>
