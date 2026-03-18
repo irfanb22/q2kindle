@@ -113,17 +113,12 @@ export default function LandingPage() {
             <div className="kindle-wrap">
               <div className="kindle-shadow" />
               <div className="kindle-frame">
-                <div className="kindle-screen">
-                  <div className="ks-brand">q2kindle</div>
-                  <div className="ks-issue">Issue #14</div>
-                  <div className="ks-date">February 21, 2026</div>
-                  <div className="ks-rule" />
-                  <ul className="ks-toc">
-                    <li>The Arc of the Practical Creator <span>12 min</span></li>
-                    <li>Why We Can&apos;t Have Nice Software <span>8 min</span></li>
-                    <li>Reflections on a Year of Building <span>6 min</span></li>
-                    <li>The Tyranny of the Marginal User <span>15 min</span></li>
-                  </ul>
+                <div className="kindle-screen kindle-cover">
+                  <div className="kc-title">Q2KINDLE</div>
+                  <div className="kc-rule" />
+                  <div className="kc-date">March 17, 2026</div>
+                  <div className="kc-vol">Volume 1 • Issue 17</div>
+                  <div className="kc-stats">5 articles • 47 min read</div>
                 </div>
               </div>
             </div>
