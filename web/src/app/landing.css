@@ -488,6 +488,56 @@ body { overflow-x: hidden; }
   margin-left: 8px;
 }
 
+/* Cover page screen content */
+.kindle-cover {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 340px;
+}
+
+.kc-title {
+  font-family: var(--font-body);
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #1a1a1a;
+  line-height: 1;
+}
+
+.kc-rule {
+  width: 100%;
+  height: 2px;
+  background: #1a1a1a;
+  margin: 16px 0 12px;
+}
+
+.kc-date {
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 20px;
+}
+
+.kc-vol {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #1a1a1a;
+  margin-bottom: 6px;
+}
+
+.kc-stats {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 400;
+  color: #666;
+}
+
 /* Schedule visual */
 .sched-label {
   font-family: var(--font-body);
@@ -648,6 +698,7 @@ body { overflow-x: hidden; }
   }
   .feature-row.flip { direction: ltr; }
   .kindle-frame { width: 230px; }
+  .kindle-mockup-img { width: 230px; }
 }
 
 @media (max-width: 768px) {
@@ -655,6 +706,7 @@ body { overflow-x: hidden; }
   .nav-links { gap: 10px; }
   .kindle-frame { width: 220px; }
   .kindle-screen { min-height: 300px; padding: 20px 16px; }
+  .kindle-mockup-img { width: 220px; }
 }
 
 @media (max-width: 480px) {
@@ -691,6 +743,7 @@ body { overflow-x: hidden; }
 
   .kindle-frame { width: 200px; }
   .kindle-screen { min-height: 260px; padding: 18px 14px; }
+  .kindle-mockup-img { width: 200px; }
   .ks-toc li { font-size: 9.5px; }
   .ks-issue { font-size: 16px; }
 
