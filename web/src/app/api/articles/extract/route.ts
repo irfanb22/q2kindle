@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createApiClient } from "@/lib/supabase/api";
-import { extract } from "@extractus/article-extractor";
+import { extract, extractFromHtml } from "@extractus/article-extractor";
 import { DAILY_EXTRACTION_LIMIT, getDailyExtractionCount } from "@/lib/send-limits";
 
 function calculateReadTime(htmlContent: string): number {
@@ -24,7 +24,7 @@ export async function POST(request: Request) {
   try {
     // Parse request body
     const body = await request.json();
-    const { url } = body;
+    const { url, html } = body;
 
     if (!url || typeof url !== "string") {
       return NextResponse.json(
@@ -93,11 +93,18 @@ export async function POST(request: Request) {
     } | null = null;
 
     try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+      let result;
 
-      const result = await extract(normalizedUrl, {}, { signal: controller.signal });
-      clearTimeout(timeout);
+      if (html && typeof html === "string") {
+        // Use provided HTML (from Chrome extension — captures paywalled content)
+        result = await extractFromHtml(html, normalizedUrl);
+      } else {
+        // Fetch and extract from URL (web app flow)
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+        result = await extract(normalizedUrl, {}, { signal: controller.signal });
+        clearTimeout(timeout);
+      }
 
       if (result) {
         extractedData = {

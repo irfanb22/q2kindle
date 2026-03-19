@@ -138,6 +138,8 @@ els.sendLinkBtn.addEventListener("click", async () => {
     }
 
     currentEmail = email;
+    // Persist OTP state so it survives popup close/reopen
+    await chrome.storage.local.set({ q2k_otp_email: email });
     showView("otp");
     els.otpInput.focus();
   } catch (err) {
@@ -182,6 +184,8 @@ els.verifyBtn.addEventListener("click", async () => {
 
     const data = await res.json();
 
+    // Clear OTP state and save session
+    await chrome.storage.local.remove(["q2k_otp_email"]);
     await chrome.storage.local.set({
       q2k_access_token: data.access_token,
       q2k_refresh_token: data.refresh_token,
@@ -189,6 +193,9 @@ els.verifyBtn.addEventListener("click", async () => {
       q2k_token_expires_at: Date.now() + (data.expires_in || 3600) * 1000,
     });
 
+    // Show brief "Signed in!" confirmation before transitioning
+    showStatus(els.otpStatus, "Signed in!", "success");
+    await new Promise((r) => setTimeout(r, 1500));
     await initSaveView();
   } catch (err) {
     showStatus(
@@ -212,9 +219,10 @@ els.otpInput.addEventListener("input", () => {
 });
 
 // Back button
-els.backBtn.addEventListener("click", () => {
+els.backBtn.addEventListener("click", async () => {
   clearStatus(els.otpStatus);
   els.otpInput.value = "";
+  await chrome.storage.local.remove(["q2k_otp_email"]);
   showView("login");
 });
 
@@ -283,13 +291,32 @@ els.saveBtn.addEventListener("click", async () => {
       return;
     }
 
+    // Grab the page HTML from the active tab (captures paywalled content the user can see)
+    let pageHtml = null;
+    try {
+      const [result] = await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        func: () => document.documentElement.outerHTML,
+      });
+      if (result?.result) {
+        pageHtml = result.result;
+      }
+    } catch {
+      // Some pages block script injection (chrome://, PDFs, etc.) — fall back to URL-only
+    }
+
+    const payload = { url: tab.url };
+    if (pageHtml) {
+      payload.html = pageHtml;
+    }
+
     const res = await fetch(`${API_BASE}/api/articles/extract`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({ url: tab.url }),
+      body: JSON.stringify(payload),
     });
 
     if (res.status === 401) {
@@ -361,6 +388,14 @@ els.signOutBtn.addEventListener("click", async () => {
   if (token) {
     await initSaveView();
   } else {
-    showView("login");
+    // Check if we were waiting for an OTP code before the popup closed
+    const stored = await chrome.storage.local.get(["q2k_otp_email"]);
+    if (stored.q2k_otp_email) {
+      currentEmail = stored.q2k_otp_email;
+      showView("otp");
+      els.otpInput.focus();
+    } else {
+      showView("login");
+    }
   }
 })();

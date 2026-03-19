@@ -3,7 +3,7 @@
   "name": "q2kindle — Save to Queue",
   "version": "1.0.0",
   "description": "Save articles to your q2kindle queue with one click.",
-  "permissions": ["activeTab", "storage"],
+  "permissions": ["activeTab", "storage", "scripting"],
   "host_permissions": [
     "https://q2kindle.com/*",
     "https://scxkmenczzxpwustppee.supabase.co/*"
