@@ -1,6 +1,7 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 
 export const DAILY_SEND_LIMIT = 10;
+export const DAILY_EXTRACTION_LIMIT = 50;
 
 /**
  * Get the start of "today" in the user's timezone as a UTC ISO string.
@@ -84,6 +85,31 @@ export async function getDailySendCount(
 
   if (error) {
     console.error("Failed to query daily send count:", error.message);
+    return 0;
+  }
+
+  return count || 0;
+}
+
+/**
+ * Count how many articles a user has extracted today (in UTC).
+ * Fails open (returns 0) on query errors so a transient DB issue doesn't block extractions.
+ */
+export async function getDailyExtractionCount(
+  supabase: SupabaseClient,
+  userId: string
+): Promise<number> {
+  const todayUtc = new Date().toISOString().split("T")[0];
+  const startOfDay = `${todayUtc}T00:00:00.000Z`;
+
+  const { count, error } = await supabase
+    .from("articles")
+    .select("*", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .gte("created_at", startOfDay);
+
+  if (error) {
+    console.error("Failed to query daily extraction count:", error.message);
     return 0;
   }
 
