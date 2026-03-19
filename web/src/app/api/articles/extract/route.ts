@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createApiClient } from "@/lib/supabase/api";
 import { extract } from "@extractus/article-extractor";
+import { DAILY_EXTRACTION_LIMIT, getDailyExtractionCount } from "@/lib/send-limits";
 
 function calculateReadTime(htmlContent: string): number {
   // Strip HTML tags to get plain text
@@ -42,6 +43,15 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { error: "Not authenticated" },
         { status: 401 }
+      );
+    }
+
+    // Check daily extraction limit
+    const extractionCount = await getDailyExtractionCount(supabase, user.id);
+    if (extractionCount >= DAILY_EXTRACTION_LIMIT) {
+      return NextResponse.json(
+        { error: "Daily limit reached. Try again tomorrow." },
+        { status: 429 }
       );
     }
 
