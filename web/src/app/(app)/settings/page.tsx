@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { usePostHog } from "posthog-js/react";
 
 const DAY_OPTIONS = [
   { value: "mon", label: "Mon", short: "M" },
@@ -90,6 +91,7 @@ export default function SettingsPage() {
   const [testError, setTestError] = useState<string | null>(null);
   const [testSuccess, setTestSuccess] = useState<string | null>(null);
 
+  const posthog = usePostHog();
   const timezones = useRef(getTimezoneList());
 
   useEffect(() => {
@@ -187,6 +189,15 @@ export default function SettingsPage() {
         return;
       }
 
+      posthog?.capture("settings_saved", { has_kindle_email: !!kindleEmail.trim(), has_schedule: scheduleDays.length > 0, epub_include_images: epubIncludeImages });
+      if (kindleEmail.trim()) {
+        posthog?.capture("kindle_email_configured", { has_schedule: scheduleDays.length > 0 });
+      }
+      if (scheduleDays.length > 0) {
+        posthog?.capture("schedule_enabled", { days: scheduleDays, time: scheduleTime, timezone });
+      } else {
+        posthog?.capture("schedule_disabled");
+      }
       setSuccess("Settings saved");
       setSettingsSaved(true);
       setSaving(false);
@@ -198,6 +209,7 @@ export default function SettingsPage() {
   }
 
   async function handleTestEmail() {
+    posthog?.capture("test_email_sent");
     setTesting(true);
     setTestError(null);
     setTestSuccess(null);
@@ -211,6 +223,8 @@ export default function SettingsPage() {
       const data = await res.json();
 
       if (!res.ok) {
+        const errorMsg = data.error === "settings_not_configured" ? "Please save your email settings first" : (data.message || "Test email failed");
+        posthog?.capture("test_email_failed", { error: errorMsg });
         if (data.error === "settings_not_configured") {
           setTestError("Please save your email settings first");
         } else {
@@ -220,10 +234,12 @@ export default function SettingsPage() {
         return;
       }
 
+      posthog?.capture("test_email_succeeded");
       setTestSuccess("Test EPUB sent — check your Kindle in a few minutes");
       setTesting(false);
       setTimeout(() => setTestSuccess(null), 8000);
     } catch {
+      posthog?.capture("test_email_failed", { error: "Network error" });
       setTestError("Failed to send test email");
       setTesting(false);
     }

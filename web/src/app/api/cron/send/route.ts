@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { generateKindleEpub } from "@/lib/epub";
 import { sendToKindle } from "@/lib/email";
 import { DAILY_SEND_LIMIT, getDailySendCount } from "@/lib/send-limits";
+import { getPostHogServer } from "@/lib/posthog-server";
 
 // ── Timezone helpers ────────────────────────────────────────────────────────
 
@@ -207,6 +208,8 @@ export async function GET(request: Request) {
           status: "failed",
           error_message: `Scheduled send — EPUB generation failed: ${msg}`,
         });
+        const posthogEpub = getPostHogServer();
+        posthogEpub?.capture({ distinctId: settings.user_id, event: "cron_send_failed", properties: { user_id: settings.user_id, error: `EPUB generation failed: ${msg}` } });
         results.push({ userId: settings.user_id, status: "failed", message: `EPUB error: ${msg}` });
         continue;
       }
@@ -229,6 +232,8 @@ export async function GET(request: Request) {
           status: "failed",
           error_message: `Scheduled send — Email failed: ${msg}`,
         });
+        const posthogEmail = getPostHogServer();
+        posthogEmail?.capture({ distinctId: settings.user_id, event: "cron_send_failed", properties: { user_id: settings.user_id, error: `Email failed: ${msg}` } });
         results.push({ userId: settings.user_id, status: "failed", message: `Email error: ${msg}` });
         continue;
       }
@@ -253,6 +258,9 @@ export async function GET(request: Request) {
         ...(updateError ? { error_message: `Sent successfully but failed to update article statuses: ${updateError.message}` } : {}),
       });
 
+      const posthogSuccess = getPostHogServer();
+      posthogSuccess?.capture({ distinctId: settings.user_id, event: "cron_send_succeeded", properties: { articles_count: sendableArticles.length, issue_number: issueNumber } });
+
       console.log(`User ${settings.user_id}: ✅ Scheduled send successful — ${sendableArticles.length} articles (Issue #${issueNumber})${updateError ? " (warning: article status update failed)" : ""}`);
       results.push({ userId: settings.user_id, status: "success", message: `${sendableArticles.length} articles sent${updateError ? " (status update failed)" : ""}` });
     } catch (err) {
@@ -261,6 +269,9 @@ export async function GET(request: Request) {
       results.push({ userId: settings.user_id, status: "error", message: msg });
     }
   }
+
+  const posthogFinal = getPostHogServer();
+  if (posthogFinal) await posthogFinal.shutdown();
 
   return NextResponse.json({ message: "Scheduled send complete", results });
 }

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { usePostHog } from "posthog-js/react";
 import { createClient } from "@/lib/supabase/client";
 import type { Article } from "@/lib/types";
 import WelcomeModal from "./welcome-modal";
@@ -21,6 +22,7 @@ export default function DashboardPage() {
   const [showWelcome, setShowWelcome] = useState(false);
 
   const router = useRouter();
+  const posthog = usePostHog();
   const supabaseRef = useRef(createClient());
   const supabase = supabaseRef.current;
 
@@ -88,12 +90,14 @@ export default function DashboardPage() {
       const data = await res.json();
 
       if (!res.ok) {
+        posthog?.capture("article_add_failed", { url: normalizedUrl, error: data.error || "Failed to add article" });
         setError(data.error || "Failed to add article");
         setLoading(false);
         return;
       }
 
       const article = data.article as Article;
+      posthog?.capture("article_added", { url: article.url, title: article.title });
 
       // Add article to list immediately
       setArticles((prev) => [article, ...prev]);
@@ -105,6 +109,7 @@ export default function DashboardPage() {
         pollForExtraction(article.id);
       }
     } catch {
+      posthog?.capture("article_add_failed", { url: normalizedUrl, error: "Network error" });
       setError("Failed to add article. Please try again.");
       setLoading(false);
     }
@@ -155,6 +160,7 @@ export default function DashboardPage() {
   }
 
   async function handleSend() {
+    posthog?.capture("send_triggered", { articles_count: articles.length });
     setSending(true);
     setError(null);
     setSendSuccess(null);
@@ -172,12 +178,14 @@ export default function DashboardPage() {
           return;
         }
         if (data.error === "daily_limit_reached") {
+          posthog?.capture("send_failed", { articles_count: articles.length, error: "daily_limit_reached" });
           setAtSendLimit(true);
           setDailySendsUsed(data.dailySendsUsed);
           setError(data.message);
           setSending(false);
           return;
         }
+        posthog?.capture("send_failed", { articles_count: articles.length, error: data.message || "Failed to send" });
         setError(data.message || "Failed to send");
         setSending(false);
         return;
@@ -189,11 +197,13 @@ export default function DashboardPage() {
         setAtSendLimit(data.dailySendsUsed >= (data.dailySendLimit || 10));
       }
 
+      posthog?.capture("send_succeeded", { articles_count: data.articleCount, issue_number: data.issueNumber });
       setSendSuccess({ count: data.articleCount, skipped: data.skippedCount || 0 });
       setArticles([]);
       setSending(false);
       setTimeout(() => setSendSuccess(null), 5000);
     } catch {
+      posthog?.capture("send_failed", { articles_count: articles.length, error: "Network error" });
       setError("Failed to send. Please try again.");
       setSending(false);
     }
