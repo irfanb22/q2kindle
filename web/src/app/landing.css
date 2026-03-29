@@ -607,7 +607,7 @@ body { overflow-x: hidden; }
   padding: 140px 24px;
   text-align: center;
   position: relative;
-  background: var(--color-surface-warm);
+  background: var(--color-bg);
 }
 
 .bottom-cta::before {
