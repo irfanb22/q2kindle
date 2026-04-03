@@ -244,6 +244,14 @@ All files live under `web/`:
 | `web/src/lib/cover-image.ts` | Dynamic cover image — satori + @resvg/resvg-js, generates 1600×2400 PNG with branding, date, volume/issue, stats |
 | `web/public/og-image.png` | Open Graph link preview image — 1200×630 static PNG with cream bg, app icon, name, tagline |
 | `web/src/lib/send-limits.ts` | Daily send limit — `DAILY_SEND_LIMIT` constant, `getDailySendCount()`, `getStartOfDayUtc()` timezone helper |
+| `web/src/lib/admin.ts` | Admin check — `isAdmin()` validates user ID against `ADMIN_USER_IDS` env var |
+| `web/src/lib/email-template.ts` | Marketing email HTML renderer — table-based layout, q2kindle branding, unsubscribe footer |
+| `web/src/lib/email-tokens.ts` | Unsubscribe URL generation + HMAC verification for tamper-proof unsubscribe links |
+| `web/src/app/(app)/admin/email/page.tsx` | Admin email dashboard — audience stats, send logs, test email button with preview |
+| `web/src/app/api/admin/email/send/route.ts` | Admin email send API — test mode (single recipient) and production mode (all subscribed users) via Resend |
+| `web/src/app/api/admin/email/audience/route.ts` | Admin audience API — returns total, subscribed, and unsubscribed user counts |
+| `web/src/app/api/admin/email/logs/route.ts` | Admin send logs API — returns recent marketing email send history |
+| `web/src/app/api/email/unsubscribe/route.ts` | Public unsubscribe endpoint — verifies HMAC signature, sets `marketing_unsubscribed_at` |
 | `web/src/lib/posthog.tsx` | Client-side PostHog provider — initializes `posthog-js`, wraps app in `PostHogProvider` |
 | `web/src/lib/posthog-pageview.tsx` | Pageview tracking — captures `$pageview` on route changes via `usePathname()` |
 | `web/src/lib/posthog-server.ts` | Server-side PostHog client — `getPostHogServer()` returns a `posthog-node` instance (or null if key missing) |
@@ -256,6 +264,7 @@ All files live under `web/`:
 | `web/supabase/migrations/006_remove_smtp_credentials.sql` | Drops `sender_email` and `smtp_password` columns from settings (moved to app-owned SES) |
 | `web/supabase/migrations/007_remove_epub_font.sql` | Drops `epub_font` column from settings (Kindle ignores CSS font-family) |
 | `web/supabase/migrations/008_add_image_to_articles.sql` | Adds `image` text column to articles for og:image / featured image URL |
+| `web/supabase/migrations/009_email_marketing.sql` | Creates `email_preferences` and `email_send_logs` tables for marketing email system |
 | `web/src/app/api/cron/send/route.ts` | Cron API route — scheduled send logic, called hourly by Supabase pg_cron |
 | `web/src/app/terms/page.tsx` | Terms of Service — plain-English terms, accessible without login |
 
@@ -285,6 +294,9 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=<anon key from Supabase dashboard>
 BREVO_SMTP_LOGIN=a364d9001@smtp-brevo.com
 BREVO_SMTP_KEY=<must match the BREVO_SMTP_KEY value in Netlify env vars>
 SUPABASE_SERVICE_ROLE_KEY=<service role key from Supabase dashboard>
+ADMIN_USER_IDS=<your Supabase user UUID, comma-separated for multiple admins>
+RESEND_API_KEY=<Resend REST API key for marketing emails>
+EMAIL_UNSUBSCRIBE_SECRET=<random hex string — run `openssl rand -hex 32` to generate>
 ```
 
 **SMTP gotcha**: If local email sending fails with `535 5.7.8 Authentication failed`, the `BREVO_SMTP_KEY` in `.env.local` is stale. The key gets regenerated in Brevo and only Netlify gets updated. Fix: copy the current value from Netlify → Site configuration → Environment variables → `BREVO_SMTP_KEY` into `.env.local`, then restart `npm run dev`.
@@ -302,6 +314,7 @@ SUPABASE_SERVICE_ROLE_KEY=<service role key from Supabase dashboard>
 | **Phase 6** | EPUB customization — cover page, fonts, image toggle, metadata controls | ✅ Complete |
 | **Phase 6.5** | Custom domain — q2kindle.com via Squarespace DNS + Netlify + Supabase | ✅ Complete |
 | **Phase 7** | Polish — UI refinements, landing page, onboarding, EPUB cover tweaks, PWA, branding | ✅ Complete |
+| **Phase 8** | Marketing email system — admin dashboard, Resend integration, unsubscribe support | ✅ Complete |
 
 ### Phase 1 progress
 
@@ -446,6 +459,17 @@ SUPABASE_SERVICE_ROLE_KEY=<service role key from Supabase dashboard>
 - ✅ **Privacy & Terms contact updated** — replaced email addresses (`privacy@q2kindle.com`, `team@q2kindle.com`) with GitHub issues link. No real inbox was set up for those addresses.
 - ✅ **Open Graph link preview** — static 1200×630 OG image (`web/public/og-image.png`) with cream background, app icon, "q2kindle" in Newsreader, and tagline. Open Graph + Twitter Card meta tags in `layout.tsx`. Rich preview appears when sharing `q2kindle.com` in iMessage, Slack, Twitter, etc.
 
+### Phase 8 progress (Marketing Email System)
+
+- ✅ **Admin email dashboard** — hidden route at `/admin/email` with audience stats (total/subscribed/unsubscribed), send logs, test email button with inline preview. Admin access gated by `ADMIN_USER_IDS` env var.
+- ✅ **Marketing email send API** — `/api/admin/email/send` with test mode (single recipient) and production mode (all subscribed users). Sends via Resend REST API from `team@q2kindle.com`. Logs every send to `email_send_logs` table.
+- ✅ **Email template renderer** — `web/src/lib/email-template.ts` — table-based HTML layout with q2kindle branding header, body content slot, and unsubscribe footer. Compatible with all major email clients.
+- ✅ **Unsubscribe support** — HMAC-signed unsubscribe URLs per recipient. Public `/api/email/unsubscribe` endpoint verifies signature and sets `marketing_unsubscribed_at` in `email_preferences` table. RFC 8058 `List-Unsubscribe` headers on production sends.
+- ✅ **Database tables** — `email_preferences` (opt-out tracking with RLS) and `email_send_logs` (audit trail, no RLS — service role only). Migration 009.
+- ✅ **Admin auth pattern** — `ADMIN_USER_IDS` env var (comma-separated UUIDs). `isAdmin()` helper in `web/src/lib/admin.ts`. All admin API routes check this before proceeding.
+- ✅ **Resend for marketing emails** — Resend REST API (not SMTP) used for marketing emails. Separate from Brevo (Kindle delivery) and Resend SMTP (Supabase auth emails). `RESEND_API_KEY` env var.
+- ✅ **Audience/logs APIs** — `/api/admin/email/audience` returns user counts, `/api/admin/email/logs` returns recent send history. Both admin-gated.
+
 ## Chrome Extension (Internal / In Development)
 
 A simple Chrome extension that lets you save the current browser tab's URL to your q2kindle queue with one click. Built for internal use — the creator is actively using it, but it has **not been published** to the Chrome Web Store yet. Publishing requires a one-time $5 developer account fee and Google review (1-3 business days).
@@ -502,6 +526,7 @@ Phase 7 completes web app v1. After public launch (Reddit, online media), v2 wil
 | `/settings` | Kindle email, auto-send preferences, EPUB formatting |
 | `/privacy` | Privacy policy (public, no auth required) |
 | `/terms` | Terms of service (public, no auth required) |
+| `/admin/email` | Admin email dashboard — audience stats, send logs, test email (hidden, admin only) |
 
 ## V2 Deployment
 
@@ -511,7 +536,7 @@ Phase 7 completes web app v1. After public launch (Reddit, online media), v2 wil
 - **Build**: Netlify builds from GitHub repo, `base = "web"`, `npm run build`, Node 22 LTS
 - **Config file**: `netlify.toml` at repo root (not inside `web/`)
 - **Plugin**: `@netlify/plugin-nextjs` (required for SSR/API routes on Netlify)
-- **Env vars on Netlify**: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `BREVO_SMTP_LOGIN`, `BREVO_SMTP_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
+- **Env vars on Netlify**: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `BREVO_SMTP_LOGIN`, `BREVO_SMTP_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_USER_IDS`, `RESEND_API_KEY`, `EMAIL_UNSUBSCRIBE_SECRET`
 - **Supabase Site URL**: Must be set to `https://q2kindle.com` (in Auth > URL Configuration)
 - **Supabase Redirect URLs**: Must include `https://q2kindle.com/auth/callback`, `https://q2kindle.netlify.app/auth/callback`, and `http://localhost:3000/auth/callback`
 - **Supabase Custom SMTP**: Resend (configured in Supabase Dashboard > Project Settings > Auth > SMTP Settings)
@@ -666,3 +691,8 @@ PostHog is used for product analytics — tracking key user actions to understan
 | 2026-03-16 | Login vs signup differentiation via query param | Same `/login` page, `?mode=signup` toggles copy. "Get started" and hero CTAs link to signup mode. Simpler than separate routes — same form, same Supabase `signInWithOtp` call, only the displayed text changes. |
 | 2026-03-16 | Static OG image (not dynamic satori) | Link preview image is a static 1200×630 PNG generated once from SVG via resvg. No need for dynamic generation — branding and tagline don't change per-page. Cream `#f4f4f4` background matches app palette. |
 | 2026-03-22 | PostHog for product analytics (15 custom events) | Need visibility into user behavior — signup conversion, feature adoption, send success rates. `posthog-js` for client, `posthog-node` for server routes. All captures are null-safe and fire-and-forget — no impact on app functionality. Free tier covers current scale. |
+| 2026-04-02 | Resend for marketing emails (not Brevo) | Brevo handles Kindle EPUB delivery (SMTP + attachments). Resend handles auth emails (Supabase SMTP) and now marketing emails (REST API). Keeps providers separated by purpose — Brevo's free tier is limited to 300/day and best reserved for Kindle sends. |
+| 2026-04-02 | `ADMIN_USER_IDS` env var (not database role) | Simple comma-separated UUID list in env var. No migration needed, easy to add/remove admins. Sufficient for a single-admin app — database-backed roles would be overkill. |
+| 2026-04-02 | HMAC-signed unsubscribe URLs (not session-based) | Unsubscribe links must work without login. HMAC signature with `EMAIL_UNSUBSCRIBE_SECRET` prevents forged unsubscribe requests. Constant-time comparison prevents timing attacks. |
+| 2026-04-02 | No email composer UI — Claude Code composes emails | Marketing emails are composed by Claude Code and sent via the admin API. The admin page shows stats, logs, and a test button — no WYSIWYG editor needed. Keeps the codebase simple. |
+| 2026-04-02 | Hidden admin route (no nav link) | `/admin/email` is not in the nav bar. Only accessible by direct URL. Admin check happens both client-side (403 → "Access denied" screen) and server-side (API routes return 403). Regular users see nothing. |
