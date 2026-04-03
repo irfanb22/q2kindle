@@ -170,6 +170,7 @@ Full rewrite from Python desktop app to a hosted TypeScript web app. All v2 code
 | **Article extraction** | `@extractus/article-extractor` (replaces trafilatura) |
 | **EPUB creation** | `epub-gen-memory` (replaces ebooklib) |
 | **Email (Kindle delivery)** | Brevo (formerly Sendinblue) via Nodemailer SMTP (`kindle@q2kindle.com`) |
+| **Analytics** | PostHog — `posthog-js` (client), `posthog-node` (server) |
 | **Hosting** | Netlify |
 
 ## V2 Supabase details
@@ -251,6 +252,9 @@ All files live under `web/`:
 | `web/src/app/api/admin/email/audience/route.ts` | Admin audience API — returns total, subscribed, and unsubscribed user counts |
 | `web/src/app/api/admin/email/logs/route.ts` | Admin send logs API — returns recent marketing email send history |
 | `web/src/app/api/email/unsubscribe/route.ts` | Public unsubscribe endpoint — verifies HMAC signature, sets `marketing_unsubscribed_at` |
+| `web/src/lib/posthog.tsx` | Client-side PostHog provider — initializes `posthog-js`, wraps app in `PostHogProvider` |
+| `web/src/lib/posthog-pageview.tsx` | Pageview tracking — captures `$pageview` on route changes via `usePathname()` |
+| `web/src/lib/posthog-server.ts` | Server-side PostHog client — `getPostHogServer()` returns a `posthog-node` instance (or null if key missing) |
 | `web/src/lib/types.ts` | Shared TypeScript types (Article, Settings, SendHistory, EpubPreferences) used across pages |
 | `web/supabase/migrations/001_create_tables.sql` | Database schema — articles, send_history, settings tables + RLS policies |
 | `web/supabase/migrations/002_add_read_time_and_description.sql` | Adds read_time_minutes and description columns to articles |
@@ -573,6 +577,45 @@ Phase 7 completes web app v1. After public launch (Reddit, online media), v2 wil
 
 ---
 
+## PostHog Analytics
+
+PostHog is used for product analytics — tracking key user actions to understand usage patterns, conversion funnel, and feature adoption.
+
+### Setup
+
+- **Client-side**: `posthog-js` initialized in `web/src/lib/posthog.tsx`, wraps app via `PostHogProvider`. Pageviews tracked automatically via `web/src/lib/posthog-pageview.tsx`. User identified with `posthog.identify()` in `web/src/app/(app)/layout.tsx`.
+- **Server-side**: `posthog-node` via shared helper `web/src/lib/posthog-server.ts`. Returns singleton client or `null` if `NEXT_PUBLIC_POSTHOG_KEY` is not set. Must call `await posthog.shutdown()` after captures in request handlers to flush events.
+- **Env vars**: `NEXT_PUBLIC_POSTHOG_KEY` and `NEXT_PUBLIC_POSTHOG_HOST` — set in `web/.env.local` and Netlify env vars.
+
+### Custom events (15 total)
+
+| Event | Location | Trigger | Properties |
+|-------|----------|---------|------------|
+| `user_signed_up` | auth/callback (server) | New user signup (created_at within 60s) | `email` |
+| `article_added` | dashboard (client) | Article extract API succeeds | `url`, `title` |
+| `article_add_failed` | dashboard (client) | Article extract API fails or network error | `url`, `error` |
+| `send_triggered` | dashboard (client) | User clicks Send to Kindle button | `articles_count` |
+| `send_succeeded` | dashboard (client) | Send API returns success | `articles_count`, `issue_number` |
+| `send_failed` | dashboard (client) | Send API returns error or network error | `articles_count`, `error` |
+| `settings_saved` | settings (client) | Settings POST succeeds | `has_kindle_email`, `has_schedule`, `epub_include_images` |
+| `kindle_email_configured` | settings (client) | Settings saved with non-empty Kindle email | `has_schedule` |
+| `test_email_sent` | settings (client) | User clicks test email button | — |
+| `test_email_succeeded` | settings (client) | Test email API returns success | — |
+| `test_email_failed` | settings (client) | Test email API returns error | `error` |
+| `schedule_enabled` | settings (client) | Settings saved with schedule days selected | `days`, `time`, `timezone` |
+| `schedule_disabled` | settings (client) | Settings saved with no schedule days | — |
+| `cron_send_succeeded` | cron/send (server) | Scheduled send completes successfully | `articles_count`, `issue_number` |
+| `cron_send_failed` | cron/send (server) | Scheduled send fails (EPUB or email error) | `user_id`, `error` |
+
+### Key patterns
+
+- Client-side events use `usePostHog()` hook from `posthog-js/react` with optional chaining (`posthog?.capture(...)`) — safe if PostHog is not initialized.
+- Server-side events use `getPostHogServer()` which returns `null` if the env var is missing — all calls are null-guarded.
+- `user_signed_up` distinguishes new vs returning users by checking if `user.created_at` is within the last 60 seconds.
+- Cron route calls `posthog.shutdown()` once at the end of the request (after processing all users), not after each individual capture.
+
+---
+
 ## Decision log
 
 | Date | Decision | Rationale |
@@ -647,6 +690,7 @@ Phase 7 completes web app v1. After public launch (Reddit, online media), v2 wil
 | 2026-03-16 | Flex layout for Kindle mockup (WebKit fix) | WebKit (iPad Chrome/Safari) miscalculates child `height: 100%` inside a parent with `aspect-ratio` + padding. Switched bezel to `display: flex` + `flex: 1` + `minHeight: 0` on the screen area. Works correctly across Blink and WebKit. |
 | 2026-03-16 | Login vs signup differentiation via query param | Same `/login` page, `?mode=signup` toggles copy. "Get started" and hero CTAs link to signup mode. Simpler than separate routes — same form, same Supabase `signInWithOtp` call, only the displayed text changes. |
 | 2026-03-16 | Static OG image (not dynamic satori) | Link preview image is a static 1200×630 PNG generated once from SVG via resvg. No need for dynamic generation — branding and tagline don't change per-page. Cream `#f4f4f4` background matches app palette. |
+| 2026-03-22 | PostHog for product analytics (15 custom events) | Need visibility into user behavior — signup conversion, feature adoption, send success rates. `posthog-js` for client, `posthog-node` for server routes. All captures are null-safe and fire-and-forget — no impact on app functionality. Free tier covers current scale. |
 | 2026-04-02 | Resend for marketing emails (not Brevo) | Brevo handles Kindle EPUB delivery (SMTP + attachments). Resend handles auth emails (Supabase SMTP) and now marketing emails (REST API). Keeps providers separated by purpose — Brevo's free tier is limited to 300/day and best reserved for Kindle sends. |
 | 2026-04-02 | `ADMIN_USER_IDS` env var (not database role) | Simple comma-separated UUID list in env var. No migration needed, easy to add/remove admins. Sufficient for a single-admin app — database-backed roles would be overkill. |
 | 2026-04-02 | HMAC-signed unsubscribe URLs (not session-based) | Unsubscribe links must work without login. HMAC signature with `EMAIL_UNSUBSCRIBE_SECRET` prevents forged unsubscribe requests. Constant-time comparison prevents timing attacks. |

@@ -147,6 +147,14 @@ export default function DashboardPage() {
       next.delete(articleId);
       return next;
     });
+    // Fire extraction failure event
+    setArticles((prev) => {
+      const failed = prev.find((a) => a.id === articleId);
+      if (failed) {
+        posthog?.capture("article_add_failed", { url: failed.url, error: "Extraction timed out" });
+      }
+      return prev;
+    });
   }
 
   async function handleRemove(id: string) {
