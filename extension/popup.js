@@ -80,7 +80,7 @@ function showSuccessView() {
   // Re-trigger the checkmark animation by replacing the SVG
   const wrap = views.success.querySelector(".checkmark-wrap");
   wrap.innerHTML = `
-    <svg viewBox="0 0 48 48" width="56" height="56">
+    <svg viewBox="0 0 48 48" width="36" height="36">
       <circle class="checkmark-circle" cx="24" cy="24" r="22"/>
       <path class="checkmark-check" d="M14 24 l7 7 13-13"/>
     </svg>

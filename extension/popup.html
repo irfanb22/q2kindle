@@ -280,10 +280,17 @@
       padding-bottom: 8px;
     }
 
+    .success-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
     .checkmark-wrap {
-      width: 56px;
-      height: 56px;
-      margin-bottom: 16px;
+      width: 36px;
+      height: 36px;
+      flex-shrink: 0;
     }
 
     .checkmark-circle {
@@ -316,10 +323,9 @@
 
     .success-title {
       font-family: 'Newsreader', Georgia, serif;
-      font-size: 17px;
+      font-size: 20px;
       font-weight: 500;
       color: #1a1a1a;
-      margin-bottom: 12px;
     }
 
     .go-to-queue-btn {
@@ -419,13 +425,15 @@
 
     <!-- Success View -->
     <div id="success-view" class="view success-view">
-      <div class="checkmark-wrap">
-        <svg viewBox="0 0 48 48" width="56" height="56">
-          <circle class="checkmark-circle" cx="24" cy="24" r="22"/>
-          <path class="checkmark-check" d="M14 24 l7 7 13-13"/>
-        </svg>
+      <div class="success-row">
+        <div class="checkmark-wrap">
+          <svg viewBox="0 0 48 48" width="36" height="36">
+            <circle class="checkmark-circle" cx="24" cy="24" r="22"/>
+            <path class="checkmark-check" d="M14 24 l7 7 13-13"/>
+          </svg>
+        </div>
+        <div class="success-title">Saved</div>
       </div>
-      <div class="success-title">Saved to Queue</div>
       <button id="go-to-queue-btn" class="go-to-queue-btn">Go to Queue</button>
       <div class="progress-bar-track">
         <div id="progress-bar-fill" class="progress-bar-fill"></div>
