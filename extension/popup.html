@@ -313,17 +313,23 @@
       margin-bottom: 12px;
     }
 
-    .view-queue-link {
-      font-size: 13px;
-      font-weight: 500;
-      color: #2d5f2d;
-      text-decoration: none;
+    .go-to-queue-btn {
+      width: 100%;
+      padding: 11px 16px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: inherit;
       cursor: pointer;
+      background: #2d5f2d;
+      color: #fff;
       margin-bottom: 24px;
+      transition: background 0.2s;
     }
 
-    .view-queue-link:hover {
-      text-decoration: underline;
+    .go-to-queue-btn:hover {
+      background: #245024;
     }
 
     .progress-bar-track {
@@ -340,7 +346,7 @@
       background: #2d5f2d;
       border-radius: 2px;
       width: 100%;
-      animation: progress-shrink 3.5s linear forwards;
+      animation: progress-shrink 5s linear forwards;
     }
 
     @keyframes progress-shrink {
@@ -410,7 +416,7 @@
         </svg>
       </div>
       <div class="success-title">Saved to Queue</div>
-      <a id="view-queue-link" class="view-queue-link">View Queue</a>
+      <button id="go-to-queue-btn" class="go-to-queue-btn">Go to Queue</button>
       <div class="progress-bar-track">
         <div id="progress-bar-fill" class="progress-bar-fill"></div>
       </div>

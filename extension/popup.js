@@ -26,7 +26,7 @@ const els = {
   saveStatus: document.getElementById("save-status"),
   userEmail: document.getElementById("user-email"),
   signOutBtn: document.getElementById("sign-out-btn"),
-  viewQueueLink: document.getElementById("view-queue-link"),
+  goToQueueBtn: document.getElementById("go-to-queue-btn"),
   progressBarFill: document.getElementById("progress-bar-fill"),
 };
 
@@ -67,11 +67,11 @@ function showSuccessView() {
 
   showView("success");
 
-  // Auto-close popup after 3.5s
+  // Auto-close popup after 5s
   clearTimeout(successTimer);
   successTimer = setTimeout(() => {
     window.close();
-  }, 3500);
+  }, 5000);
 }
 
 function setLoading(btn, loading, text) {
@@ -385,10 +385,10 @@ els.saveBtn.addEventListener("click", async () => {
   }
 });
 
-// ── View Queue link ──
-els.viewQueueLink.addEventListener("click", (e) => {
-  e.preventDefault();
+// ── Go to Queue button ──
+els.goToQueueBtn.addEventListener("click", () => {
   chrome.tabs.create({ url: `${API_BASE}/dashboard` });
+  window.close();
 });
 
 // ── Sign out ──
