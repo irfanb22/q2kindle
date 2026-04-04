@@ -9,6 +9,7 @@ const views = {
   login: document.getElementById("login-view"),
   otp: document.getElementById("otp-view"),
   save: document.getElementById("save-view"),
+  success: document.getElementById("success-view"),
 };
 
 const els = {
@@ -26,7 +27,8 @@ const els = {
   saveStatus: document.getElementById("save-status"),
   userEmail: document.getElementById("user-email"),
   signOutBtn: document.getElementById("sign-out-btn"),
-  saveSuccess: document.getElementById("save-success"),
+  viewQueueLink: document.getElementById("view-queue-link"),
+  progressBarFill: document.getElementById("progress-bar-fill"),
 };
 
 let currentEmail = "";
@@ -47,27 +49,30 @@ function clearStatus(el) {
   el.textContent = "";
 }
 
-function showSuccessCheckmark() {
-  els.saveSuccess.innerHTML = `
-    <div class="checkmark-wrap">
-      <svg viewBox="0 0 48 48" width="44" height="44">
-        <circle class="checkmark-circle" cx="24" cy="24" r="22"/>
-        <path class="checkmark-check" d="M14 24 l7 7 13-13"/>
-      </svg>
-    </div>
-    <br>
-    <a class="view-queue-link" id="view-queue-link">View Queue &rarr;</a>
-  `;
-  els.saveSuccess.classList.add("visible");
-  document.getElementById("view-queue-link").addEventListener("click", (e) => {
-    e.preventDefault();
-    chrome.tabs.create({ url: `${API_BASE}/dashboard` });
-  });
-}
+let successTimer = null;
 
-function hideSuccessCheckmark() {
-  els.saveSuccess.classList.remove("visible");
-  els.saveSuccess.innerHTML = "";
+function showSuccessView() {
+  // Re-trigger the checkmark animation by replacing the SVG
+  const wrap = views.success.querySelector(".checkmark-wrap");
+  wrap.innerHTML = `
+    <svg viewBox="0 0 48 48" width="56" height="56">
+      <circle class="checkmark-circle" cx="24" cy="24" r="22"/>
+      <path class="checkmark-check" d="M14 24 l7 7 13-13"/>
+    </svg>
+  `;
+  // Re-trigger progress bar animation
+  els.progressBarFill.style.animation = "none";
+  // Force reflow then restart
+  void els.progressBarFill.offsetWidth;
+  els.progressBarFill.style.animation = "";
+
+  showView("success");
+
+  // Auto-dismiss back to save view after 3.5s
+  clearTimeout(successTimer);
+  successTimer = setTimeout(() => {
+    initSaveView();
+  }, 3500);
 }
 
 function setLoading(btn, loading, text) {
@@ -301,7 +306,6 @@ els.saveBtn.addEventListener("click", async () => {
   }
 
   clearStatus(els.saveStatus);
-  hideSuccessCheckmark();
   setLoading(els.saveBtn, true, "Saving...");
 
   try {
@@ -370,20 +374,8 @@ els.saveBtn.addEventListener("click", async () => {
     const title = data.article?.title || "Article";
     const failed = data.extractionFailed;
 
-    showSuccessCheckmark();
-    showStatus(
-      els.saveStatus,
-      failed
-        ? `"${title}" saved, but content couldn't be extracted.`
-        : `"${title}" saved to your queue!`,
-      failed ? "error" : "success"
-    );
-
-    // Disable save button briefly to prevent double-saves
-    els.saveBtn.disabled = true;
-    setTimeout(() => {
-      els.saveBtn.disabled = false;
-    }, 2000);
+    setLoading(els.saveBtn, false, "Save to Queue");
+    showSuccessView();
   } catch (err) {
     showStatus(
       els.saveStatus,
@@ -393,6 +385,12 @@ els.saveBtn.addEventListener("click", async () => {
   } finally {
     setLoading(els.saveBtn, false, "Save to Queue");
   }
+});
+
+// ── View Queue link ──
+els.viewQueueLink.addEventListener("click", (e) => {
+  e.preventDefault();
+  chrome.tabs.create({ url: `${API_BASE}/dashboard` });
 });
 
 // ── Sign out ──

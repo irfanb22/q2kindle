@@ -270,22 +270,19 @@
       to { transform: rotate(360deg); }
     }
 
-    /* ── Success state ── */
-    .save-success {
-      display: none;
-      text-align: center;
-      padding: 8px 0 4px;
-    }
-
-    .save-success.visible {
-      display: block;
+    /* ── Success view ── */
+    .success-view {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 28px;
+      padding-bottom: 8px;
     }
 
     .checkmark-wrap {
-      display: inline-block;
-      width: 44px;
-      height: 44px;
-      margin-bottom: 4px;
+      width: 56px;
+      height: 56px;
+      margin-bottom: 16px;
     }
 
     .checkmark-circle {
@@ -316,18 +313,47 @@
       to { stroke-dashoffset: 0; }
     }
 
+    .success-title {
+      font-family: 'Newsreader', Georgia, serif;
+      font-size: 17px;
+      font-weight: 500;
+      color: #1a1a1a;
+      margin-bottom: 12px;
+    }
+
     .view-queue-link {
-      display: inline-block;
-      margin-top: 10px;
       font-size: 13px;
       font-weight: 500;
       color: #2d5f2d;
       text-decoration: none;
       cursor: pointer;
+      margin-bottom: 24px;
     }
 
     .view-queue-link:hover {
       text-decoration: underline;
+    }
+
+    .progress-bar-track {
+      width: 100%;
+      height: 3px;
+      background: #e5e5e5;
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: auto;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: #2d5f2d;
+      border-radius: 2px;
+      width: 100%;
+      animation: progress-shrink 3.5s linear forwards;
+    }
+
+    @keyframes progress-shrink {
+      from { width: 100%; }
+      to { width: 0%; }
     }
 
     /* ── View management ── */
@@ -377,11 +403,25 @@
         <div id="page-url" class="url-text"></div>
       </div>
       <button id="save-btn" class="btn-primary">Save to Queue</button>
-      <div id="save-success" class="save-success"></div>
       <div id="save-status" class="status"></div>
       <div class="user-bar">
         <span id="user-email" class="user-email"></span>
         <button id="sign-out-btn" class="sign-out">Sign out</button>
+      </div>
+    </div>
+
+    <!-- Success View -->
+    <div id="success-view" class="view success-view">
+      <div class="checkmark-wrap">
+        <svg viewBox="0 0 48 48" width="56" height="56">
+          <circle class="checkmark-circle" cx="24" cy="24" r="22"/>
+          <path class="checkmark-check" d="M14 24 l7 7 13-13"/>
+        </svg>
+      </div>
+      <div class="success-title">Saved to Queue</div>
+      <a id="view-queue-link" class="view-queue-link">View Queue</a>
+      <div class="progress-bar-track">
+        <div id="progress-bar-fill" class="progress-bar-fill"></div>
       </div>
     </div>
   </div>
