@@ -22,7 +22,6 @@ const els = {
   resendBtn: document.getElementById("resend-btn"),
   otpStatus: document.getElementById("otp-status"),
   pageTitle: document.getElementById("page-title"),
-  pageUrl: document.getElementById("page-url"),
   saveBtn: document.getElementById("save-btn"),
   saveStatus: document.getElementById("save-status"),
   userEmail: document.getElementById("user-email"),
@@ -68,10 +67,10 @@ function showSuccessView() {
 
   showView("success");
 
-  // Auto-dismiss back to save view after 3.5s
+  // Auto-close popup after 3.5s
   clearTimeout(successTimer);
   successTimer = setTimeout(() => {
-    initSaveView();
+    window.close();
   }, 3500);
 }
 
@@ -280,7 +279,6 @@ async function initSaveView() {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (tab) {
     els.pageTitle.textContent = tab.title || "Untitled Page";
-    els.pageUrl.textContent = tab.url || "";
   }
 
   clearStatus(els.saveStatus);
