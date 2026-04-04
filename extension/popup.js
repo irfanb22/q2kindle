@@ -67,11 +67,11 @@ function showSuccessView() {
 
   showView("success");
 
-  // Auto-close popup after 5s
+  // Auto-close popup after 7s
   clearTimeout(successTimer);
   successTimer = setTimeout(() => {
     window.close();
-  }, 5000);
+  }, 7000);
 }
 
 function setLoading(btn, loading, text) {
