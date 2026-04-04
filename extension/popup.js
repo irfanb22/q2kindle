@@ -26,6 +26,7 @@ const els = {
   saveStatus: document.getElementById("save-status"),
   userEmail: document.getElementById("user-email"),
   signOutBtn: document.getElementById("sign-out-btn"),
+  saveSuccess: document.getElementById("save-success"),
 };
 
 let currentEmail = "";
@@ -44,6 +45,29 @@ function showStatus(el, message, type) {
 function clearStatus(el) {
   el.className = "status";
   el.textContent = "";
+}
+
+function showSuccessCheckmark() {
+  els.saveSuccess.innerHTML = `
+    <div class="checkmark-wrap">
+      <svg viewBox="0 0 48 48" width="44" height="44">
+        <circle class="checkmark-circle" cx="24" cy="24" r="22"/>
+        <path class="checkmark-check" d="M14 24 l7 7 13-13"/>
+      </svg>
+    </div>
+    <br>
+    <a class="view-queue-link" id="view-queue-link">View Queue &rarr;</a>
+  `;
+  els.saveSuccess.classList.add("visible");
+  document.getElementById("view-queue-link").addEventListener("click", (e) => {
+    e.preventDefault();
+    chrome.tabs.create({ url: `${API_BASE}/dashboard` });
+  });
+}
+
+function hideSuccessCheckmark() {
+  els.saveSuccess.classList.remove("visible");
+  els.saveSuccess.innerHTML = "";
 }
 
 function setLoading(btn, loading, text) {
@@ -277,6 +301,7 @@ els.saveBtn.addEventListener("click", async () => {
   }
 
   clearStatus(els.saveStatus);
+  hideSuccessCheckmark();
   setLoading(els.saveBtn, true, "Saving...");
 
   try {
@@ -345,6 +370,7 @@ els.saveBtn.addEventListener("click", async () => {
     const title = data.article?.title || "Article";
     const failed = data.extractionFailed;
 
+    showSuccessCheckmark();
     showStatus(
       els.saveStatus,
       failed

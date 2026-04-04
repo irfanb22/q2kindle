@@ -270,6 +270,66 @@
       to { transform: rotate(360deg); }
     }
 
+    /* ── Success state ── */
+    .save-success {
+      display: none;
+      text-align: center;
+      padding: 8px 0 4px;
+    }
+
+    .save-success.visible {
+      display: block;
+    }
+
+    .checkmark-wrap {
+      display: inline-block;
+      width: 44px;
+      height: 44px;
+      margin-bottom: 4px;
+    }
+
+    .checkmark-circle {
+      stroke: #2d5f2d;
+      stroke-width: 2;
+      fill: none;
+      stroke-dasharray: 138;
+      stroke-dashoffset: 138;
+      animation: circle-draw 0.4s ease-out forwards;
+    }
+
+    .checkmark-check {
+      stroke: #2d5f2d;
+      stroke-width: 2.5;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-dasharray: 28;
+      stroke-dashoffset: 28;
+      animation: check-draw 0.3s ease-out 0.25s forwards;
+    }
+
+    @keyframes circle-draw {
+      to { stroke-dashoffset: 0; }
+    }
+
+    @keyframes check-draw {
+      to { stroke-dashoffset: 0; }
+    }
+
+    .view-queue-link {
+      display: inline-block;
+      margin-top: 10px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #2d5f2d;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .view-queue-link:hover {
+      text-decoration: underline;
+    }
+
     /* ── View management ── */
     .view { display: none; }
     .view.active { display: block; }
@@ -317,6 +377,7 @@
         <div id="page-url" class="url-text"></div>
       </div>
       <button id="save-btn" class="btn-primary">Save to Queue</button>
+      <div id="save-success" class="save-success"></div>
       <div id="save-status" class="status"></div>
       <div class="user-bar">
         <span id="user-email" class="user-email"></span>
