@@ -49,6 +49,32 @@ function clearStatus(el) {
 }
 
 let successTimer = null;
+let savingTextTimer = null;
+
+const SAVING_MESSAGES = [
+  { text: "Saving...", delay: 0 },
+  { text: "Extracting article...", delay: 3000 },
+  { text: "Almost there...", delay: 6000 },
+  { text: "Still working...", delay: 10000 },
+];
+
+function startSavingTextRotation() {
+  const timeouts = [];
+  SAVING_MESSAGES.forEach(({ text, delay }) => {
+    const id = setTimeout(() => {
+      els.saveBtn.innerHTML = `<span class="spinner"></span><span class="saving-text">${text}</span>`;
+    }, delay);
+    timeouts.push(id);
+  });
+  savingTextTimer = timeouts;
+}
+
+function stopSavingTextRotation() {
+  if (savingTextTimer) {
+    savingTextTimer.forEach(clearTimeout);
+    savingTextTimer = null;
+  }
+}
 
 function showSuccessView() {
   // Re-trigger the checkmark animation by replacing the SVG
@@ -305,6 +331,7 @@ els.saveBtn.addEventListener("click", async () => {
 
   clearStatus(els.saveStatus);
   setLoading(els.saveBtn, true, "Saving...");
+  startSavingTextRotation();
 
   try {
     const token = await getValidToken();
@@ -337,14 +364,28 @@ els.saveBtn.addEventListener("click", async () => {
       payload.html = pageHtml;
     }
 
-    const res = await fetch(`${API_BASE}/api/articles/extract`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(payload),
-    });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
+
+    let res;
+    try {
+      res = await fetch(`${API_BASE}/api/articles/extract`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+        signal: controller.signal,
+      });
+    } catch (fetchErr) {
+      if (fetchErr.name === "AbortError") {
+        throw new Error("Request timed out. Please try again.");
+      }
+      throw fetchErr;
+    } finally {
+      clearTimeout(timeout);
+    }
 
     if (res.status === 401) {
       // Token invalid — clear and show login
@@ -381,6 +422,7 @@ els.saveBtn.addEventListener("click", async () => {
       "error"
     );
   } finally {
+    stopSavingTextRotation();
     setLoading(els.saveBtn, false, "Save to Queue");
   }
 });
