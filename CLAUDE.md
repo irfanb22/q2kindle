@@ -442,17 +442,28 @@ SUPABASE_SERVICE_ROLE_KEY=<service role key from Supabase dashboard>
 - ✅ **Privacy & Terms contact updated** — replaced email addresses (`privacy@q2kindle.com`, `team@q2kindle.com`) with GitHub issues link. No real inbox was set up for those addresses.
 - ✅ **Open Graph link preview** — static 1200×630 OG image (`web/public/og-image.png`) with cream background, app icon, "q2kindle" in Newsreader, and tagline. Open Graph + Twitter Card meta tags in `layout.tsx`. Rich preview appears when sharing `q2kindle.com` in iMessage, Slack, Twitter, etc.
 
-## Chrome Extension (Internal / In Development)
+## Chrome Extension (v1.0 — Published)
 
-A simple Chrome extension that lets you save the current browser tab's URL to your q2kindle queue with one click. Built for internal use — the creator is actively using it, but it has **not been published** to the Chrome Web Store yet. Publishing requires a one-time $5 developer account fee and Google review (1-3 business days).
+Chrome extension that lets you save the current browser tab to your q2kindle article queue with one click. Published on the Chrome Web Store.
+
+### Features (v1.0)
+
+- **One-click save** — click the extension icon, then "Save to Queue" to add the current page
+- **Passwordless auth** — sign in with the same magic link OTP flow as the web app
+- **Paywalled content capture** — captures the full page HTML via `chrome.scripting.executeScript`, so articles behind paywalls are extracted from what the user can see (not re-fetched server-side)
+- **Animated success state** — after saving, a dedicated success screen shows an animated checkmark + "Saved" with a "Go to Queue" button, auto-closes after 7 seconds with a progress bar countdown
+- **Rotating save status** — during save, the button text cycles through "Saving..." → "Extracting article..." → "Almost there..." → "Still working..." with fade animations
+- **15-second timeout** — if the server doesn't respond within 15 seconds, shows a timeout error instead of hanging
+- **Token management** — stores auth tokens in `chrome.storage.local`, preemptive refresh (60s buffer before expiry), automatic session expiry detection with redirect to login
 
 ### How it works
 
 1. User clicks the extension icon in the Chrome toolbar
 2. First time: sign in with email (same magic link OTP flow as the web app)
-3. After sign in: popup shows the current page's title and URL, with a "Save to Queue" button
-4. Clicking save calls the existing `/api/articles/extract` endpoint with a Bearer token (instead of cookies)
+3. After sign in: popup shows the current page's title with a "Save to Queue" button
+4. Clicking save captures the page HTML, then calls `/api/articles/extract` with a Bearer token
 5. Article is added to the queue and extracted server-side, same as pasting a URL on the dashboard
+6. Success screen appears with checkmark, "Saved" text, and "Go to Queue" button — auto-closes after 7 seconds
 
 ### Extension files
 
@@ -460,9 +471,9 @@ All files live under `extension/` at the repo root (not inside `web/`):
 
 | File | Purpose |
 |------|---------|
-| `extension/manifest.json` | Manifest V3 — permissions for `activeTab` + `storage`, host access to q2kindle.com and Supabase |
-| `extension/popup.html` | Popup UI — matches app design (Newsreader + Inter fonts, forest green palette) |
-| `extension/popup.js` | Auth via Supabase REST API, token management with auto-refresh, save-to-queue |
+| `extension/manifest.json` | Manifest V3 — permissions for `activeTab` + `storage` + `scripting`, host access to q2kindle.com and Supabase |
+| `extension/popup.html` | Popup UI — 4 views (login, OTP, save, success), matches app design (Newsreader + Inter fonts, forest green palette) |
+| `extension/popup.js` | Auth via Supabase REST API, token management with auto-refresh, save-to-queue with timeout and rotating status, success view with auto-close |
 | `extension/icons/icon-{16,48,128}.png` | PNG icons generated from the app's favicon SVG |
 
 ### How to load (local development)
@@ -474,6 +485,19 @@ All files live under `extension/` at the repo root (not inside `web/`):
 
 No build step, no npm, no bundler. Plain HTML/JS that Chrome reads directly.
 
+### Chrome Web Store publishing
+
+1. Go to the [Chrome Web Store Developer Dashboard](https://chrome.google.com/webstore/devconsole)
+2. Click **New Item** → upload a ZIP of the `extension/` folder
+3. Fill in the store listing (description, screenshots, category)
+4. Submit for review (typically 1-3 business days)
+
+To create the ZIP for upload:
+```bash
+cd ~/Projects/kindle-sender
+zip -r q2kindle-extension.zip extension/ -x "extension/.DS_Store"
+```
+
 ### Backend support
 
 The extract API route (`web/src/app/api/articles/extract/route.ts`) uses `createApiClient(request)` from `web/src/lib/supabase/api.ts`, which checks for a Bearer token in the `Authorization` header before falling back to cookie-based auth. This means the same endpoint serves both the web app and the Chrome extension. Web app users are completely unaffected — the Bearer token path only activates when the extension explicitly sends one.
@@ -483,7 +507,7 @@ The extract API route (`web/src/app/api/articles/extract/route.ts`) uses `create
 Phase 7 completes web app v1. After public launch (Reddit, online media), v2 will add:
 
 - **RSS reader** — subscribe to feeds, browse new articles, and manually add them to the Kindle queue (no auto-queuing)
-- **Chrome extension** — publish to Chrome Web Store ($5 developer account fee, Google review process)
+- **Chrome extension** — ✅ Published on Chrome Web Store (v1.0)
 - **iOS app** — native app with share sheet integration (share articles from Safari/apps directly to queue)
 
 ## V2 Pages
@@ -613,7 +637,8 @@ Phase 7 completes web app v1. After public launch (Reddit, online media), v2 wil
 | 2026-02-28 | Settings page fix (remove stale style jsx) | After removing the EPUB font picker, two `<style jsx>` blocks with `@keyframes fadeUp` were left orphaned in settings/page.tsx. These caused client-side errors. Removed the blocks and moved `fadeUp` to globals.css. |
 | 2026-03-01 | Never use styled-jsx — use globals.css or Tailwind only | `@netlify/plugin-nextjs` v5 has a packaging bug that fails to bundle styled-jsx runtime chunks, causing ChunkLoadError on Netlify. Removed all `<style jsx>` from codebase. CSS goes in globals.css or Tailwind classes. |
 | 2026-03-13 | EPUB cover font sizes increased ~2-3x | Original sizes (200/70/55/48px) were unreadable at Kindle library thumbnail size (~150-200px wide). New sizes (230/140/110/90px) with horizontal rule separator and centered layout are legible at thumbnail scale. |
-| 2026-03-14 | Chrome extension — internal use only, not published | Built Manifest V3 popup extension for saving current tab URL to queue. Uses Supabase REST API directly for OTP auth, calls existing extract endpoint with Bearer token. No build step needed — plain HTML/JS. Will publish to Chrome Web Store later ($5 fee + Google review). |
+| 2026-03-14 | Chrome extension — Manifest V3 popup | Built Manifest V3 popup extension for saving current tab URL to queue. Uses Supabase REST API directly for OTP auth, calls existing extract endpoint with Bearer token. No build step needed — plain HTML/JS. |
+| 2026-04-04 | Chrome extension v1.0 published | Added animated success screen (checkmark + "Saved" + "Go to Queue" button, 7s auto-close with progress bar), rotating save status text ("Saving..." → "Extracting article..." → "Almost there..." → "Still working..."), 15-second fetch timeout, removed URL display (title only). Version set to 1.0.0 for Chrome Web Store submission. |
 | 2026-03-14 | `createApiClient()` for dual auth (cookie + Bearer) | New `api.ts` helper checks for Authorization header first (Chrome extension), falls back to cookie-based auth (web app). Extract route uses this instead of `createClient()`. Zero impact on existing web app users — Bearer path only activates when explicitly sent. |
 | 2026-03-14 | Onboarding as modal wizard on dashboard (not settings page) | Self-contained 4-step modal keeps users on the dashboard. Reuses existing `/api/settings` and `/api/send/test` endpoints — no new API routes or DB migrations. Detection via missing settings row + localStorage flag handles edge cases (returning users, multi-device). Transparent overlay avoids partial-page dimming issue caused by app layout stacking context. |
 | 2026-03-15 | Generic "expired or already used" error for failed magic links | Auth callback can't distinguish between expired links, cross-browser clicks, and double-clicks — all fail `exchangeCodeForSession` the same way. PKCE codes are single-use: once clicked anywhere (even wrong browser), the code is consumed and the original link is also dead. Message covers all cases without overexplaining. |
