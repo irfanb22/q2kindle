@@ -515,16 +515,21 @@ No build step, no npm, no bundler. Plain HTML/JS that Chrome reads directly.
 
 ### Chrome Web Store publishing
 
-1. Go to the [Chrome Web Store Developer Dashboard](https://chrome.google.com/webstore/devconsole)
-2. Click **New Item** → upload a ZIP of the `extension/` folder
-3. Fill in the store listing (description, screenshots, category)
-4. Submit for review (typically 1-3 business days)
+- **Publisher**: q2kindle (developer account, $5 one-time fee)
+- **Status**: Submitted for review (2026-04-05), typically 1-3 business days
+- **Official URL**: `https://q2kindle.com` (verified via DNS TXT record in Squarespace)
+- **Privacy policy**: `https://q2kindle.com/privacy`
+- **Category**: Productivity
+- **Trader declaration**: Non-trader
+- **Remote code**: No (all code bundled in the extension)
 
 To create the ZIP for upload:
 ```bash
 cd ~/Projects/kindle-sender
 zip -r q2kindle-extension.zip extension/ -x "extension/.DS_Store"
 ```
+
+To update after approval: bump version in `manifest.json`, create new ZIP, upload to the Developer Dashboard.
 
 ### Backend support
 
@@ -707,6 +712,7 @@ PostHog is used for product analytics — tracking key user actions to understan
 | 2026-03-13 | EPUB cover font sizes increased ~2-3x | Original sizes (200/70/55/48px) were unreadable at Kindle library thumbnail size (~150-200px wide). New sizes (230/140/110/90px) with horizontal rule separator and centered layout are legible at thumbnail scale. |
 | 2026-03-14 | Chrome extension — Manifest V3 popup | Built Manifest V3 popup extension for saving current tab URL to queue. Uses Supabase REST API directly for OTP auth, calls existing extract endpoint with Bearer token. No build step needed — plain HTML/JS. |
 | 2026-04-04 | Chrome extension v1.0 published | Added animated success screen (checkmark + "Saved" + "Go to Queue" button, 7s auto-close with progress bar), rotating save status text ("Saving..." → "Extracting article..." → "Almost there..." → "Still working..."), 15-second fetch timeout, removed URL display (title only). Version set to 1.0.0 for Chrome Web Store submission. |
+| 2026-04-05 | Chrome extension submitted to Chrome Web Store | Submitted v1.0.0 for review. Publisher name "q2kindle", domain verified via DNS TXT record in Squarespace, privacy policy at q2kindle.com/privacy. Permissions justified: activeTab (read tab title), storage (auth tokens), scripting (capture page HTML for paywalled content), host permissions (q2kindle.com API + Supabase auth). Non-trader, no remote code. |
 | 2026-03-14 | `createApiClient()` for dual auth (cookie + Bearer) | New `api.ts` helper checks for Authorization header first (Chrome extension), falls back to cookie-based auth (web app). Extract route uses this instead of `createClient()`. Zero impact on existing web app users — Bearer path only activates when explicitly sent. |
 | 2026-03-14 | Onboarding as modal wizard on dashboard (not settings page) | Self-contained 4-step modal keeps users on the dashboard. Reuses existing `/api/settings` and `/api/send/test` endpoints — no new API routes or DB migrations. Detection via missing settings row + localStorage flag handles edge cases (returning users, multi-device). Transparent overlay avoids partial-page dimming issue caused by app layout stacking context. |
 | 2026-03-15 | Generic "expired or already used" error for failed magic links | Auth callback can't distinguish between expired links, cross-browser clicks, and double-clicks — all fail `exchangeCodeForSession` the same way. PKCE codes are single-use: once clicked anywhere (even wrong browser), the code is consumed and the original link is also dead. Message covers all cases without overexplaining. |
