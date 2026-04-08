@@ -1,0 +1,341 @@
+/* Documentation page styles */
+
+/* Layout */
+.docs-layout {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 48px;
+  align-items: start;
+}
+
+/* Sidebar */
+.docs-sidebar {
+  position: sticky;
+  top: 32px;
+  max-height: calc(100vh - 64px);
+  overflow-y: auto;
+  padding-right: 16px;
+}
+
+.docs-sidebar-title {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 16px;
+  padding-left: 14px;
+}
+
+.docs-toc-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.docs-toc-link {
+  display: block;
+  padding: 7px 14px;
+  font-size: 14px;
+  text-decoration: none;
+  border-left: 2px solid transparent;
+  border-radius: 0 6px 6px 0;
+  transition: all 0.15s ease;
+}
+
+.docs-toc-link:hover {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.docs-toc-link.active {
+  border-left-color: var(--color-accent);
+  color: var(--color-accent) !important;
+  background: rgba(45, 95, 45, 0.06);
+  font-weight: 500;
+}
+
+/* Mobile TOC */
+.docs-mobile-toc {
+  display: none;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding: 12px 24px;
+  gap: 8px;
+  backdrop-filter: blur(16px) saturate(1.2);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.docs-mobile-toc::-webkit-scrollbar {
+  display: none;
+}
+
+.docs-mobile-toc-link {
+  flex-shrink: 0;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  border-radius: 100px;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.docs-mobile-toc-link.active {
+  background: var(--color-accent) !important;
+  color: #fff !important;
+}
+
+/* Content */
+.docs-content {
+  min-width: 0;
+  padding-bottom: 80px;
+}
+
+.docs-content section {
+  scroll-margin-top: 32px;
+}
+
+.docs-content h2 {
+  font-size: 1.6rem;
+  letter-spacing: -0.02em;
+  margin-bottom: 16px;
+  padding-top: 8px;
+}
+
+.docs-content h3 {
+  font-size: 1.1rem;
+  letter-spacing: -0.01em;
+  margin-top: 28px;
+  margin-bottom: 10px;
+}
+
+.docs-content p {
+  line-height: 1.7;
+  margin-bottom: 16px;
+}
+
+.docs-content ul,
+.docs-content ol {
+  line-height: 1.7;
+  margin-bottom: 16px;
+  padding-left: 24px;
+}
+
+.docs-content li {
+  margin-bottom: 6px;
+}
+
+.docs-content code {
+  font-size: 0.9em;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.docs-content a {
+  color: var(--color-accent);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.docs-content a:hover {
+  text-decoration: underline;
+}
+
+/* Stat cards (Limits section) */
+.docs-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin: 20px 0 24px;
+}
+
+.docs-stat-card {
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.docs-stat-number {
+  font-size: 2rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  margin-bottom: 4px;
+}
+
+.docs-stat-label {
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+/* Troubleshooting */
+.docs-faq-item {
+  margin-bottom: 20px;
+}
+
+.docs-faq-q {
+  font-weight: 600;
+  margin-bottom: 6px;
+  font-size: 0.95rem;
+}
+
+.docs-faq-a {
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* Roadmap board */
+.docs-roadmap-board {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.docs-roadmap-col {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.docs-roadmap-header {
+  padding: 10px 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.docs-roadmap-header--shipped {
+  background: rgba(45, 95, 45, 0.12);
+  color: var(--color-accent);
+}
+
+.docs-roadmap-header--active {
+  background: rgba(217, 169, 56, 0.12);
+  color: #a67c00;
+}
+
+.docs-roadmap-header--maybe {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--color-text-dim);
+}
+
+.docs-roadmap-items {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.docs-roadmap-card {
+  padding: 12px 14px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.docs-roadmap-card-title {
+  font-weight: 500;
+}
+
+.docs-roadmap-card-desc {
+  font-size: 0.8rem;
+  margin-top: 3px;
+}
+
+/* Back to top */
+.docs-back-top {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 40;
+  border: none;
+}
+
+.docs-back-top.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.docs-back-top:hover {
+  transform: translateY(-2px);
+}
+
+/* Step indicators */
+.docs-step {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.docs-step-num {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-top: 1px;
+}
+
+.docs-step-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.docs-step-body p:last-child {
+  margin-bottom: 0;
+}
+
+/* Responsive */
+@media (max-width: 1023px) {
+  .docs-layout {
+    display: block;
+  }
+
+  .docs-sidebar {
+    display: none;
+  }
+
+  .docs-mobile-toc {
+    display: flex;
+  }
+
+  .docs-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .docs-roadmap-board {
+    grid-template-columns: 1fr;
+  }
+
+  .docs-back-top {
+    bottom: 24px;
+    right: 24px;
+  }
+
+  .docs-content section {
+    scroll-margin-top: 72px;
+  }
+}

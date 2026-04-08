@@ -175,6 +175,8 @@ export default function LandingPage() {
       <footer className="landing-footer">
         <p>q2kindle &mdash; Queue articles. Get a beautiful ebook. Read distraction-free.</p>
         <div className="footer-links">
+          <Link href="/docs">Docs</Link>
+          <span>&middot;</span>
           <Link href="/privacy">Privacy</Link>
           <span>&middot;</span>
           <Link href="/terms">Terms</Link>
