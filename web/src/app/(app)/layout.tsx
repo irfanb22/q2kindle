@@ -122,6 +122,24 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   </button>
                 );
               })}
+              <a
+                href="https://chromewebstore.google.com/detail/q2kindle-%E2%80%94-save-to-queue/pjicihhhplcnbnjbhnklldmibgidkmon"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors duration-150"
+                style={{
+                  fontFamily: 'var(--font-body)',
+                  fontWeight: 500,
+                  color: 'var(--color-text-muted)',
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--color-text)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--color-text-muted)'; }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <path d="M20.5 11H19V7c0-1.1-.9-2-2-2h-4V3.5a2.5 2.5 0 00-5 0V5H4c-1.1 0-2 .9-2 2v3.8h1.5a2.5 2.5 0 010 5H2V19c0 1.1.9 2 2 2h3.8v-1.5a2.5 2.5 0 015 0V21H16c1.1 0 2-.9 2-2v-4h1.5a2.5 2.5 0 000-5z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                Extension
+              </a>
             </nav>
           </div>
 

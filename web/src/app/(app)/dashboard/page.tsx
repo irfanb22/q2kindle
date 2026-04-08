@@ -20,6 +20,7 @@ export default function DashboardPage() {
   const [dailySendLimit, setDailySendLimit] = useState(10);
   const [atSendLimit, setAtSendLimit] = useState(false);
   const [showWelcome, setShowWelcome] = useState(false);
+  const [showExtensionHint, setShowExtensionHint] = useState(false);
 
   const router = useRouter();
   const posthog = usePostHog();
@@ -102,6 +103,11 @@ export default function DashboardPage() {
       // Add article to list immediately
       setArticles((prev) => [article, ...prev]);
       setLoading(false);
+
+      // Show extension hint once after first manual article add
+      if (!localStorage.getItem("q2k_extension_hint_dismissed")) {
+        setShowExtensionHint(true);
+      }
 
       // If extraction hasn't completed yet (no content), poll for updates
       if (!article.content) {
@@ -323,6 +329,45 @@ export default function DashboardPage() {
             <span className="text-sm" style={{ color: 'var(--color-danger)', fontFamily: "var(--font-body)" }}>
               {error}
             </span>
+          </div>
+        )}
+
+        {showExtensionHint && (
+          <div
+            className="mt-3 flex items-center justify-between gap-3 rounded-lg px-4 py-3"
+            style={{
+              background: 'var(--color-accent-pale)',
+              border: '1px solid rgba(45,95,45,0.12)',
+            }}
+          >
+            <div className="flex items-center gap-3">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className="shrink-0">
+                <path d="M20.5 11H19V7c0-1.1-.9-2-2-2h-4V3.5a2.5 2.5 0 00-5 0V5H4c-1.1 0-2 .9-2 2v3.8h1.5a2.5 2.5 0 010 5H2V19c0 1.1.9 2 2 2h3.8v-1.5a2.5 2.5 0 015 0V21H16c1.1 0 2-.9 2-2v-4h1.5a2.5 2.5 0 000-5z" stroke="var(--color-accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <p className="text-sm" style={{ fontFamily: 'var(--font-body)', color: 'var(--color-text-muted)' }}>
+                Save articles faster —{" "}
+                <a
+                  href="https://chromewebstore.google.com/detail/q2kindle-%E2%80%94-save-to-queue/pjicihhhplcnbnjbhnklldmibgidkmon"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ color: 'var(--color-accent)', fontWeight: 500 }}
+                >
+                  get the Chrome extension
+                </a>
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                setShowExtensionHint(false);
+                localStorage.setItem("q2k_extension_hint_dismissed", "1");
+              }}
+              className="shrink-0 cursor-pointer"
+              style={{ color: 'var(--color-text-dim)', background: 'transparent', border: 'none' }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
+            </button>
           </div>
         )}
       </form>
