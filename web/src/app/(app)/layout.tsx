@@ -179,6 +179,37 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {children}
       </main>
 
+      {/* Footer — hidden on mobile (tab bar takes that space) */}
+      <footer className="hidden sm:flex justify-center gap-4 pb-8 pt-2">
+        <a
+          href="/docs"
+          className="text-xs transition-colors duration-150"
+          style={{ fontFamily: 'var(--font-body)', color: 'var(--color-text-dim)', textDecoration: 'none' }}
+          onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--color-text-muted)'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--color-text-dim)'; }}
+        >
+          Docs
+        </a>
+        <a
+          href="/privacy"
+          className="text-xs transition-colors duration-150"
+          style={{ fontFamily: 'var(--font-body)', color: 'var(--color-text-dim)', textDecoration: 'none' }}
+          onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--color-text-muted)'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--color-text-dim)'; }}
+        >
+          Privacy
+        </a>
+        <a
+          href="/terms"
+          className="text-xs transition-colors duration-150"
+          style={{ fontFamily: 'var(--font-body)', color: 'var(--color-text-dim)', textDecoration: 'none' }}
+          onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--color-text-muted)'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--color-text-dim)'; }}
+        >
+          Terms
+        </a>
+      </footer>
+
       {/* Mobile bottom tab bar — visible only on small screens */}
       <nav
         className="fixed bottom-0 left-0 right-0 sm:hidden border-t flex items-center justify-around"
