@@ -18,7 +18,7 @@ const SECTIONS = [
 ] as const;
 
 export default function DocsPage() {
-  const [activeSection, setActiveSection] = useState(SECTIONS[0].id);
+  const [activeSection, setActiveSection] = useState<string>(SECTIONS[0].id);
   const [showBackTop, setShowBackTop] = useState(false);
   const mobileTocRef = useRef<HTMLDivElement>(null);
 
