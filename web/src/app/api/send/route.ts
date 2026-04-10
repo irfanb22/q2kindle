@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { generateKindleEpub } from "@/lib/epub";
-import { sendToKindle } from "@/lib/email";
+import { sendToKindle, EpubTooLargeError } from "@/lib/email";
 import { DAILY_SEND_LIMIT, getDailySendCount } from "@/lib/send-limits";
 
 export async function POST() {
@@ -166,6 +166,7 @@ export async function POST() {
         epubFilename,
       });
     } catch (emailError) {
+      const isTooLarge = emailError instanceof EpubTooLargeError;
       const message =
         emailError instanceof Error
           ? emailError.message
@@ -175,8 +176,15 @@ export async function POST() {
         user_id: user.id,
         article_count: articleCount,
         status: "failed",
-        error_message: `Email sending failed: ${message}`,
+        error_message: isTooLarge ? message : `Email sending failed: ${message}`,
       });
+
+      if (isTooLarge) {
+        return NextResponse.json(
+          { error: "epub_too_large", message },
+          { status: 413 }
+        );
+      }
 
       return NextResponse.json(
         { error: "send_failed", message: `Email sending failed: ${message}` },
