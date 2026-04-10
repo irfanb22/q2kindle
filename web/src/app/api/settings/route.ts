@@ -73,7 +73,7 @@ export async function POST(request: Request) {
     }
 
     // Basic email validation
-    if (!kindle_email.includes("@")) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(kindle_email)) {
       return NextResponse.json(
         { error: "Please enter a valid Kindle email address" },
         { status: 400 }
