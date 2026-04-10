@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createApiClient } from "@/lib/supabase/api";
 import { extract, extractFromHtml } from "@extractus/article-extractor";
 import { DAILY_EXTRACTION_LIMIT, getDailyExtractionCount } from "@/lib/send-limits";
+import { validateUrl } from "@/lib/url-validation";
 
 function calculateReadTime(htmlContent: string): number {
   // Strip HTML tags to get plain text
@@ -57,6 +58,16 @@ export async function POST(request: Request) {
 
     // Normalize the URL
     const normalizedUrl = url.startsWith("http") ? url : `https://${url}`;
+
+    // SSRF protection: block private/internal addresses
+    const urlCheck = await validateUrl(normalizedUrl);
+    if (!urlCheck.valid) {
+      return NextResponse.json(
+        { error: urlCheck.error || "Invalid URL" },
+        { status: 400 }
+      );
+    }
+
     const domain = extractDomain(normalizedUrl);
 
     // First, insert the article immediately with a placeholder so the UI can show it
