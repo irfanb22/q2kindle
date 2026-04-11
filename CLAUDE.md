@@ -297,6 +297,7 @@ SUPABASE_SERVICE_ROLE_KEY=<service role key from Supabase dashboard>
 ADMIN_USER_IDS=<your Supabase user UUID, comma-separated for multiple admins>
 RESEND_API_KEY=<Resend REST API key for marketing emails>
 EMAIL_UNSUBSCRIBE_SECRET=<random hex string — run `openssl rand -hex 32` to generate>
+CRON_SECRET=<random hex string — must match the value embedded in the Supabase pg_cron job command>
 ```
 
 **SMTP gotcha**: If local email sending fails with `535 5.7.8 Authentication failed`, the `BREVO_SMTP_KEY` in `.env.local` is stale. The key gets regenerated in Brevo and only Netlify gets updated. Fix: copy the current value from Netlify → Site configuration → Environment variables → `BREVO_SMTP_KEY` into `.env.local`, then restart `npm run dev`.
@@ -565,7 +566,7 @@ Phase 7 completes web app v1. After public launch (Reddit, online media), v2 wil
 - **Build**: Netlify builds from GitHub repo, `base = "web"`, `npm run build`, Node 22 LTS
 - **Config file**: `netlify.toml` at repo root (not inside `web/`)
 - **Plugin**: `@netlify/plugin-nextjs` (required for SSR/API routes on Netlify)
-- **Env vars on Netlify**: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `BREVO_SMTP_LOGIN`, `BREVO_SMTP_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_USER_IDS`, `RESEND_API_KEY`, `EMAIL_UNSUBSCRIBE_SECRET`
+- **Env vars on Netlify**: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `BREVO_SMTP_LOGIN`, `BREVO_SMTP_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_USER_IDS`, `RESEND_API_KEY`, `EMAIL_UNSUBSCRIBE_SECRET`, `CRON_SECRET`
 - **Supabase Site URL**: Must be set to `https://q2kindle.com` (in Auth > URL Configuration)
 - **Supabase Redirect URLs**: Must include `https://q2kindle.com/auth/callback`, `https://q2kindle.netlify.app/auth/callback`, and `http://localhost:3000/auth/callback`
 - **Supabase Custom SMTP**: Resend (configured in Supabase Dashboard > Project Settings > Auth > SMTP Settings)
@@ -574,6 +575,76 @@ Phase 7 completes web app v1. After public launch (Reddit, online media), v2 wil
   - **Username**: `resend`
   - **Password**: Resend API key (set in Supabase dashboard, not in codebase)
   - **Sender email**: `team@q2kindle.com` (custom domain, verified in Resend)
+
+### Scheduled send (Supabase pg_cron)
+
+The hourly cron is run by Supabase `pg_cron` + `pg_net` calling `https://q2kindle.com/api/cron/send`. Two values must stay in sync or scheduled sends silently break:
+
+1. The `CRON_SECRET` env var on Netlify
+2. The `Bearer <secret>` literal embedded in the pg_cron command
+
+If they diverge (or the placeholder is never replaced), `/api/cron/send` returns 401 and no users get their digest. The route writes nothing to `send_history` on auth failure, so the only signs are 401s in `net._http_response` and an empty `send_history` for cron rows.
+
+**SQL to (re)create the job** — paste into Supabase SQL Editor, replacing `<CRON_SECRET>` with the actual value from Netlify env vars:
+
+```sql
+SELECT cron.unschedule(<existing_jobid>);  -- omit if creating fresh
+
+SELECT cron.schedule(
+  'q2kindle-hourly-send',
+  '0 * * * *',
+  $$
+  SELECT net.http_get(
+    url := 'https://q2kindle.com/api/cron/send',
+    headers := jsonb_build_object(
+      'Content-Type', 'application/json',
+      'Authorization', 'Bearer <CRON_SECRET>'
+    ),
+    timeout_milliseconds := 60000
+  );
+  $$
+);
+```
+
+**`timeout_milliseconds := 60000` is required.** `pg_net`'s default timeout is 5 seconds, which is shorter than even a small cron run (one user with one article + EPUB generation + Brevo SMTP takes ~2-3s; multiple users will exceed 5s). At the default, pg_net disconnects mid-flight and Netlify may or may not finish the function — articles end up in limbo.
+
+**Debugging the cron** — three queries to check, in order:
+
+```sql
+-- 1. Did pg_cron actually fire?
+SELECT jobid, status, return_message, start_time
+FROM cron.job_run_details
+ORDER BY start_time DESC LIMIT 5;
+
+-- 2. What HTTP response did pg_net get back from Netlify?
+SELECT id, status_code, error_msg, created
+FROM net._http_response
+ORDER BY created DESC LIMIT 5;
+
+-- 3. Did the cron route write anything to send_history?
+SELECT id, user_id, status, error_message, sent_at
+FROM send_history
+WHERE sent_at > now() - interval '2 hours'
+ORDER BY sent_at DESC;
+```
+
+`status_code = 401` in query 2 means the secret is wrong or the placeholder was never replaced. `error_msg` containing `Timeout of 5000 ms reached` means `timeout_milliseconds` is missing. `status_code = 200` + empty query 3 means the route ran but no users matched the schedule (check `schedule_days`/`schedule_time`/`timezone` in the `settings` table).
+
+**Quick manual test** — bypass pg_net entirely from Terminal:
+
+```bash
+time curl -i -H "Authorization: Bearer <CRON_SECRET>" https://q2kindle.com/api/cron/send
+```
+
+The route only matches users whose `schedule_time` hour equals the current hour in their timezone, so run this within the hour your test user is scheduled for. Expected: HTTP 200 with the user's UUID in `results` as `success`.
+
+**Rotating `CRON_SECRET`** — three steps in order:
+
+1. Update `CRON_SECRET` in Netlify env vars (Site configuration → Environment variables)
+2. **Trigger a redeploy** ("Deploy project without cache") — env var changes only take effect on the next deploy
+3. Re-run the SQL above with the new secret
+
+Doing these out of order leaves a window where Netlify and pg_cron disagree and the next hourly trigger 401s.
 
 ### Deployment status
 
@@ -727,3 +798,4 @@ PostHog is used for product analytics — tracking key user actions to understan
 | 2026-04-02 | HMAC-signed unsubscribe URLs (not session-based) | Unsubscribe links must work without login. HMAC signature with `EMAIL_UNSUBSCRIBE_SECRET` prevents forged unsubscribe requests. Constant-time comparison prevents timing attacks. |
 | 2026-04-02 | No email composer UI — Claude Code composes emails | Marketing emails are composed by Claude Code and sent via the admin API. The admin page shows stats, logs, and a test button — no WYSIWYG editor needed. Keeps the codebase simple. |
 | 2026-04-02 | Hidden admin route (no nav link) | `/admin/email` is not in the nav bar. Only accessible by direct URL. Admin check happens both client-side (403 → "Access denied" screen) and server-side (API routes return 403). Regular users see nothing. |
+| 2026-04-11 | pg_cron command must embed real `CRON_SECRET` + 60s timeout | Scheduled sends silently broke for two reasons that compounded. (1) The pg_cron job was created with a literal `Bearer YOUR_CRON_SECRET_HERE` placeholder that was never replaced. It worked accidentally because the old cron auth check (`if (cronSecret && ...)`) silently allowed all callers when `CRON_SECRET` was unset on Netlify; once the env var was added and the security commit hardened the check to `if (!cronSecret || ...)`, every cron call returned 401. (2) Separately, `pg_net`'s default 5-second timeout was killing the function mid-flight on hours where it had real work to do — visible in `net._http_response.error_msg` as `Timeout of 5000 ms reached`. Fix: rotated `CRON_SECRET`, redeployed Netlify, recreated the pg_cron job with the real secret embedded plus `timeout_milliseconds := 60000`. See "Scheduled send (Supabase pg_cron)" section for the full SQL and debugging queries. |
