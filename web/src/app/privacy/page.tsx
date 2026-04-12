@@ -255,14 +255,12 @@ export default function PrivacyPage() {
           <Section title="Contact">
             <p>
               If you have questions about this privacy policy or how your data
-              is handled, open an issue on{" "}
+              is handled, email us at{" "}
               <a
-                href="https://github.com/irfanb22/q2kindle/issues"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="mailto:support@q2kindle.com"
                 style={{ color: "var(--color-accent)", textDecoration: "none" }}
               >
-                GitHub
+                support@q2kindle.com
               </a>
               .
             </p>

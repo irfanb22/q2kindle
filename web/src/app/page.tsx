@@ -180,6 +180,8 @@ export default function LandingPage() {
           <Link href="/privacy">Privacy</Link>
           <span>&middot;</span>
           <Link href="/terms">Terms</Link>
+          <span>&middot;</span>
+          <a href="mailto:support@q2kindle.com">Support</a>
         </div>
       </footer>
     </>

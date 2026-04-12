@@ -208,6 +208,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         >
           Terms
         </a>
+        <a
+          href="mailto:support@q2kindle.com"
+          className="text-xs transition-colors duration-150"
+          style={{ fontFamily: 'var(--font-body)', color: 'var(--color-text-dim)', textDecoration: 'none' }}
+          onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--color-text-muted)'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--color-text-dim)'; }}
+        >
+          Support
+        </a>
       </footer>
 
       {/* Mobile bottom tab bar — visible only on small screens */}
