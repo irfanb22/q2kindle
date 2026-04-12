@@ -469,6 +469,11 @@ export default function DocsPage() {
                 formatting. The content will be the same, but the visual presentation depends on your device settings.
               </p>
             </div>
+
+            <p className="mt-8" style={{ color: "var(--color-text-muted)" }}>
+              Still stuck? Email us at{" "}
+              <a href="mailto:support@q2kindle.com">support@q2kindle.com</a> and we&apos;ll help you out.
+            </p>
           </section>
 
           {/* ── Roadmap ── */}
