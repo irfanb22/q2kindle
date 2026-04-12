@@ -521,7 +521,7 @@ export default function SettingsPage() {
                 >
                   Amazon Approved Senders list
                 </a>{" "}
-                so your Kindle accepts articles from q2kindle.
+                so your Kindle accepts articles from q2Kindle.
               </p>
             </div>
           </div>

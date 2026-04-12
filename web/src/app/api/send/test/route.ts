@@ -45,7 +45,7 @@ export async function POST() {
     const dateStr = new Date().toISOString().split("T")[0];
     const testContent = `
       <h2>Test Delivery Successful</h2>
-      <p>This is a test email from q2kindle. If you're reading this on your Kindle, your email configuration is working correctly.</p>
+      <p>This is a test email from q2Kindle. If you're reading this on your Kindle, your email configuration is working correctly.</p>
       <p><strong>Sent:</strong> ${new Date().toLocaleString("en-US", { dateStyle: "full", timeStyle: "short" })}</p>
       <p><strong>From:</strong> kindle@q2kindle.com</p>
       <p><strong>To:</strong> ${settings.kindle_email}</p>
@@ -69,8 +69,8 @@ export async function POST() {
     let epubBuffer: Buffer;
     try {
       const epubOptions: Record<string, unknown> = {
-        title: `q2kindle - Test (${dateStr})`,
-        author: "q2kindle",
+        title: `q2Kindle - Test (${dateStr})`,
+        author: "q2Kindle",
         css: `body { line-height: 1.7; margin: 1em; color: #1a1a1a; }
 h2 { font-size: 1.2em; margin: 0 0 0.8em; }
 p { margin: 0 0 0.75em; text-indent: 0; }`,
@@ -112,7 +112,7 @@ p { margin: 0 0 0.75em; text-indent: 0; }`,
     try {
       await sendToKindle({
         to: settings.kindle_email,
-        subject: "q2kindle - Test",
+        subject: "q2Kindle - Test",
         epubBuffer,
         epubFilename: `q2kindle-Test-${dateStr}.epub`,
       });

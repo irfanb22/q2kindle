@@ -89,7 +89,7 @@ function LoginForm() {
               color: 'var(--color-text)',
               letterSpacing: '-0.02em',
             }}>
-            q2kindle
+            q2Kindle
           </h1>
 
           {!sent && (

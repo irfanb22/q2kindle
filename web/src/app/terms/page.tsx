@@ -1,8 +1,8 @@
 import Link from "next/link";
 
 export const metadata = {
-  title: "Terms of Service — q2kindle",
-  description: "Terms of service for using q2kindle",
+  title: "Terms of Service — q2Kindle",
+  description: "Terms of service for using q2Kindle",
 };
 
 export default function TermsPage() {
@@ -72,7 +72,7 @@ export default function TermsPage() {
         >
           <Section title="The basics">
             <p>
-              q2kindle is a free tool that lets you save articles, bundle them
+              q2Kindle is a free tool that lets you save articles, bundle them
               into an ebook, and send them to your Kindle. By using it, you
               agree to these terms. They&apos;re written in plain English because
               we think that&apos;s how terms should be.
@@ -99,7 +99,7 @@ export default function TermsPage() {
           <Section title="What we ask you not to do">
             <ul className="list-disc pl-6 space-y-2">
               <li>
-                Don&apos;t use q2kindle to send content to anyone other than
+                Don&apos;t use q2Kindle to send content to anyone other than
                 yourself.
               </li>
               <li>
@@ -114,7 +114,7 @@ export default function TermsPage() {
 
           <Section title="Content and copyright">
             <p>
-              q2kindle extracts article content from URLs you provide so it can
+              q2Kindle extracts article content from URLs you provide so it can
               be formatted for your Kindle. We don&apos;t host, redistribute, or
               publish that content — it&apos;s sent only to your personal
               device. You&apos;re responsible for ensuring you have the right to
@@ -125,7 +125,7 @@ export default function TermsPage() {
 
           <Section title="The service itself">
             <p>
-              q2kindle is provided as-is. We do our best to keep it running and
+              q2Kindle is provided as-is. We do our best to keep it running and
               reliable, but we&apos;re a small project and can&apos;t guarantee
               100% uptime or that every article will extract perfectly. We
               reserve the right to modify, suspend, or discontinue the service
@@ -143,7 +143,7 @@ export default function TermsPage() {
 
           <Section title="Termination">
             <p>
-              You can stop using q2kindle at any time. We may also close
+              You can stop using q2Kindle at any time. We may also close
               accounts that violate these terms or abuse the service. If you
               want your data deleted, just reach out.
             </p>
@@ -153,7 +153,7 @@ export default function TermsPage() {
             <p>
               We may update these terms occasionally. If we make significant
               changes, we&apos;ll note it here with an updated date. Continued
-              use of q2kindle after changes means you accept the new terms.
+              use of q2Kindle after changes means you accept the new terms.
             </p>
           </Section>
 

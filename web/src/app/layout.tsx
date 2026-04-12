@@ -20,14 +20,14 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "q2kindle",
+  title: "q2Kindle",
   description: "Queue articles. Get a beautiful ebook. Read distraction-free.",
   metadataBase: new URL("https://q2kindle.com"),
   openGraph: {
-    title: "q2kindle",
+    title: "q2Kindle",
     description: "Queue articles. Get a beautiful ebook. Read distraction-free.",
     url: "https://q2kindle.com",
-    siteName: "q2kindle",
+    siteName: "q2Kindle",
     images: [
       {
         url: "/og-image.png",
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "q2kindle",
+    title: "q2Kindle",
     description: "Queue articles. Get a beautiful ebook. Read distraction-free.",
     images: ["/og-image.png"],
   },

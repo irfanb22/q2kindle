@@ -1,8 +1,8 @@
 import Link from "next/link";
 
 export const metadata = {
-  title: "Privacy Policy — q2kindle",
-  description: "How q2kindle handles your data",
+  title: "Privacy Policy — q2Kindle",
+  description: "How q2Kindle handles your data",
 };
 
 export default function PrivacyPage() {
@@ -70,9 +70,9 @@ export default function PrivacyPage() {
             lineHeight: 1.8,
           }}
         >
-          <Section title="What is q2kindle">
+          <Section title="What is q2Kindle">
             <p>
-              q2kindle is a web application that lets you save articles from
+              q2Kindle is a web application that lets you save articles from
               the web, bundle them into an ebook (EPUB format), and deliver
               them to your Amazon Kindle device via email. We are committed
               to protecting your privacy and being transparent about how we
@@ -114,7 +114,7 @@ export default function PrivacyPage() {
           </Section>
 
           <Section title="How We Use Your Information">
-            <p>Your data is used solely to provide the q2kindle service:</p>
+            <p>Your data is used solely to provide the q2Kindle service:</p>
             <ul className="list-disc pl-6 mt-3 space-y-2">
               <li>
                 <strong style={{ color: "var(--color-text)" }}>Authentication</strong> —
@@ -173,7 +173,7 @@ export default function PrivacyPage() {
           <Section title="Third-Party Services">
             <p>
               We use the following trusted third-party services to operate
-              q2kindle:
+              q2Kindle:
             </p>
             <ul className="list-disc pl-6 mt-3 space-y-2">
               <li>

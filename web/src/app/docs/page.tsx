@@ -158,7 +158,7 @@ export default function DocsPage() {
               fontWeight: 400,
             }}
           >
-            How q2kindle works
+            How q2Kindle works
           </h1>
           <p className="mb-12" style={{ color: "var(--color-text-muted)", fontSize: "1.05rem", lineHeight: 1.6 }}>
             Everything you need to know about sending articles to your Kindle.
@@ -170,7 +170,7 @@ export default function DocsPage() {
               Getting Started
             </h2>
             <p style={{ color: "var(--color-text-muted)" }}>
-              q2kindle turns web articles into a formatted ebook and delivers it straight to your Kindle.
+              q2Kindle turns web articles into a formatted ebook and delivers it straight to your Kindle.
               Here&apos;s how it works:
             </p>
             <div className="docs-step">
@@ -178,7 +178,7 @@ export default function DocsPage() {
               <div className="docs-step-body">
                 <p style={{ color: "var(--color-text-muted)" }}>
                   <strong style={{ color: "var(--color-text)" }}>Save articles.</strong>{" "}
-                  Paste a URL into your dashboard or use the Chrome extension to save the page you&apos;re reading. q2kindle
+                  Paste a URL into your dashboard or use the Chrome extension to save the page you&apos;re reading. q2Kindle
                   extracts the article content, title, author, and read time automatically.
                 </p>
               </div>
@@ -198,7 +198,7 @@ export default function DocsPage() {
               <div className="docs-step-body">
                 <p style={{ color: "var(--color-text-muted)" }}>
                   <strong style={{ color: "var(--color-text)" }}>Send to Kindle.</strong>{" "}
-                  Hit send (or set up automatic delivery) and q2kindle creates an EPUB with a cover page, table of contents, and
+                  Hit send (or set up automatic delivery) and q2Kindle creates an EPUB with a cover page, table of contents, and
                   all your articles &mdash; then emails it to your Kindle. It shows up in your library like any other book.
                 </p>
               </div>
@@ -223,7 +223,7 @@ export default function DocsPage() {
                     Amazon &rarr; Manage Your Content and Devices &rarr; Preferences
                   </a>
                   . Scroll down to &ldquo;Personal Document Settings&rdquo; and find your Send-to-Kindle email (it looks like{" "}
-                  <code>something@kindle.com</code>). Enter this in your q2kindle{" "}
+                  <code>something@kindle.com</code>). Enter this in your q2Kindle{" "}
                   <a href="/settings">settings</a>.
                 </p>
               </div>
@@ -234,7 +234,7 @@ export default function DocsPage() {
                 <p style={{ color: "var(--color-text-muted)" }}>
                   <strong style={{ color: "var(--color-text)" }}>Approve the sender.</strong>{" "}
                   On the same Amazon page, find the &ldquo;Approved Personal Document E-mail List&rdquo; section and add{" "}
-                  <code>kindle@q2kindle.com</code>. This tells Amazon it&apos;s safe to deliver emails from q2kindle to your device.
+                  <code>kindle@q2kindle.com</code>. This tells Amazon it&apos;s safe to deliver emails from q2Kindle to your device.
                 </p>
               </div>
             </div>
@@ -260,7 +260,7 @@ export default function DocsPage() {
             </h3>
             <p style={{ color: "var(--color-text-muted)" }}>
               Paste any article URL into the input field on your <a href="/dashboard">dashboard</a> and hit Add.
-              q2kindle will fetch the page, extract the readable content, and add it to your queue. You&apos;ll see the
+              q2Kindle will fetch the page, extract the readable content, and add it to your queue. You&apos;ll see the
               title, author, and estimated read time appear on the card.
             </p>
             <h3 style={{ fontFamily: "var(--font-heading)", color: "var(--color-text)", fontWeight: 400 }}>
@@ -290,7 +290,7 @@ export default function DocsPage() {
               Sending to Kindle
             </h2>
             <p style={{ color: "var(--color-text-muted)" }}>
-              When you click &ldquo;Send to Kindle,&rdquo; q2kindle bundles all your queued articles into a single EPUB ebook.
+              When you click &ldquo;Send to Kindle,&rdquo; q2Kindle bundles all your queued articles into a single EPUB ebook.
               Each article becomes a chapter with its own entry in the table of contents. The ebook gets a branded
               cover page showing the date, issue number, article count, and total read time.
             </p>
@@ -330,7 +330,7 @@ export default function DocsPage() {
               EPUB Formatting
             </h2>
             <p style={{ color: "var(--color-text-muted)" }}>
-              Every ebook q2kindle creates includes a cover page, a table of contents, and individually
+              Every ebook q2Kindle creates includes a cover page, a table of contents, and individually
               formatted article chapters. The cover shows a <strong style={{ color: "var(--color-text)" }}>volume
               and issue number</strong> to help you track your reading over time &mdash; the volume is the year
               (Volume 1 = 2026, Volume 2 = 2027, and so on), and the issue increments with each send. So if
@@ -367,7 +367,7 @@ export default function DocsPage() {
             <p style={{ color: "var(--color-text-muted)" }}>
               The{" "}
               <a href="https://chromewebstore.google.com/detail/q2kindle-%E2%80%94-save-to-queue/pjicihhhplcnbnjbhnklldmibgidkmon" target="_blank" rel="noopener noreferrer">
-                q2kindle Chrome extension
+                q2Kindle Chrome extension
               </a>{" "}
               is an easy way to save articles you&apos;re viewing on the web directly to your queue.
             </p>
@@ -390,7 +390,7 @@ export default function DocsPage() {
               Limits & Quotas
             </h2>
             <p style={{ color: "var(--color-text-muted)" }}>
-              q2kindle is free to use. To keep the service running smoothly, there are a few daily limits:
+              q2Kindle is free to use. To keep the service running smoothly, there are a few daily limits:
             </p>
             <div className="docs-stats-grid">
               <div className="docs-stat-card" style={{ background: "var(--color-surface)", border: "1px solid var(--color-border)" }}>
@@ -465,7 +465,7 @@ export default function DocsPage() {
                 The ebook looks different from the article preview
               </p>
               <p className="docs-faq-a" style={{ color: "var(--color-text-muted)" }}>
-                The article preview on q2kindle is an approximation. Your Kindle applies its own fonts, margins, and
+                The article preview on q2Kindle is an approximation. Your Kindle applies its own fonts, margins, and
                 formatting. The content will be the same, but the visual presentation depends on your device settings.
               </p>
             </div>

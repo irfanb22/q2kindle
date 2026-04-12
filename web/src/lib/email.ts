@@ -43,7 +43,7 @@ function getTransporter() {
   return _transporter;
 }
 
-export const KINDLE_SENDER = "q2kindle <kindle@q2kindle.com>";
+export const KINDLE_SENDER = "q2Kindle <kindle@q2kindle.com>";
 
 export async function sendToKindle(options: {
   to: string;

@@ -71,12 +71,12 @@ export default function AdminEmailPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           mode: "test",
-          subject: "q2kindle — Test Email",
-          previewText: "This is a test email from q2kindle.",
+          subject: "q2Kindle — Test Email",
+          previewText: "This is a test email from q2Kindle.",
           bodyHtml: `
             <p style="margin:0 0 16px;">Hey there,</p>
-            <p style="margin:0 0 16px;">This is a <strong>test email</strong> from your q2kindle admin dashboard. If you're reading this, email delivery via Resend is working.</p>
-            <p style="margin:0 0 24px;">— q2kindle</p>
+            <p style="margin:0 0 16px;">This is a <strong>test email</strong> from your q2Kindle admin dashboard. If you're reading this, email delivery via Resend is working.</p>
+            <p style="margin:0 0 24px;">— q2Kindle</p>
           `,
         }),
       });
@@ -104,8 +104,8 @@ export default function AdminEmailPage() {
     setPreviewHtml(`
       <div style="font-family:Arial,'Helvetica Neue',Helvetica,sans-serif;font-size:16px;line-height:1.6;color:#1a1a1a;">
         <p style="margin:0 0 16px;">Hey there,</p>
-        <p style="margin:0 0 16px;">This is a <strong>test email</strong> from your q2kindle admin dashboard. If you're reading this, email delivery via Resend is working.</p>
-        <p style="margin:0 0 24px;">— q2kindle</p>
+        <p style="margin:0 0 16px;">This is a <strong>test email</strong> from your q2Kindle admin dashboard. If you're reading this, email delivery via Resend is working.</p>
+        <p style="margin:0 0 24px;">— q2Kindle</p>
       </div>
     `);
   }
@@ -338,7 +338,7 @@ export default function AdminEmailPage() {
                     letterSpacing: "-0.02em",
                   }}
                 >
-                  q2kindle
+                  q2Kindle
                 </span>
               </div>
               {/* Body */}
@@ -356,7 +356,7 @@ export default function AdminEmailPage() {
                   lineHeight: 1.5,
                 }}
               >
-                You&apos;re receiving this because you have a q2kindle account.
+                You&apos;re receiving this because you have a q2Kindle account.
                 <br />
                 <span style={{ textDecoration: "underline" }}>Unsubscribe</span>{" "}
                 from marketing emails

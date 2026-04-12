@@ -25,7 +25,7 @@ export default function LandingPage() {
     <>
       {/* NAV */}
       <nav className="nav">
-        <Link href="/" className="nav-logo">q2kindle</Link>
+        <Link href="/" className="nav-logo">q2Kindle</Link>
         <div className="nav-links">
           <Link href="/login" className="nav-link">Log in</Link>
           <Link href="/login?mode=signup" className="nav-cta">Get started</Link>
@@ -173,7 +173,7 @@ export default function LandingPage() {
 
       {/* FOOTER */}
       <footer className="landing-footer">
-        <p>q2kindle &mdash; Queue articles. Get a beautiful ebook. Read distraction-free.</p>
+        <p>q2Kindle &mdash; Queue articles. Get a beautiful ebook. Read distraction-free.</p>
         <div className="footer-links">
           <Link href="/docs">Docs</Link>
           <span>&middot;</span>

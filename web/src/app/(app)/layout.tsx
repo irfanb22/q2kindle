@@ -89,7 +89,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               style={{ fontFamily: 'var(--font-heading)', color: 'var(--color-text)', letterSpacing: '-0.01em' }}
               onClick={() => router.push("/dashboard")}
             >
-              q2kindle
+              q2Kindle
             </span>
 
             {/* Desktop nav — hidden on mobile */}

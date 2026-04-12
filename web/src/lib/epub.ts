@@ -114,7 +114,7 @@ export async function generateKindleEpub(options: {
     };
   });
 
-  const title = `q2kindle - ${dateStr}`;
+  const title = `q2Kindle - ${dateStr}`;
 
   // Generate cover image for Kindle library thumbnail
   // Falls back to no cover if generation fails (e.g. Google Fonts down)
@@ -141,7 +141,7 @@ export async function generateKindleEpub(options: {
   const rawResult = await generateEpub(
     {
       title,
-      author: "q2kindle",
+      author: "q2Kindle",
       ...(coverFile ? { cover: coverFile } : {}),
       css: buildCss(),
       ignoreFailedDownloads: true,

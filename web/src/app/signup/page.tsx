@@ -120,7 +120,7 @@ function SignupForm() {
                 color: '#ededed',
                 letterSpacing: '-0.02em',
               }}>
-              q2kindle
+              q2Kindle
             </h1>
           </div>
 
@@ -141,7 +141,7 @@ function SignupForm() {
                     fontFamily: "var(--font-sans, 'DM Sans'), sans-serif",
                     color: '#ededed',
                   }}>
-                  Sign up to q2kindle
+                  Sign up to q2Kindle
                 </h2>
                 <p className="text-sm leading-relaxed mb-6"
                   style={{
