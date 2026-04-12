@@ -469,6 +469,11 @@ export default function DocsPage() {
                 formatting. The content will be the same, but the visual presentation depends on your device settings.
               </p>
             </div>
+
+            <p className="mt-8" style={{ color: "var(--color-text-muted)" }}>
+              Still stuck? Email us at{" "}
+              <a href="mailto:support@q2kindle.com">support@q2kindle.com</a> and we&apos;ll help you out.
+            </p>
           </section>
 
           {/* ── Roadmap ── */}
@@ -505,7 +510,6 @@ export default function DocsPage() {
                 <div className="docs-roadmap-items">
                   {[
                     { title: "RSS feed reader", desc: "Subscribe to feeds, browse articles, add to queue" },
-                    { title: "iOS app", desc: "Share articles from Safari and other apps" },
                   ].map((item) => (
                     <div key={item.title} className="docs-roadmap-card" style={{ background: "rgba(0,0,0,0.02)", border: "1px solid rgba(0,0,0,0.04)" }}>
                       <div className="docs-roadmap-card-title" style={{ color: "var(--color-text)" }}>{item.title}</div>
