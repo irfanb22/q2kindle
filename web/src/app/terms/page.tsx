@@ -159,14 +159,12 @@ export default function TermsPage() {
 
           <Section title="Contact">
             <p>
-              Questions? Open an issue on{" "}
+              Questions? Email us at{" "}
               <a
-                href="https://github.com/irfanb22/q2kindle/issues"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="mailto:support@q2kindle.com"
                 style={{ color: "var(--color-accent)", textDecoration: "none" }}
               >
-                GitHub
+                support@q2kindle.com
               </a>
               .
             </p>
