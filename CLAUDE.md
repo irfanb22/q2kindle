@@ -1,4 +1,4 @@
-# q2kindle — Project Reference
+# q2Kindle — Project Reference
 
 Read this file first before working on this project. It covers how the app works, how it was built, key decisions, and known issues.
 
@@ -245,7 +245,7 @@ All files live under `web/`:
 | `web/public/og-image.png` | Open Graph link preview image — 1200×630 static PNG with cream bg, app icon, name, tagline |
 | `web/src/lib/send-limits.ts` | Daily send limit — `DAILY_SEND_LIMIT` constant, `getDailySendCount()`, `getStartOfDayUtc()` timezone helper |
 | `web/src/lib/admin.ts` | Admin check — `isAdmin()` validates user ID against `ADMIN_USER_IDS` env var |
-| `web/src/lib/email-template.ts` | Marketing email HTML renderer — table-based layout, q2kindle branding, unsubscribe footer |
+| `web/src/lib/email-template.ts` | Marketing email HTML renderer — table-based layout, q2Kindle branding, unsubscribe footer |
 | `web/src/lib/email-tokens.ts` | Unsubscribe URL generation + HMAC verification for tamper-proof unsubscribe links |
 | `web/src/app/(app)/admin/email/page.tsx` | Admin email dashboard — audience stats, send logs, test email button with preview |
 | `web/src/app/api/admin/email/send/route.ts` | Admin email send API — test mode (single recipient) and production mode (all subscribed users) via Resend |
@@ -408,7 +408,7 @@ CRON_SECRET=<random hex string — must match the value embedded in the Supabase
 
 ### Phase 6 progress (EPUB Customization)
 
-- ✅ **Cover page** — branded cover on every digest with "q2kindle" branding, issue number, date, article count, total read time. Uses `beforeToc: true` + `excludeFromToc: true` for proper spine ordering.
+- ✅ **Cover page** — branded cover on every digest with "q2Kindle" branding, issue number, date, article count, total read time. Uses `beforeToc: true` + `excludeFromToc: true` for proper spine ordering.
 - ✅ **Issue number tracking** — auto-incremented per user on each successful send. Stored in `send_history.issue_number`. Both manual and cron send routes query previous sends for next sequential number.
 - ✅ **Image toggle** — include images on/off (default: on). When off, `<img>`, `<picture>`, and `<figure>` tags stripped via `stripImages()`. Stored in `settings.epub_include_images`.
 - ✅ **Metadata toggles** — three independent toggles for article headers: author (on/off), read time (on/off), published date (on/off). All default to on. Stored as individual boolean columns on `settings`.
@@ -455,16 +455,16 @@ CRON_SECRET=<random hex string — must match the value embedded in the Supabase
 - ✅ **Kindle mockup WebKit fix** — Fixed article preview content overflowing bezel on iPad (WebKit). Replaced `height: 100%` with `flex: 1` + `minHeight: 0` on screen area. WebKit miscalculates child height with `aspect-ratio` + padding + `height: 100%`.
 - ✅ **Login/signup page differentiation** — Landing page "Get started" links to `/login?mode=signup`, "Log in" links to `/login`. Signup shows "Sign up" heading, login shows "Welcome back." with appropriate copy. Heading and footer hidden on OTP screen.
 - ✅ **Login page UX hardening** — Three improvements: (1) Failed magic link error — `/login?error=link_failed` now shows amber warning banner ("link expired or already used") instead of silently showing a blank form. Magic links are single-use (PKCE code consumed on first click, even in wrong browser). (2) Resend with cooldown — "check spam folder, or resend email" text below OTP form with 30-second countdown timer matching Supabase's rate limit. (3) App favicon as login icon — replaced generic book SVG with the actual app favicon (forest green Kindle device icon).
-- ✅ **Auth email delivery** — Magic link emails delivered via Resend custom SMTP (`team@q2kindle.com`). Emails include both a clickable "Sign in to q2kindle" button and a 6-digit OTP code. Link expires in 10 minutes (configured in Supabase). Emails arrive in 1-2 seconds.
+- ✅ **Auth email delivery** — Magic link emails delivered via Resend custom SMTP (`team@q2kindle.com`). Emails include both a clickable "Sign in to q2Kindle" button and a 6-digit OTP code. Link expires in 10 minutes (configured in Supabase). Emails arrive in 1-2 seconds. Template configured in Supabase Dashboard → Authentication → Email Templates.
 - ✅ **Terms of Service page** — `/terms` route with plain-English terms (friendly tone, no legalese). Covers account, acceptable use, content/copyright, service as-is, daily limits, termination. Matches privacy page design. Added to middleware public routes.
-- ✅ **Privacy & Terms contact updated** — replaced email addresses (`privacy@q2kindle.com`, `team@q2kindle.com`) with GitHub issues link. No real inbox was set up for those addresses.
+- ✅ **Privacy & Terms contact updated** — replaced GitHub issues link with `support@q2kindle.com` mailto link. Email forwarding via ImprovMX → personal Gmail.
 - ✅ **Open Graph link preview** — static 1200×630 OG image (`web/public/og-image.png`) with cream background, app icon, "q2kindle" in Newsreader, and tagline. Open Graph + Twitter Card meta tags in `layout.tsx`. Rich preview appears when sharing `q2kindle.com` in iMessage, Slack, Twitter, etc.
 
 ### Phase 8 progress (Marketing Email System)
 
 - ✅ **Admin email dashboard** — hidden route at `/admin/email` with audience stats (total/subscribed/unsubscribed), send logs, test email button with inline preview. Admin access gated by `ADMIN_USER_IDS` env var.
 - ✅ **Marketing email send API** — `/api/admin/email/send` with test mode (single recipient) and production mode (all subscribed users). Sends via Resend REST API from `team@q2kindle.com`. Logs every send to `email_send_logs` table.
-- ✅ **Email template renderer** — `web/src/lib/email-template.ts` — table-based HTML layout with q2kindle branding header, body content slot, and unsubscribe footer. Compatible with all major email clients.
+- ✅ **Email template renderer** — `web/src/lib/email-template.ts` — table-based HTML layout with q2Kindle branding header, body content slot, and unsubscribe footer. Compatible with all major email clients.
 - ✅ **Unsubscribe support** — HMAC-signed unsubscribe URLs per recipient. Public `/api/email/unsubscribe` endpoint verifies signature and sets `marketing_unsubscribed_at` in `email_preferences` table. RFC 8058 `List-Unsubscribe` headers on production sends.
 - ✅ **Database tables** — `email_preferences` (opt-out tracking with RLS) and `email_send_logs` (audit trail, no RLS — service role only). Migration 009.
 - ✅ **Admin auth pattern** — `ADMIN_USER_IDS` env var (comma-separated UUIDs). `isAdmin()` helper in `web/src/lib/admin.ts`. All admin API routes check this before proceeding.
@@ -473,7 +473,7 @@ CRON_SECRET=<random hex string — must match the value embedded in the Supabase
 
 ## Chrome Extension (v1.0 — Published)
 
-Chrome extension that lets you save the current browser tab to your q2kindle article queue with one click. Published on the Chrome Web Store.
+Chrome extension that lets you save the current browser tab to your q2Kindle article queue with one click. Published on the Chrome Web Store.
 
 ### Features (v1.0)
 
@@ -516,7 +516,7 @@ No build step, no npm, no bundler. Plain HTML/JS that Chrome reads directly.
 
 ### Chrome Web Store publishing
 
-- **Publisher**: q2kindle (developer account, $5 one-time fee)
+- **Publisher**: q2Kindle (developer account, $5 one-time fee)
 - **Status**: Submitted for review (2026-04-05), typically 1-3 business days
 - **Official URL**: `https://q2kindle.com` (verified via DNS TXT record in Squarespace)
 - **Privacy policy**: `https://q2kindle.com/privacy`
@@ -542,7 +542,6 @@ Phase 7 completes web app v1. After public launch (Reddit, online media), v2 wil
 
 - **RSS reader** — subscribe to feeds, browse new articles, and manually add them to the Kindle queue (no auto-queuing)
 - **Chrome extension** — ✅ Published on Chrome Web Store (v1.0)
-- **iOS app** — native app with share sheet integration (share articles from Safari/apps directly to queue)
 
 ## V2 Pages
 
@@ -798,4 +797,6 @@ PostHog is used for product analytics — tracking key user actions to understan
 | 2026-04-02 | HMAC-signed unsubscribe URLs (not session-based) | Unsubscribe links must work without login. HMAC signature with `EMAIL_UNSUBSCRIBE_SECRET` prevents forged unsubscribe requests. Constant-time comparison prevents timing attacks. |
 | 2026-04-02 | No email composer UI — Claude Code composes emails | Marketing emails are composed by Claude Code and sent via the admin API. The admin page shows stats, logs, and a test button — no WYSIWYG editor needed. Keeps the codebase simple. |
 | 2026-04-02 | Hidden admin route (no nav link) | `/admin/email` is not in the nav bar. Only accessible by direct URL. Admin check happens both client-side (403 → "Access denied" screen) and server-side (API routes return 403). Regular users see nothing. |
+| 2026-04-13 | support@q2kindle.com contact email via ImprovMX | Replaced GitHub issues contact on privacy/terms pages with `mailto:support@q2kindle.com`; added "Still stuck? Email us" note at end of docs Troubleshooting section. Did NOT add a Support link to site footers per user preference. Squarespace's built-in email forwarding is deprecated (returns generic errors), so set up ImprovMX free tier (MX records added to Squarespace DNS) to forward support@q2kindle.com → personal Gmail. Also cleaned up stale Amazon SES DNS records (MX for `send` subdomain, CNAME for DKIM) left from the Feb 2026 SES→Brevo migration. |
+| 2026-04-13 | Branding standardized to "q2Kindle" (lowercase q, uppercase K) | Previously mixed usage — "q2kindle" (all lowercase) appeared in user-visible text across nav logos, headings, metadata, email templates, and EPUB metadata. Updated ~62 instances across 16 files including the Supabase auth email template HTML. URLs and email addresses stay lowercase (`q2kindle.com`, `support@q2kindle.com`). "Q2KINDLE" all-caps on the EPUB cover image kept as a design choice. |
 | 2026-04-11 | pg_cron command must embed real `CRON_SECRET` + 60s timeout | Scheduled sends silently broke for two reasons that compounded. (1) The pg_cron job was created with a literal `Bearer YOUR_CRON_SECRET_HERE` placeholder that was never replaced. It worked accidentally because the old cron auth check (`if (cronSecret && ...)`) silently allowed all callers when `CRON_SECRET` was unset on Netlify; once the env var was added and the security commit hardened the check to `if (!cronSecret || ...)`, every cron call returned 401. (2) Separately, `pg_net`'s default 5-second timeout was killing the function mid-flight on hours where it had real work to do — visible in `net._http_response.error_msg` as `Timeout of 5000 ms reached`. Fix: rotated `CRON_SECRET`, redeployed Netlify, recreated the pg_cron job with the real secret embedded plus `timeout_milliseconds := 60000`. See "Scheduled send (Supabase pg_cron)" section for the full SQL and debugging queries. |
