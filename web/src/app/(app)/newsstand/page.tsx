@@ -28,12 +28,41 @@ type DisplayArticle = {
   snippet: string;
   imageUrl: string | null;
   sourceUrl: string;
+  publishedAt: string | null;
 };
+
+// Human-friendly relative date ("2h ago", "3d ago", "Mar 14")
+function formatDate(iso: string | null): string | null {
+  if (!iso) return null;
+  const date = new Date(iso);
+  if (isNaN(date.getTime())) return null;
+  const now = Date.now();
+  const diffMs = now - date.getTime();
+  const diffMin = Math.floor(diffMs / 60000);
+  const diffHr = Math.floor(diffMin / 60);
+  const diffDay = Math.floor(diffHr / 24);
+
+  if (diffMin < 1) return "just now";
+  if (diffMin < 60) return `${diffMin}m ago`;
+  if (diffHr < 24) return `${diffHr}h ago`;
+  if (diffDay < 7) return `${diffDay}d ago`;
+  // Older — show month + day, include year if not current year
+  const sameYear = date.getFullYear() === new Date().getFullYear();
+  return date.toLocaleDateString("en-US", sameYear
+    ? { month: "short", day: "numeric" }
+    : { month: "short", day: "numeric", year: "numeric" });
+}
 
 function flattenFeeds(feeds: RssFeed[]): DisplayArticle[] {
   const articles: DisplayArticle[] = [];
   for (const feed of feeds) {
-    for (const item of feed.items) {
+    // Sort each feed's items newest-first before interleaving
+    const sorted = [...feed.items].sort((a, b) => {
+      const aTime = a.published_at ? new Date(a.published_at).getTime() : 0;
+      const bTime = b.published_at ? new Date(b.published_at).getTime() : 0;
+      return bTime - aTime;
+    });
+    for (const item of sorted) {
       articles.push({
         id: `${feed.id}::${item.url}`,
         feedId: feed.id,
@@ -41,6 +70,7 @@ function flattenFeeds(feeds: RssFeed[]): DisplayArticle[] {
         snippet: item.snippet,
         imageUrl: item.image,
         sourceUrl: item.url,
+        publishedAt: item.published_at,
       });
     }
   }
@@ -462,6 +492,11 @@ function GridCard({ article, feeds, isQueued, isQueuing, onToggleQueue, showSour
         <p className="text-[11px] mt-1.5" style={{ color: "var(--color-text-dim)", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", lineHeight: 1.5 }}>
           {article.snippet}
         </p>
+        {formatDate(article.publishedAt) && (
+          <p className="text-[10px] mt-2 font-medium uppercase tracking-wider" style={{ color: "var(--color-text-dim)", letterSpacing: "0.06em" }}>
+            {formatDate(article.publishedAt)}
+          </p>
+        )}
       </div>
     </div>
   );
@@ -477,14 +512,24 @@ function ListRow({ article, feeds, index, isQueued, isQueuing, onToggleQueue, sh
       style={{ borderColor: "var(--color-border-light)", animation: `cardFadeIn 0.3s ease ${index * 0.03}s both` }}
     >
       <div className="flex-1 min-w-0">
-        {showSource && (
-          <div className="flex items-center gap-2 mb-1.5">
-            <span className="w-2 h-2 rounded-sm shrink-0" style={{ background: getFeedColor(article.feedId, feeds) }} />
-            <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--color-text-dim)" }}>
-              {getFeedName(article.feedId, feeds)}
-            </span>
-          </div>
-        )}
+        <div className="flex items-center gap-2 mb-1.5">
+          {showSource && (
+            <>
+              <span className="w-2 h-2 rounded-sm shrink-0" style={{ background: getFeedColor(article.feedId, feeds) }} />
+              <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "var(--color-text-dim)" }}>
+                {getFeedName(article.feedId, feeds)}
+              </span>
+            </>
+          )}
+          {formatDate(article.publishedAt) && (
+            <>
+              {showSource && <span className="text-[11px]" style={{ color: "var(--color-text-dim)", opacity: 0.5 }}>·</span>}
+              <span className="text-[11px] font-medium uppercase tracking-wider" style={{ color: "var(--color-text-dim)", letterSpacing: "0.06em" }}>
+                {formatDate(article.publishedAt)}
+              </span>
+            </>
+          )}
+        </div>
         <a
           href={article.sourceUrl}
           target="_blank"
