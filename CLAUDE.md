@@ -205,6 +205,15 @@ settings
 ├── min_article_count, schedule_days (text[]), schedule_time, timezone
 ├── epub_include_images, epub_show_author, epub_show_read_time, epub_show_published_date
 ├── created_at, updated_at (auto-updated via trigger)
+
+rss_feeds
+├── id (uuid, pk)
+├── user_id (fk → auth.users)
+├── feed_url, title, site_url, color
+├── items_cache (jsonb — cached RSS items: [{url, title, snippet, image, author, published_at}])
+├── last_fetched_at (timestamp — null means never fetched)
+├── created_at
+├── unique(user_id, feed_url)
 ```
 
 ## V2 File overview
@@ -228,7 +237,7 @@ All files live under `web/`:
 | `web/src/lib/supabase/server.ts` | Server-side Supabase client (uses `createServerClient` with cookie handling) |
 | `web/src/lib/supabase/api.ts` | API route Supabase client — supports both cookie auth (web app) and Bearer token auth (Chrome extension) |
 | `web/src/lib/supabase/middleware.ts` | Session refresh logic used by the middleware |
-| `web/src/app/(app)/layout.tsx` | Authenticated layout — top nav bar (Queue/History/Settings), sign out, user email |
+| `web/src/app/(app)/layout.tsx` | Authenticated layout — top nav bar (Queue/History/Newsstand/Settings), sign out, user email, queue ping animation |
 | `web/src/app/(app)/dashboard/page.tsx` | Dashboard — URL input, article queue list, send-to-Kindle with loading/success states, welcome modal trigger |
 | `web/src/app/(app)/dashboard/welcome-modal.tsx` | Onboarding wizard — 4-step modal: welcome, Kindle email, approve sender, test email |
 | `web/src/app/(app)/history/page.tsx` | Send history — last 10 sends with status, article count, timestamps |
@@ -255,7 +264,8 @@ All files live under `web/`:
 | `web/src/lib/posthog.tsx` | Client-side PostHog provider — initializes `posthog-js`, wraps app in `PostHogProvider` |
 | `web/src/lib/posthog-pageview.tsx` | Pageview tracking — captures `$pageview` on route changes via `usePathname()` |
 | `web/src/lib/posthog-server.ts` | Server-side PostHog client — `getPostHogServer()` returns a `posthog-node` instance (or null if key missing) |
-| `web/src/lib/types.ts` | Shared TypeScript types (Article, Settings, SendHistory, EpubPreferences) used across pages |
+| `web/src/lib/rss.ts` | RSS feed parsing — `fetchAndParseFeed()` with 8s timeout, `isStale()` 30-min check, image extraction, snippet truncation |
+| `web/src/lib/types.ts` | Shared TypeScript types (Article, Settings, SendHistory, EpubPreferences, RssFeed, RssFeedItem) used across pages |
 | `web/supabase/migrations/001_create_tables.sql` | Database schema — articles, send_history, settings tables + RLS policies |
 | `web/supabase/migrations/002_add_read_time_and_description.sql` | Adds read_time_minutes and description columns to articles |
 | `web/supabase/migrations/003_rework_auto_send.sql` | Reworks delivery settings: schedule_day → schedule_days array, auto_send_threshold → min_article_count, adds timezone |
@@ -265,6 +275,9 @@ All files live under `web/`:
 | `web/supabase/migrations/007_remove_epub_font.sql` | Drops `epub_font` column from settings (Kindle ignores CSS font-family) |
 | `web/supabase/migrations/008_add_image_to_articles.sql` | Adds `image` text column to articles for og:image / featured image URL |
 | `web/supabase/migrations/009_email_marketing.sql` | Creates `email_preferences` and `email_send_logs` tables for marketing email system |
+| `web/supabase/migrations/010_rss_feeds.sql` | Creates `rss_feeds` table with JSONB items cache, unique constraint, and RLS policies |
+| `web/src/app/(app)/newsstand/page.tsx` | Newsstand — RSS feed browser with grid/list views, feed filters, queue-to-Kindle, sources modal |
+| `web/src/app/api/feeds/route.ts` | RSS feeds API — GET (list + refresh stale), POST (subscribe), DELETE (unsubscribe) |
 | `web/src/app/api/cron/send/route.ts` | Cron API route — scheduled send logic, called hourly by Supabase pg_cron |
 | `web/src/app/terms/page.tsx` | Terms of Service — plain-English terms, accessible without login |
 
@@ -316,6 +329,7 @@ CRON_SECRET=<random hex string — must match the value embedded in the Supabase
 | **Phase 6.5** | Custom domain — q2kindle.com via Squarespace DNS + Netlify + Supabase | ✅ Complete |
 | **Phase 7** | Polish — UI refinements, landing page, onboarding, EPUB cover tweaks, PWA, branding | ✅ Complete |
 | **Phase 8** | Marketing email system — admin dashboard, Resend integration, unsubscribe support | ✅ Complete |
+| **Phase 9** | Newsstand — RSS feed browser, subscribe to feeds, browse articles, add to Kindle queue | 🔄 ~50% Complete |
 
 ### Phase 1 progress
 
@@ -471,6 +485,24 @@ CRON_SECRET=<random hex string — must match the value embedded in the Supabase
 - ✅ **Resend for marketing emails** — Resend REST API (not SMTP) used for marketing emails. Separate from Brevo (Kindle delivery) and Resend SMTP (Supabase auth emails). `RESEND_API_KEY` env var.
 - ✅ **Audience/logs APIs** — `/api/admin/email/audience` returns user counts, `/api/admin/email/logs` returns recent send history. Both admin-gated.
 
+### Phase 9 progress (Newsstand — In Progress)
+
+- ✅ **RSS feed browser** — `/newsstand` page with grid and list views, per-feed filter pills, paginated (12 articles per page), side arrow + bottom pagination navigation.
+- ✅ **Feed subscription API** — `GET /POST /DELETE /api/feeds`. Max 10 feeds per user. SSRF protection via `validateUrl()`. Auto-assigns color from a 10-color palette. Handles duplicate subscription (Postgres unique constraint).
+- ✅ **RSS parsing** — `web/src/lib/rss.ts` using `rss-parser` with 8-second timeout per feed. Extracts title, snippet (200 chars), image (enclosure/media:content/media:thumbnail), author, published date. Caps at 30 items per feed, dedupes by URL.
+- ✅ **JSONB cache** — single `rss_feeds` table with `items_cache` JSONB column. No separate items table. 30-minute staleness window — feeds older than 30 minutes are re-fetched on next `GET /api/feeds`. Max 3 stale feeds refreshed per request (Netlify 10-second function timeout safety).
+- ✅ **Database** — `rss_feeds` table (migration 010) with RLS policies (select/insert/update/delete own). Unique constraint on `(user_id, feed_url)`.
+- ✅ **Interleaved article display** — round-robin across feeds so no single source dominates the view. Each feed's items sorted newest-first before interleaving.
+- ✅ **Add to Kindle queue** — queue button (+/checkmark toggle) calls existing `POST /api/articles/extract` with the article URL. Shows spinner during extraction. Fires `q2k-queued` custom DOM event to animate the nav bar.
+- ✅ **Nav bar queue ping** — when an article is queued from newsstand, the Queue nav icon bounces (`queueNavBounce` keyframe) and shows a green count badge that fades after 1.5s (`queuePipFade` keyframe). Works on both desktop nav and mobile tab bar.
+- ✅ **Sources modal** — unified add/manage modal. URL input at top, "Your sources" list with inline remove confirmation (row replaces with "Remove {name}?" + Remove/Cancel), suggested feeds section at bottom (6 popular feeds, filtered by what's already subscribed).
+- ✅ **Grid card interactions** — hover: card pops up (`translateY(-4px) scale(1.02)`), image color blooms from grayscale to full color, subtle image zoom. Missing images show feed-initial placeholder.
+- ✅ **List view** — river-style layout with source label + date, title as link, snippet, thumbnail + queue button. Defaults to list on mobile (`window.innerWidth < 640`).
+- ✅ **Publish dates** — relative timestamps ("5m ago", "3h ago", "2d ago") on grid cards (below snippet) and list rows (next to source label with · separator). Falls back to "Mar 14" for older articles, includes year if not current year.
+- ✅ **Loading/error/empty states** — shimmer skeleton grid while loading, retry button on error, onboarding CTA when no feeds subscribed.
+- ✅ **Source label hiding** — when filtering to a specific feed, source labels are hidden (redundant info).
+- ✅ **Shared types** — `RssFeed` and `RssFeedItem` types in `web/src/lib/types.ts`.
+
 ## Chrome Extension (v1.0 — Published)
 
 Chrome extension that lets you save the current browser tab to your q2Kindle article queue with one click. Published on the Chrome Web Store.
@@ -540,7 +572,7 @@ The extract API route (`web/src/app/api/articles/extract/route.ts`) uses `create
 
 Phase 7 completes web app v1. After public launch (Reddit, online media), v2 will add:
 
-- **RSS reader** — subscribe to feeds, browse new articles, and manually add them to the Kindle queue (no auto-queuing)
+- **RSS reader** — 🔄 Newsstand in progress (~50% — backend + frontend wired up, needs testing and polish)
 - **Chrome extension** — ✅ Published on Chrome Web Store (v1.0)
 
 ## V2 Pages
@@ -555,6 +587,7 @@ Phase 7 completes web app v1. After public launch (Reddit, online media), v2 wil
 | `/settings` | Kindle email, auto-send preferences, EPUB formatting |
 | `/privacy` | Privacy policy (public, no auth required) |
 | `/terms` | Terms of service (public, no auth required) |
+| `/newsstand` | Newsstand — RSS feed browser, subscribe/manage feeds, add articles to Kindle queue |
 | `/admin/email` | Admin email dashboard — audience stats, send logs, test email (hidden, admin only) |
 
 ## V2 Deployment
@@ -800,3 +833,14 @@ PostHog is used for product analytics — tracking key user actions to understan
 | 2026-04-13 | support@q2kindle.com contact email via ImprovMX | Replaced GitHub issues contact on privacy/terms pages with `mailto:support@q2kindle.com`; added "Still stuck? Email us" note at end of docs Troubleshooting section. Did NOT add a Support link to site footers per user preference. Squarespace's built-in email forwarding is deprecated (returns generic errors), so set up ImprovMX free tier (MX records added to Squarespace DNS) to forward support@q2kindle.com → personal Gmail. Also cleaned up stale Amazon SES DNS records (MX for `send` subdomain, CNAME for DKIM) left from the Feb 2026 SES→Brevo migration. |
 | 2026-04-13 | Branding standardized to "q2Kindle" (lowercase q, uppercase K) | Previously mixed usage — "q2kindle" (all lowercase) appeared in user-visible text across nav logos, headings, metadata, email templates, and EPUB metadata. Updated ~62 instances across 16 files including the Supabase auth email template HTML. URLs and email addresses stay lowercase (`q2kindle.com`, `support@q2kindle.com`). "Q2KINDLE" all-caps on the EPUB cover image kept as a design choice. |
 | 2026-04-11 | pg_cron command must embed real `CRON_SECRET` + 60s timeout | Scheduled sends silently broke for two reasons that compounded. (1) The pg_cron job was created with a literal `Bearer YOUR_CRON_SECRET_HERE` placeholder that was never replaced. It worked accidentally because the old cron auth check (`if (cronSecret && ...)`) silently allowed all callers when `CRON_SECRET` was unset on Netlify; once the env var was added and the security commit hardened the check to `if (!cronSecret || ...)`, every cron call returned 401. (2) Separately, `pg_net`'s default 5-second timeout was killing the function mid-flight on hours where it had real work to do — visible in `net._http_response.error_msg` as `Timeout of 5000 ms reached`. Fix: rotated `CRON_SECRET`, redeployed Netlify, recreated the pg_cron job with the real secret embedded plus `timeout_milliseconds := 60000`. See "Scheduled send (Supabase pg_cron)" section for the full SQL and debugging queries. |
+| 2026-04-18 | Single `rss_feeds` table with JSONB cache (not two tables) | RSS items are ephemeral cache, not user data. A separate `rss_items` table would add join complexity and need periodic cleanup. JSONB `items_cache` column on the feed row keeps it simple — one query returns everything. Cache is refreshed when stale (>30 min). |
+| 2026-04-18 | 30-minute cache staleness window | Balances freshness vs. Supabase free-tier usage. RSS feeds rarely update more than hourly. Stale feeds are only re-fetched when the user loads the newsstand, not on a background cron. |
+| 2026-04-18 | Max 3 stale feeds refreshed per GET request | Netlify functions have a 10-second timeout. Each RSS fetch has an 8-second individual timeout. Refreshing all 10 feeds at once could exceed the function timeout. Cap at 3 per request — remaining stale feeds refresh on subsequent page loads. Uses `Promise.allSettled` so one slow feed doesn't block others. |
+| 2026-04-18 | Max 10 feeds per user | Reasonable limit for free tier. Keeps page load fast (fewer feeds to check for staleness). Can increase later without a migration — it's just a constant in the API route. |
+| 2026-04-18 | `rss-parser` npm package | Most popular RSS/Atom parser for Node.js. Handles RSS 2.0, Atom, and media extensions. Custom fields for `media:content` and `media:thumbnail` image extraction. |
+| 2026-04-18 | Queue toggle calls existing extract API (not a new endpoint) | Reuses `POST /api/articles/extract` — same endpoint the dashboard URL input uses. Article goes through the same extraction pipeline and lands in the same queue. No new API surface needed. |
+| 2026-04-18 | Custom DOM event for nav bar queue ping (not React context) | `window.dispatchEvent(new CustomEvent("q2k-queued"))` is simpler than wrapping the app in a new context provider. Newsstand page fires the event, layout listens. No shared state, no prop drilling, no provider. |
+| 2026-04-18 | Interleaved article display (round-robin across feeds) | Without interleaving, one prolific feed (e.g., Ars Technica with 30 items) would dominate the first two pages. Round-robin ensures variety on every page. |
+| 2026-04-18 | Feed color auto-assigned from fixed palette | 10-color palette indexed by existing feed count (modulo). No user-facing color picker — keeps onboarding simple. Colors are cosmetic (feed filter pills, source labels). |
+| 2026-04-18 | Inline remove confirmation (not floating popover) | Row content replaces with "Remove {name}?" + Remove/Cancel buttons. Less disorienting than a popover or modal. User stays in context. |
+| 2026-04-18 | Mobile defaults to list view | Grid cards are small on phone screens. List view (river-style) is more readable and thumb-friendly. Detected via `window.innerWidth < 640` on mount. User can still toggle to grid. |

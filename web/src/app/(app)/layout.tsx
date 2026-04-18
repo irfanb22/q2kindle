@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { usePostHog } from "posthog-js/react";
@@ -8,6 +8,7 @@ import { usePostHog } from "posthog-js/react";
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Queue", icon: "queue" },
   { href: "/history", label: "History", icon: "history" },
+  { href: "/newsstand", label: "Newsstand", icon: "newsstand" },
   { href: "/settings", label: "Settings", icon: "settings" },
 ] as const;
 
@@ -33,6 +34,15 @@ function NavIcon({ icon, active }: { icon: string; active: boolean }) {
           <path d="M1 4v6h6" stroke={color} strokeWidth={weight} strokeLinecap="round" strokeLinejoin="round"/>
           <path d="M3.51 15a9 9 0 102.13-9.36L1 10" stroke={color} strokeWidth={weight} strokeLinecap="round" strokeLinejoin="round"/>
           <path d="M12 7v5l4 2" stroke={color} strokeWidth={weight} strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      );
+    case "newsstand":
+      return (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <rect x="3" y="3" width="18" height="18" rx="2" stroke={color} strokeWidth={weight} strokeLinecap="round" strokeLinejoin="round"/>
+          <line x1="7" y1="8" x2="17" y2="8" stroke={color} strokeWidth={weight} strokeLinecap="round"/>
+          <line x1="7" y1="12" x2="13" y2="12" stroke={color} strokeWidth={weight} strokeLinecap="round"/>
+          <line x1="7" y1="16" x2="15" y2="16" stroke={color} strokeWidth={weight} strokeLinecap="round"/>
         </svg>
       );
     case "settings":
@@ -62,6 +72,24 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       }
     });
   }, [posthog]);
+
+  // Listen for "q2k-queued" custom event from newsstand to pulse the Queue nav icon
+  const [queuePing, setQueuePing] = useState(false);
+  const [queuePingCount, setQueuePingCount] = useState(0);
+  const pingTimeoutRef = useState<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const count = (e as CustomEvent).detail?.count ?? 0;
+      setQueuePingCount(count);
+      setQueuePing(true);
+      // Clear any existing timeout and set a new one
+      if (pingTimeoutRef[0]) clearTimeout(pingTimeoutRef[0]);
+      pingTimeoutRef[0] = setTimeout(() => setQueuePing(false), 1500);
+    };
+    window.addEventListener("q2k-queued", handler);
+    return () => window.removeEventListener("q2k-queued", handler);
+  }, [pingTimeoutRef]);
 
   async function handleSignOut() {
     const supabase = createClient();
@@ -98,17 +126,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 const active = item.href === "/dashboard"
                   ? pathname === "/dashboard"
                   : pathname.startsWith(item.href);
+                const isQueue = item.icon === "queue";
 
                 return (
                   <button
                     key={item.href}
                     onClick={() => router.push(item.href)}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors duration-150 cursor-pointer"
+                    className="relative flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors duration-150 cursor-pointer"
                     style={{
                       fontFamily: 'var(--font-body)',
                       fontWeight: 500,
                       color: active ? 'var(--color-accent)' : 'var(--color-text-muted)',
                       background: active ? 'var(--color-accent-pale)' : 'transparent',
+                      animation: isQueue && queuePing ? 'queueNavBounce 0.4s ease' : undefined,
                     }}
                     onMouseEnter={(e) => {
                       if (!active) e.currentTarget.style.color = 'var(--color-text)';
@@ -117,8 +147,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       if (!active) e.currentTarget.style.color = 'var(--color-text-muted)';
                     }}
                   >
-                    <NavIcon icon={item.icon} active={active} />
+                    <NavIcon icon={item.icon} active={active || (isQueue && queuePing)} />
                     {item.label}
+                    {/* Green count badge */}
+                    {isQueue && queuePing && queuePingCount > 0 && (
+                      <span
+                        className="absolute -top-1.5 -right-2 min-w-[18px] h-[18px] rounded-full flex items-center justify-center text-[10px] font-bold text-white px-1"
+                        style={{
+                          background: 'var(--color-accent)',
+                          boxShadow: '0 0 8px rgba(45,95,45,0.4)',
+                          animation: 'queuePipFade 1.5s ease forwards',
+                        }}
+                      >
+                        {queuePingCount}
+                      </span>
+                    )}
                   </button>
                 );
               })}
@@ -175,7 +218,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </header>
 
       {/* Page content — extra bottom padding on mobile for fixed tab bar */}
-      <main className={`${pathname.startsWith('/article/') ? 'max-w-6xl' : 'max-w-4xl'} mx-auto px-4 sm:px-6 py-6 sm:py-10 pb-20 sm:pb-10`}>
+      <main className={`${pathname.startsWith('/article/') || pathname.startsWith('/newsstand') ? 'max-w-6xl' : 'max-w-4xl'} mx-auto px-4 sm:px-6 py-6 sm:py-10 pb-20 sm:pb-10`}>
         {children}
       </main>
 
@@ -226,21 +269,34 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           const active = item.href === "/dashboard"
             ? pathname === "/dashboard"
             : pathname.startsWith(item.href);
+          const isQueue = item.icon === "queue";
 
           return (
             <button
               key={item.href}
               onClick={() => router.push(item.href)}
-              className="flex flex-col items-center justify-center gap-0.5 flex-1 pt-2 cursor-pointer"
+              className="relative flex flex-col items-center justify-center gap-0.5 flex-1 pt-2 cursor-pointer"
               style={{
                 fontFamily: 'var(--font-body)',
                 color: active ? 'var(--color-accent)' : 'var(--color-text-muted)',
                 background: 'transparent',
                 border: 'none',
+                animation: isQueue && queuePing ? 'queueNavBounce 0.4s ease' : undefined,
               }}
             >
-              <NavIcon icon={item.icon} active={active} />
+              <NavIcon icon={item.icon} active={active || (isQueue && queuePing)} />
               <span className="text-[10px] font-medium">{item.label}</span>
+              {/* Green ping dot */}
+              {isQueue && queuePing && (
+                <span
+                  className="absolute top-1 right-1/4 w-2.5 h-2.5 rounded-full"
+                  style={{
+                    background: 'var(--color-accent)',
+                    boxShadow: '0 0 6px rgba(45,95,45,0.5)',
+                    animation: 'queuePipFade 1.2s ease forwards',
+                  }}
+                />
+              )}
             </button>
           );
         })}
