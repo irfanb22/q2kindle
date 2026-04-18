@@ -462,6 +462,17 @@ export default function DocsPage() {
 
             <div className="docs-faq-item">
               <p className="docs-faq-q" style={{ color: "var(--color-text)" }}>
+                I&apos;m trying to save a PDF
+              </p>
+              <p className="docs-faq-a" style={{ color: "var(--color-text-muted)" }}>
+                q2Kindle extracts article content from web pages &mdash; it doesn&apos;t support PDF files. If you paste
+                a link that resolves to a PDF, extraction will fail. To read a PDF on your Kindle, you can email it
+                directly to your Kindle address as an attachment; Amazon will convert it automatically.
+              </p>
+            </div>
+
+            <div className="docs-faq-item">
+              <p className="docs-faq-q" style={{ color: "var(--color-text)" }}>
                 The ebook looks different from the article preview
               </p>
               <p className="docs-faq-a" style={{ color: "var(--color-text-muted)" }}>
