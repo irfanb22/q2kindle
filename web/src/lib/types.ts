@@ -40,23 +40,3 @@ export type EpubPreferences = {
   showReadTime: boolean;
   showPublishedDate: boolean;
 };
-
-export type RssFeedItem = {
-  url: string;
-  title: string;
-  snippet: string;
-  image: string | null;
-  author: string | null;
-  published_at: string | null;
-};
-
-export type RssFeed = {
-  id: string;
-  feed_url: string;
-  title: string;
-  site_url: string | null;
-  color: string;
-  items: RssFeedItem[];
-  last_fetched_at: string | null;
-  created_at: string;
-};
